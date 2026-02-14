@@ -1,0 +1,828 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  fullName            String
+  phone               String?
+  passwordHash        String
+  avatarUrl           String?
+  role                UserRole  @default(RESEARCHER)
+  isActive            Boolean   @default(true)
+  emailVerified       Boolean   @default(false)
+  emailVerifyToken    String?
+  emailVerifyExpiry   DateTime?
+  isInstitutional     Boolean   @default(false)
+  institution         String?
+  trialExpiresAt      DateTime?
+  stripeCustomerId    String?
+  credits             Decimal   @default(0) @db.Decimal(12, 2)
+  lgpdConsentAt       DateTime?
+  lastLoginAt         DateTime?
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  refreshTokens    RefreshToken[]
+  teamMemberships  TeamMembership[]
+  ownedTeams       Team[]
+  projects         Project[]
+  reactions        Reaction[]
+  fittingJobs      FittingJob[]
+  mdSimulations    MDSimulation[]
+  mlJobs           MLJob[]
+  llmConversations LLMConversation[]
+  uploads          FileUpload[]
+  usageRecords     UsageRecord[]
+  creditPurchases  CreditPurchase[]
+  jobResults       JobResult[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+
+  @@index([email])
+  @@index([stripeCustomerId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  family    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([family])
+  @@map("refresh_tokens")
+}
+
+model InstitutionalDomain {
+  id          String  @id @default(cuid())
+  domain      String  @unique
+  institution String
+  country     String  @default("BR")
+  isVerified  Boolean @default(true)
+
+  @@map("institutional_domains")
+}
+
+model Team {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String?  @unique
+  color           String   @default("#6366f1")
+  description     String?
+  ownerId         String
+  autoJoinDomains String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner   User             @relation(fields: [ownerId], references: [id])
+  members TeamMembership[]
+  invites TeamInvite[]
+  projects Project[]
+
+  @@map("teams")
+}
+
+model TeamMembership {
+  id        String           @id @default(cuid())
+  userId    String
+  teamId    String
+  role      TeamMemberRole   @default(MEMBER)
+  status    TeamMemberStatus @default(ACTIVE)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@map("team_memberships")
+}
+
+model TeamInvite {
+  id         String         @id @default(cuid())
+  teamId     String
+  email      String
+  role       TeamMemberRole @default(MEMBER)
+  tokenHash  String         @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime       @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, email])
+  @@map("team_invites")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  teamId      String?
+  ownerId     String
+  isPublic    Boolean   @default(false)
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  owner         User           @relation(fields: [ownerId], references: [id])
+  team          Team?          @relation(fields: [teamId], references: [id])
+  reactions     Reaction[]
+  fittingJobs   FittingJob[]
+  mdSimulations MDSimulation[]
+  mlJobs        MLJob[]
+
+  @@index([ownerId])
+  @@index([teamId])
+  @@map("projects")
+}
+
+model FileUpload {
+  id           String         @id @default(cuid())
+  userId       String
+  filename     String
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  storagePath  String
+  fileType     UploadFileType
+  checksum     String?
+  expiresAt    DateTime?
+  createdAt    DateTime       @default(now())
+
+  user    User      @relation(fields: [userId], references: [id])
+  species Species[]
+
+  @@index([userId])
+  @@map("file_uploads")
+}
+
+model Reaction {
+  id                         String        @id @default(cuid())
+  projectId                  String?
+  userId                     String
+  name                       String
+  description                String?
+  reactionType               ReactionType
+  energyType                 PESEnergyType @default(En)
+  rateUnit                   RateUnit      @default(MOL)
+  status                     CalcStatus    @default(DRAFT)
+  deltaE                     Float?
+  deltaH                     Float?
+  deltaG                     Float?
+  forwardBarrier             Float?
+  reverseBarrier             Float?
+  barrierEnthalpy            Float?
+  barrierFreeEnergy          Float?
+  imaginaryFreq              Float?
+  crossoverTemp              Float?
+  dParameter                 Float?
+  eckartAlpha                Float?
+  eckartLength               Float?
+  eckartAsymmetry            Float?
+  verticalEnergyDiff         Float?
+  reorganizationEnergy       Float?
+  marcusActivationFreeEnergy Float?
+  rateConstants              Json?
+  tunnelingCoeffs            Json?
+  partitionRatios            Json?
+  smoluchowskiData           Json?
+  kramersData                Json?
+  tokensConsumed             Decimal       @default(0) @db.Decimal(10, 2)
+  computeTimeMs              Int?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+
+  project          Project?            @relation(fields: [projectId], references: [id])
+  user             User                @relation(fields: [userId], references: [id])
+  species          Species[]
+  temperatureGrid  TemperatureGrid?
+  solventConfig    SolventConfig?
+  experimentalData ExperimentalDataSet[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@map("reactions")
+}
+
+model Species {
+  id                       String      @id @default(cuid())
+  reactionId               String
+  role                     SpeciesRole
+  sortOrder                Int         @default(0)
+  fileUploadId             String?
+  filename                 String?
+  label                    String?
+  nAtoms                   Int?
+  charge                   Int?
+  multiplicity             Int?
+  molecularMass            Float?
+  molecularMassKg          Float?
+  scfEnergy                Float?
+  zpe                      Float?
+  electronicPlusZPE        Float?
+  electronicPlusEnthalpy   Float?
+  electronicPlusFreeEnergy Float?
+  imaginaryFreq            Float?
+  degreesOfFreedom         Int?
+  rotationalSymmetryNumber Float?
+  pressure                 Float?
+  electronicPartitionFn    Float?
+  scfrCavityRadius         Float?
+  vibrationalTemps         Float[]
+  rotationalTemps          Float[]
+  atomComposition          Json?
+  cartesianCoords          Json?
+  partitionFunctions       Json?
+  qcEngine                 QCEngine?
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+
+  reaction   Reaction    @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+  fileUpload FileUpload? @relation(fields: [fileUploadId], references: [id])
+
+  @@index([reactionId, role])
+  @@map("species")
+}
+
+model TemperatureGrid {
+  id         String              @id @default(cuid())
+  reactionId String              @unique
+  gridType   TemperatureGridType @default(CUSTOM)
+  minTemp    Float?
+  maxTemp    Float?
+  step       Float?
+  values     Float[]
+
+  reaction Reaction @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+
+  @@map("temperature_grids")
+}
+
+model SolventConfig {
+  id           String       @id @default(cuid())
+  reactionId   String       @unique
+  solventType  SolventType  @default(WATER)
+  solventModel SolventModel @default(NONE)
+  epsilon      Float?
+  dParam       Float?
+  eta0         Float?
+
+  reaction Reaction @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+
+  @@map("solvent_configs")
+}
+
+model ExperimentalDataSet {
+  id         String   @id @default(cuid())
+  reactionId String
+  name       String?
+  source     String?
+  citation   String?
+  doi        String?
+  points     Json
+  createdAt  DateTime @default(now())
+
+  reaction Reaction @relation(fields: [reactionId], references: [id], onDelete: Cascade)
+
+  @@index([reactionId])
+  @@map("experimental_data_sets")
+}
+
+model FittingJob {
+  id             String           @id @default(cuid())
+  projectId      String?
+  userId         String
+  name           String?
+  plotType       FittingPlotType
+  modelType      FittingModelType
+  status         CalcStatus       @default(PENDING)
+  errorMessage   String?
+  gsaQAcceptance Float            @default(1.1)
+  gsaQTemperature Float           @default(1.5)
+  gsaQVisiting   Float            @default(1.1)
+  gsaMaxIter     Int              @default(10000)
+  gsaInitialTemp Float            @default(1.0)
+  gsaStepScale   Float            @default(1.0)
+  inputData      Json?
+  tokensConsumed Decimal          @default(0) @db.Decimal(10, 2)
+  computeTimeMs  Int?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  project Project?       @relation(fields: [projectId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
+  result  FittingResult?
+
+  @@index([userId])
+  @@index([status])
+  @@map("fitting_jobs")
+}
+
+model FittingResult {
+  id           String @id @default(cuid())
+  fittingJobId String @unique
+  chiSquare    Float?
+  paramA       Float?
+  paramEo      Float?
+  paramD       Float?
+  paramTo      Float?
+  paramB       Float?
+  paramEv      Float?
+  fittedCurve  Json?
+  rawParams    Json?
+
+  fittingJob FittingJob @relation(fields: [fittingJobId], references: [id], onDelete: Cascade)
+
+  @@map("fitting_results")
+}
+
+model MDSimulation {
+  id              String     @id @default(cuid())
+  projectId       String?
+  userId          String
+  name            String?
+  mdMethod        MDMethod
+  status          CalcStatus @default(DRAFT)
+  dftFunctional   String?
+  pseudopotential String?
+  charge          Int        @default(0)
+  lsdFlag         Int        @default(0)
+  temperature     Float?
+  maxSteps        Int?
+  timeStep        Float?
+  latticeA        Float?
+  latticeB        Float?
+  latticeC        Float?
+  cosA            Float?
+  cosB            Float?
+  cosC            Float?
+  tokensConsumed  Decimal    @default(0) @db.Decimal(10, 2)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  project        Project?          @relation(fields: [projectId], references: [id])
+  user           User              @relation(fields: [userId], references: [id])
+  inputMolecules MDMolecule[]
+  generatedFiles MDGeneratedFile[]
+  multiConfig    MDMultiConfig?
+
+  @@index([userId])
+  @@map("md_simulations")
+}
+
+model MDMolecule {
+  id             String @id @default(cuid())
+  simulationId   String
+  label          String?
+  sourceFilename String?
+  nAtoms         Int?
+  totalMass      Float?
+  sortOrder      Int    @default(0)
+
+  simulation MDSimulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  atoms      MDAtom[]
+
+  @@index([simulationId])
+  @@map("md_molecules")
+}
+
+model MDAtom {
+  id         String @id @default(cuid())
+  moleculeId String
+  atomIndex  Int
+  element    String
+  x          Float
+  y          Float
+  z          Float
+  massAmu    Float?
+
+  molecule MDMolecule @relation(fields: [moleculeId], references: [id], onDelete: Cascade)
+
+  @@unique([moleculeId, atomIndex])
+  @@map("md_atoms")
+}
+
+model MDGeneratedFile {
+  id           String     @id @default(cuid())
+  simulationId String
+  fileType     MDFileType
+  filename     String
+  content      String
+  createdAt    DateTime   @default(now())
+
+  simulation MDSimulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  @@index([simulationId])
+  @@map("md_generated_files")
+}
+
+model MDMultiConfig {
+  id              String  @id @default(cuid())
+  simulationId    String  @unique
+  bondInit        Float?
+  bondFinal       Float?
+  bondSteps       Int?
+  angleInit       Float?
+  angleFinal      Float?
+  angleSteps      Int?
+  dihedralInit    Float?
+  dihedralFinal   Float?
+  dihedralSteps   Int?
+  tempInit        Float?
+  tempFinal       Float?
+  tempSteps       Int?
+  chiralInversion Boolean @default(false)
+  totalConfigs    Int?
+
+  simulation MDSimulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  @@map("md_multi_configs")
+}
+
+model MLJob {
+  id              String          @id @default(cuid())
+  userId          String
+  projectId       String?
+  name            String?
+  mlProvider      MLProvider      @default(MLATOM)
+  mlTaskType      MLTaskType
+  neuralPotential NeuralPotential?
+  status          CalcStatus      @default(PENDING)
+  errorMessage    String?
+  inputData       Json?
+  resultData      Json?
+  tokensConsumed  Decimal         @default(0) @db.Decimal(10, 2)
+  gpuTimeSeconds  Int?
+  gpuType         String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("ml_jobs")
+}
+
+model LLMConversation {
+  id             String  @id @default(cuid())
+  userId         String
+  title          String?
+  model          String  @default("deepseek-v3")
+  contextType    String?
+  contextId      String?
+  totalTokensIn  Int     @default(0)
+  totalTokensOut Int     @default(0)
+  totalCostBrl   Decimal @default(0) @db.Decimal(10, 4)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user     User         @relation(fields: [userId], references: [id])
+  messages LLMMessage[]
+
+  @@index([userId])
+  @@map("llm_conversations")
+}
+
+model LLMMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           LLMRole
+  content        String
+  tokensIn       Int?
+  tokensOut      Int?
+  model          String?
+  latencyMs      Int?
+  createdAt      DateTime @default(now())
+
+  conversation LLMConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("llm_messages")
+}
+
+model UsageRecord {
+  id           String       @id @default(cuid())
+  userId       String
+  operation    OperationType
+  tokensUsed   Decimal      @db.Decimal(10, 2)
+  resourceType ResourceType
+  entityType   String?
+  entityId     String?
+  costBrl      Decimal?     @db.Decimal(10, 4)
+  metadata     Json?
+  createdAt    DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([operation])
+  @@index([createdAt])
+  @@map("usage_records")
+}
+
+model CreditPurchase {
+  id              String        @id @default(cuid())
+  userId          String
+  packageType     PackageType
+  tokens          Int
+  amountBrl       Decimal       @db.Decimal(10, 2)
+  discountPercent Int           @default(0)
+  stripePaymentId String?
+  status          PaymentStatus @default(PENDING)
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("credit_purchases")
+}
+
+model JobResult {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String
+  jobType     String
+  status      CalcStatus @default(PENDING)
+  inputData   Json?
+  resultData  Json?
+  errorData   Json?
+  retryCount  Int        @default(0)
+  priority    Int        @default(0)
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([jobType, status])
+  @@map("job_results")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum UserRole {
+  ADMIN
+  RESEARCHER
+  VIEWER
+}
+
+enum TeamMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum TeamMemberStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+}
+
+enum ReactionType {
+  UNIMOLECULAR
+  BIMOLECULAR
+}
+
+enum SpeciesRole {
+  REACTANT
+  TRANSITION_STATE
+  PRODUCT
+  VERTICAL_PRODUCT
+}
+
+enum PESEnergyType {
+  En
+  Ent
+  EnG
+}
+
+enum RateUnit {
+  UNI
+  MOL
+  MOLECULE
+}
+
+enum RateConstantMethod {
+  TST
+  D_TST
+  BELL_35
+  BELL_58
+  BELL_2T
+  ECKART
+  SKODJE_TRUHLAR
+  MARCUS
+}
+
+enum TunnelingMethod {
+  BELL_35
+  BELL_58
+  BELL_2T
+  ECKART
+  SKODJE_TRUHLAR
+}
+
+enum SolventType {
+  WATER
+  CUSTOM
+}
+
+enum SolventModel {
+  NONE
+  KRAMERS
+  COLLINS_KIMBALL
+}
+
+enum MDMethod {
+  CPMD
+  BOMD
+  PIMD
+  SHMD
+  MTD
+}
+
+enum MDFileType {
+  WAVEFUNCTION_INPUT
+  RUN_INPUT
+  GAUSSVIEW_CHECK
+  XYZ_TRAJECTORY
+}
+
+enum FittingPlotType {
+  ARRHENIUS
+  TRANSITIVITY
+}
+
+enum FittingModelType {
+  ARRHENIUS
+  AQUILANTI_MUNDIM
+  NTS
+  VFT
+  ASCC
+  SATO
+}
+
+enum CalcStatus {
+  DRAFT
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TemperatureGridType {
+  DEFAULT
+  CUSTOM
+  RANGE
+}
+
+enum UploadFileType {
+  GAUSSIAN_LOG
+  GAUSSIAN_OUT
+  ORCA_OUT
+  GAMESS_LOG
+  NWCHEM_OUT
+  GJF_INPUT
+  XYZ_GEOMETRY
+  RATE_DATA_TXT
+  RATE_DATA_DAT
+  RATE_DATA_CSV
+  CPMD_INPUT
+  OTHER
+}
+
+enum QCEngine {
+  GAUSSIAN
+  ORCA
+  GAMESS
+  NWCHEM
+  PYSCF
+  XTB
+  MLATOM
+}
+
+enum NotificationType {
+  CALC_COMPLETED
+  CALC_FAILED
+  CREDITS_LOW
+  TEAM_INVITE
+  SYSTEM
+}
+
+enum MLProvider {
+  MLATOM
+  PYSCF
+  XTB
+}
+
+enum MLTaskType {
+  SINGLE_POINT
+  OPTIMIZATION
+  FREQUENCY
+  MD
+  TRAINING
+}
+
+enum NeuralPotential {
+  ANI_2X
+  MACE
+  AIQM1
+}
+
+enum LLMRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum OperationType {
+  GSA_FITTING
+  RATE_CONSTANT_BASIC
+  RATE_CONSTANT_FULL
+  RATE_CONSTANT_SOLVENT
+  MD_SINGLE
+  MD_MULTIPLE
+  ML_SINGLE_POINT
+  ML_OPTIMIZATION
+  ML_MD
+  ML_TRAINING
+  LLM_DEEPSEEK
+  LLM_CLAUDE
+  QC_EXTRACT
+}
+
+enum ResourceType {
+  CPU
+  GPU
+  API
+}
+
+enum PackageType {
+  TRIAL
+  BASIC
+  STUDENT
+  RESEARCHER
+  LABORATORY
+  INSTITUTIONAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
