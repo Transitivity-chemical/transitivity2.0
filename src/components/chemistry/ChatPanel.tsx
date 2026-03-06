@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Send, Loader2, Bot, User } from 'lucide-react';
+import { Send, Loader2, Bot, User, ChevronDown, Crown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { ChatMarkdown } from '@/components/chat/ChatMarkdown';
+import { AI_MODEL_CONFIGS, type TAiProvider } from '@/lib/ai-models';
+import { PROVIDER_ICONS } from '@/components/icons/ai-providers';
 
 interface Message {
   id: string;
@@ -18,16 +21,29 @@ interface ChatPanelProps {
   onNewConversation?: (id: string) => void;
 }
 
+const FREE_MODELS = AI_MODEL_CONFIGS.filter(m => m.isFree);
+const PRO_MODELS = AI_MODEL_CONFIGS.filter(m => !m.isFree);
+
+function ProviderIcon({ provider, className }: { provider: TAiProvider; className?: string }) {
+  const Icon = PROVIDER_ICONS[provider];
+  if (!Icon) return null;
+  return <Icon className={className} />;
+}
+
 export default function ChatPanel({ conversationId, onNewConversation }: ChatPanelProps) {
   const t = useTranslations('assistant');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | undefined>(conversationId);
+  const [modelId, setModelId] = useState(FREE_MODELS[0]?.id || AI_MODEL_CONFIGS[0].id);
+  const [showModels, setShowModels] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load existing messages when conversationId changes
+  const currentModel = AI_MODEL_CONFIGS.find(m => m.id === modelId) || AI_MODEL_CONFIGS[0];
+
   useEffect(() => {
     setCurrentConversationId(conversationId);
     if (conversationId) {
@@ -36,6 +52,17 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
       setMessages([]);
     }
   }, [conversationId]);
+
+  // Close model dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (modelDropdownRef.current && !modelDropdownRef.current.contains(e.target as Node)) {
+        setShowModels(false);
+      }
+    }
+    if (showModels) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showModels]);
 
   const loadMessages = async (convId: string) => {
     try {
@@ -67,16 +94,15 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
       content: trimmed,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const allMessages = [...messages, userMessage];
+    setMessages(allMessages);
     setInput('');
     setIsStreaming(true);
 
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
 
-    // Create placeholder for assistant response
     const assistantId = `assistant-${Date.now()}`;
     const assistantMessage: Message = {
       id: assistantId,
@@ -90,54 +116,69 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: trimmed,
-          conversationId: currentConversationId,
+          messages: allMessages.map(m => ({
+            role: m.role === 'USER' ? 'user' : 'assistant',
+            content: m.content,
+          })),
+          model: modelId,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to send message');
+        let errorMsg = 'Failed to get response';
+        try {
+          const err = await res.json();
+          errorMsg = err.error || errorMsg;
+        } catch {
+          errorMsg = `HTTP ${res.status}: ${res.statusText}`;
+        }
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId ? { ...msg, content: `Error: ${errorMsg}` } : msg,
+          ),
+        );
+        setIsStreaming(false);
+        return;
       }
 
       const reader = res.body?.getReader();
       if (!reader) throw new Error('No reader');
 
       const decoder = new TextDecoder();
-      let buffer = '';
+      let accumulated = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n\n');
-        buffer = lines.pop() ?? '';
+        const text = decoder.decode(value, { stream: true });
+        const lines = text.split('\n');
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          const jsonStr = line.slice(6);
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
 
           try {
-            const event = JSON.parse(jsonStr);
-
-            if (event.type === 'conversation_id') {
-              if (!currentConversationId) {
-                setCurrentConversationId(event.id);
-                onNewConversation?.(event.id);
-              }
-            } else if (event.type === 'content') {
+            const parsed = JSON.parse(data);
+            if (parsed.content) {
+              accumulated += parsed.content;
               setMessages((prev) =>
                 prev.map((msg) =>
-                  msg.id === assistantId
-                    ? { ...msg, content: msg.content + event.content }
-                    : msg,
+                  msg.id === assistantId ? { ...msg, content: accumulated } : msg,
                 ),
               );
-            } else if (event.type === 'error') {
-              console.error('Stream error:', event.error);
+            }
+            if (parsed.error) {
+              accumulated += `\nError: ${parsed.error}`;
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantId ? { ...msg, content: accumulated } : msg,
+                ),
+              );
             }
           } catch {
-            // Ignore malformed JSON
+            // skip parse errors
           }
         }
       }
@@ -164,7 +205,6 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
 
   const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
-    // Auto-resize
     const textarea = e.target;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
@@ -172,6 +212,51 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
 
   return (
     <div className="flex h-full flex-col">
+      {/* Model selector bar */}
+      <div className="flex items-center gap-2 border-b px-4 py-2">
+        <span className="text-xs text-muted-foreground">Model:</span>
+        <div className="relative" ref={modelDropdownRef}>
+          <button
+            onClick={() => setShowModels(!showModels)}
+            className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs hover:bg-muted"
+          >
+            <ProviderIcon provider={currentModel.provider} className="h-3.5 w-3.5" />
+            {currentModel.name}
+            {!currentModel.isFree && <Crown size={10} className="text-amber-500" />}
+            <ChevronDown size={12} className="ml-1 text-muted-foreground" />
+          </button>
+          {showModels && (
+            <div className="absolute left-0 top-8 z-50 max-h-96 w-64 overflow-y-auto rounded-lg border bg-popover py-1 shadow-lg">
+              <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Free</div>
+              {FREE_MODELS.map(m => (
+                <button key={m.id} onClick={() => { setModelId(m.id); setShowModels(false); }}
+                  className={cn(
+                    'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-muted',
+                    modelId === m.id && 'bg-muted font-medium text-primary',
+                  )}>
+                  <ProviderIcon provider={m.provider} className="h-3.5 w-3.5 shrink-0" />
+                  {m.name}
+                </button>
+              ))}
+              <div className="mt-1 border-t px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Pro <Crown size={10} className="mb-0.5 inline text-amber-500" />
+              </div>
+              {PRO_MODELS.map(m => (
+                <button key={m.id} onClick={() => { setModelId(m.id); setShowModels(false); }}
+                  className={cn(
+                    'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-muted',
+                    modelId === m.id && 'bg-muted font-medium text-primary',
+                  )}>
+                  <ProviderIcon provider={m.provider} className="h-3.5 w-3.5 shrink-0" />
+                  {m.name}
+                  <Crown size={10} className="ml-auto text-amber-500" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
@@ -199,18 +284,23 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
             )}
             <div
               className={cn(
-                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                'max-w-[80%] rounded-2xl px-4 py-2.5',
                 msg.role === 'USER'
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-foreground',
               )}
             >
-              <div className="whitespace-pre-wrap break-words">{msg.content}</div>
-              {msg.role === 'ASSISTANT' && msg.content === '' && isStreaming && (
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Loader2 className="size-3 animate-spin" />
-                  <span className="text-xs">{t('thinking')}</span>
-                </div>
+              {msg.role === 'ASSISTANT' ? (
+                msg.content ? (
+                  <ChatMarkdown content={msg.content} />
+                ) : isStreaming ? (
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Loader2 className="size-3 animate-spin" />
+                    <span className="text-xs">{t('thinking')}</span>
+                  </div>
+                ) : null
+              ) : (
+                <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">{msg.content}</div>
               )}
             </div>
             {msg.role === 'USER' && (

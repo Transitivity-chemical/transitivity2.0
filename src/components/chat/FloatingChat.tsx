@@ -6,7 +6,8 @@ import { X, Send, ChevronDown, Crown } from 'lucide-react';
 import { GammaIcon } from '@/components/brand/TransitivityLogo';
 import { useTranslations } from 'next-intl';
 import { PROVIDER_ICONS } from '@/components/icons/ai-providers';
-import { AI_MODEL_CONFIGS, type TAiProvider, type TAIModelConfig } from '@/lib/ai-models';
+import { AI_MODEL_CONFIGS, type TAiProvider } from '@/lib/ai-models';
+import { ChatMarkdown } from '@/components/chat/ChatMarkdown';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -200,7 +201,11 @@ export function FloatingChat() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${msg.role === 'user' ? 'bg-[#1e3a5f] text-white' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}`}>
-                  <div className="whitespace-pre-wrap">{msg.content || (isStreaming && i === messages.length - 1 ? '...' : '')}</div>
+                  {msg.role === 'assistant' && msg.content ? (
+                    <ChatMarkdown content={msg.content} />
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.content || (isStreaming && i === messages.length - 1 ? '...' : '')}</div>
+                  )}
                 </div>
               </div>
             ))}
