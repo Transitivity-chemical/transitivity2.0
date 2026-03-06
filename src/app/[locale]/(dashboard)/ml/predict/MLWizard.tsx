@@ -18,6 +18,7 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  FlaskConical,
   Loader2,
   CheckCircle,
   Atom,
@@ -25,6 +26,7 @@ import {
   Settings,
   ClipboardList,
 } from 'lucide-react';
+import { SAMPLE_ML_GEOMETRY } from '@/lib/sample-data';
 import { fetchApi } from '@/lib/client-api/base';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -592,6 +594,30 @@ export function MLWizard() {
 
   return (
     <div className="max-w-3xl space-y-4">
+      {/* Load Example */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setAtoms(
+              SAMPLE_ML_GEOMETRY.map((a) => ({
+                element: a.element,
+                x: a.x,
+                y: a.y,
+                z: a.z,
+              })),
+            );
+          }}
+        >
+          <FlaskConical className="mr-1.5 size-4" />
+          Load Example
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Benzoic acid (C7H6O2) — 15 atoms
+        </span>
+      </div>
+
       <StepIndicator />
 
       {step === 0 && <StepMolecule />}

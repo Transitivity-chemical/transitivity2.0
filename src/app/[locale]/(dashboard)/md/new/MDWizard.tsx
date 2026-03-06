@@ -15,11 +15,13 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft,
   ChevronRight,
+  FlaskConical,
   Plus,
   Trash2,
   Upload,
   Loader2,
 } from 'lucide-react';
+import { SAMPLE_MD_GEOMETRY } from '@/lib/sample-data';
 
 /* ---------- types ---------- */
 
@@ -237,6 +239,32 @@ export function MDWizard() {
 
   return (
     <div className="space-y-6">
+      {/* Load Example */}
+      <div className="flex items-center gap-3 mb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setAtoms(
+              SAMPLE_MD_GEOMETRY.map((a) => ({
+                id: `a${++rowCounter}`,
+                element: a.element,
+                x: a.x,
+                y: a.y,
+                z: a.z,
+              })),
+            );
+            updateConfig('name', 'Benzoic acid CPMD');
+          }}
+        >
+          <FlaskConical className="mr-1.5 size-4" />
+          Load Example
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Benzoic acid (C7H6O2) — 15 atoms
+        </span>
+      </div>
+
       {/* Step indicator */}
       <div className="flex items-center gap-2">
         {stepLabels.map((label, i) => (

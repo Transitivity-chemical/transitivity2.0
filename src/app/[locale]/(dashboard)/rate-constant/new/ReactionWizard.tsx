@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { FileDropzone } from '@/components/chemistry/FileDropzone';
-import { Upload, Trash2, Plus, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { Upload, Trash2, Plus, ChevronRight, ChevronLeft, Loader2, FlaskConical } from 'lucide-react';
+import { SAMPLE_RATE_CONSTANT_DATA } from '@/lib/sample-data';
 
 type SpeciesRole = 'REACTANT' | 'TRANSITION_STATE' | 'PRODUCT';
 
@@ -198,6 +199,37 @@ export function ReactionWizard() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {/* Load Example */}
+      <div className="flex items-center gap-3 mb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const d = SAMPLE_RATE_CONSTANT_DATA;
+            setName(d.name);
+            setReactionType(d.reactionType);
+            setEnergyType(d.energyType);
+            setSpecies(
+              d.species.map((sp) => ({
+                role: sp.role,
+                label: sp.label,
+                scfEnergy: sp.scfEnergy,
+                nAtoms: sp.nAtoms,
+                charge: sp.charge,
+                multiplicity: sp.multiplicity,
+              })),
+            );
+            setStep('species');
+          }}
+        >
+          <FlaskConical className="mr-1.5 size-4" />
+          Load Example
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          OH + HCl reaction (bimolecular, gas-phase)
+        </span>
+      </div>
+
       {/* Step indicator */}
       <div className="flex items-center gap-2 text-sm">
         {STEPS.map((s, i) => (
