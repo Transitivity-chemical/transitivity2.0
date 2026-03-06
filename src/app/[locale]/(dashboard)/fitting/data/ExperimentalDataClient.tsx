@@ -2,7 +2,9 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SAMPLE_FITTING_DATA, SAMPLE_FITTING_META } from '@/lib/sample-data';
 import {
   Card,
   CardContent,
@@ -146,6 +148,35 @@ export function ExperimentalDataClient() {
 
   return (
     <div className="space-y-6">
+      {/* Load Example */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setName(SAMPLE_FITTING_META.title);
+            setSource(SAMPLE_FITTING_META.authors);
+            setCitation(SAMPLE_FITTING_META.citation);
+            setPoints(
+              SAMPLE_FITTING_DATA.map((d) => ({
+                id: `sample-${d.temperature}`,
+                temperature: String(d.temperature),
+                rateConstant: String(d.rateConstant),
+              })),
+            );
+            setValidationErrors([]);
+            setSubmitStatus('idle');
+            setSubmitMessage('');
+          }}
+        >
+          <FlaskConical className="mr-1.5 size-4" />
+          Load Example
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          OH + HBr anti-Arrhenius dataset (23-295 K)
+        </span>
+      </div>
+
       {/* Metadata Card */}
       <Card>
         <CardHeader>
