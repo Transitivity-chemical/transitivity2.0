@@ -6,36 +6,17 @@ import { X, Send, ChevronDown, Crown } from 'lucide-react';
 import { GammaIcon } from '@/components/brand/TransitivityLogo';
 import { useTranslations } from 'next-intl';
 import { PROVIDER_ICONS } from '@/components/icons/ai-providers';
+import { AI_MODEL_CONFIGS, type TAiProvider, type TAIModelConfig } from '@/lib/ai-models';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-type TAiProvider = 'DeepSeek' | 'Meta' | 'Mistral' | 'Qwen' | 'Google' | 'Nvidia' | 'OpenAI' | 'Anthropic' | 'StepFun' | 'AllenAI' | 'Arcee' | 'LiquidAI' | 'TNG' | 'Upstage' | 'Venice' | 'Zhipu';
-
-interface ModelConfig {
-  id: string;
-  name: string;
-  provider: TAiProvider;
-  isFree: boolean;
-}
-
-// Curated subset for the floating chat (6 free + 4 pro)
-const MODELS: ModelConfig[] = [
-  // Free
-  { id: 'deepseek/deepseek-r1-0528', name: 'DeepSeek R1', provider: 'DeepSeek', isFree: true },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'Meta', isFree: true },
-  { id: 'mistralai/mistral-small-3.1-24b-instruct', name: 'Mistral Small 3.1', provider: 'Mistral', isFree: true },
-  { id: 'qwen/qwen3-4b', name: 'Qwen3 4B', provider: 'Qwen', isFree: true },
-  { id: 'nvidia/nemotron-nano-9b-v2', name: 'Nemotron Nano 9B', provider: 'Nvidia', isFree: true },
-  { id: 'google/gemma-3-12b-it', name: 'Gemma 3 12B', provider: 'Google', isFree: true },
-  // Pro
-  { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4', provider: 'Anthropic', isFree: false },
-  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI', isFree: false },
-  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'Google', isFree: false },
-  { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', provider: 'DeepSeek', isFree: false },
-];
+// Curated subset for the floating chat (free + top pro)
+const FREE_MODELS = AI_MODEL_CONFIGS.filter(m => m.isFree);
+const PRO_MODELS = AI_MODEL_CONFIGS.filter(m => !m.isFree).slice(0, 10);
+const MODELS = [...FREE_MODELS, ...PRO_MODELS];
 
 function ProviderIcon({ provider, className }: { provider: TAiProvider; className?: string }) {
   const Icon = PROVIDER_ICONS[provider];
@@ -48,7 +29,7 @@ export function FloatingChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [modelId, setModelId] = useState(MODELS[0].id);
+  const [modelId, setModelId] = useState(FREE_MODELS[0]?.id || MODELS[0].id);
   const [isStreaming, setIsStreaming] = useState(false);
   const [showModels, setShowModels] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -177,7 +158,7 @@ export function FloatingChat() {
                   <ChevronDown size={12} />
                 </button>
                 {showModels && (
-                  <div className="absolute right-0 top-8 z-50 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                  <div className="absolute right-0 top-8 z-50 max-h-80 w-56 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                     <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Free</div>
                     {freeModels.map(m => (
                       <button key={m.id} onClick={() => { setModelId(m.id); setShowModels(false); }}
