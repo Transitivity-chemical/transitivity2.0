@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         try {
           for await (const chunk of stream) {
             const content = chunk.choices[0]?.delta?.content;
-            if (content) {
+            if (content !== undefined && content !== null && content !== '') {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
             }
           }

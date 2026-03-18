@@ -206,8 +206,10 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
                   : 'bg-muted text-foreground',
               )}
             >
-              {msg.role === 'ASSISTANT' && msg.content ? (
-                <MarkdownMessage content={msg.content} />
+              {msg.role === 'ASSISTANT' ? (
+                msg.content ? (
+                  <MarkdownMessage content={msg.content} />
+                ) : null
               ) : (
                 <div className="whitespace-pre-wrap break-words">{msg.content}</div>
               )}
