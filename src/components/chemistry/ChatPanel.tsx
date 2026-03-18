@@ -207,13 +207,7 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
               )}
             >
               {msg.role === 'ASSISTANT' ? (
-                msg.content ? (
-                  isStreaming && msg === messages[messages.length - 1] ? (
-                    <div className="whitespace-pre-wrap break-words">{msg.content}</div>
-                  ) : (
-                    <MarkdownMessage content={msg.content} />
-                  )
-                ) : null
+                <MarkdownMessage content={msg.content} />
               ) : (
                 <div className="whitespace-pre-wrap break-words">{msg.content}</div>
               )}

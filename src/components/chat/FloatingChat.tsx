@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { X, Send, ChevronDown, Crown } from 'lucide-react';
+import { X, Send, ChevronDown, Crown, Loader2 } from 'lucide-react';
 import { GammaIcon } from '@/components/brand/TransitivityLogo';
 import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
 import { useTranslations } from 'next-intl';
@@ -92,39 +92,43 @@ export function FloatingChat() {
       }
 
       const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
       if (!reader) { setIsStreaming(false); return; }
 
-      let accumulated = '';
+      const decoder = new TextDecoder();
+      let buffer = '';
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const text = decoder.decode(value);
-        const lines = text.split('\n');
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') break;
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.content) {
-                accumulated += parsed.content;
-                setMessages(prev => {
-                  const updated = [...prev];
-                  updated[updated.length - 1] = { role: 'assistant', content: accumulated };
-                  return updated;
-                });
-              }
-              if (parsed.error) {
-                accumulated += `\nError: ${parsed.error}`;
-                setMessages(prev => {
-                  const updated = [...prev];
-                  updated[updated.length - 1] = { role: 'assistant', content: accumulated };
-                  return updated;
-                });
-              }
-            } catch { /* skip parse errors in stream */ }
-          }
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6).trim();
+          if (payload === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(payload);
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
+            if (parsed.content) {
+              setMessages(prev => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last && last.role === 'assistant') {
+                  updated[updated.length - 1] = {
+                    ...last,
+                    content: last.content + parsed.content,
+                  };
+                }
+                return updated;
+              });
+            }
+          } catch { /* skip malformed chunks */ }
         }
       }
     } catch (err) {
@@ -200,23 +204,25 @@ export function FloatingChat() {
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${msg.role === 'user' ? 'bg-[#1e3a5f] text-white' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}`}>
+                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${msg.role === 'user' ? 'bg-[#1e3a5f] text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 rounded-tl-sm'}`}>
                   {msg.role === 'assistant' ? (
-                    msg.content ? (
-                      isStreaming && i === messages.length - 1 ? (
-                        <div className="whitespace-pre-wrap">{msg.content}</div>
-                      ) : (
-                        <MarkdownMessage content={msg.content} />
-                      )
-                    ) : (
-                      isStreaming && i === messages.length - 1 ? <div className="text-gray-400">...</div> : null
-                    )
+                    <MarkdownMessage content={msg.content} />
                   ) : (
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
                   )}
                 </div>
               </div>
             ))}
+
+            {isStreaming && messages[messages.length - 1]?.role === 'assistant' && !messages[messages.length - 1]?.content && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-gray-100 dark:bg-gray-800 px-3 py-2">
+                  <Loader2 size={14} className="animate-spin text-gray-400" />
+                  <span className="text-xs text-gray-400">...</span>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
