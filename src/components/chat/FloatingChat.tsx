@@ -203,7 +203,11 @@ export function FloatingChat() {
                 <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${msg.role === 'user' ? 'bg-[#1e3a5f] text-white' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}`}>
                   {msg.role === 'assistant' ? (
                     msg.content ? (
-                      <MarkdownMessage content={msg.content} />
+                      isStreaming && i === messages.length - 1 ? (
+                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                      ) : (
+                        <MarkdownMessage content={msg.content} />
+                      )
                     ) : (
                       isStreaming && i === messages.length - 1 ? <div className="text-gray-400">...</div> : null
                     )
