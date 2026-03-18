@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Send, Loader2, Bot, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
 
 interface Message {
   id: string;
@@ -205,7 +206,11 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
                   : 'bg-muted text-foreground',
               )}
             >
-              <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+              {msg.role === 'ASSISTANT' && msg.content ? (
+                <MarkdownMessage content={msg.content} />
+              ) : (
+                <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+              )}
               {msg.role === 'ASSISTANT' && msg.content === '' && isStreaming && (
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Loader2 className="size-3 animate-spin" />
