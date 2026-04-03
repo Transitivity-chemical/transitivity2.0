@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowRight, Check, BookOpen } from 'lucide-react';
+import { ArrowRight, Check, BookOpen, Menu } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { TransitivityLogo, GammaIcon } from '@/components/brand/TransitivityLogo';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 /* ─── Fade-in ─────────────────────────────────────────────────────────── */
 
@@ -306,6 +307,7 @@ export default function LandingPage() {
   const t = useTranslations('landing');
   const tc = useTranslations('common');
   const tCourse = useTranslations('course');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -425,13 +427,21 @@ export default function LandingPage() {
           <Link href={`/${locale}`} className="header-logo transition-colors">
             <TransitivityLogo size="md" color="currentColor" />
           </Link>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="ml-auto rounded-lg border border-white/20 p-2 text-white transition-all hover:bg-white/10 sm:hidden"
+            aria-label="Open navigation menu"
+          >
+            <Menu size={18} />
+          </button>
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 sm:flex">
             <a href="#about" className="header-nav-link text-sm transition-colors">{t('navAbout')}</a>
             <a href="#features" className="header-nav-link text-sm transition-colors">{t('navFeatures')}</a>
             <a href="#pricing" className="header-nav-link text-sm transition-colors">{t('navPricing')}</a>
             <Link href={`/${locale}/course`} className="header-nav-link text-sm transition-colors">{tCourse('landingCta')}</Link>
           </nav>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto hidden items-center gap-3 sm:flex">
             <Link href={`/${locale}/login`} className="header-cta rounded-lg border px-5 py-2 text-sm font-medium transition-all">
               {t('navSignIn')}
             </Link>
@@ -441,6 +451,62 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
+
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="right" className="w-[86vw] max-w-xs border-l p-0 sm:hidden">
+          <SheetHeader className="border-b px-5 py-4 text-left">
+            <SheetTitle className="text-base">Transitivity 2.0</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-3 px-5 py-5">
+            <a
+              href="#about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              {t('navAbout')}
+            </a>
+            <a
+              href="#features"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              {t('navFeatures')}
+            </a>
+            <a
+              href="#pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              {t('navPricing')}
+            </a>
+            <Link
+              href={`/${locale}/course`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              {tCourse('landingCta')}
+            </Link>
+
+            <div className="border-t pt-4">
+              <Link
+                href={`/${locale}/login`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block rounded-lg border px-4 py-3 text-center text-sm font-medium text-[#1e3a5f] transition-all hover:bg-accent"
+              >
+                {t('navSignIn')}
+              </Link>
+              <Link
+                href={`/${locale}/register`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-3 block rounded-lg bg-[#1e3a5f] px-4 py-3 text-center text-sm font-semibold text-white transition-all hover:bg-[#2a4f7f]"
+              >
+                {t('getStarted')}
+              </Link>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* ═══ HERO ═══ */}
       <section className="relative flex min-h-[100svh] flex-col items-center justify-center px-6 text-center">
