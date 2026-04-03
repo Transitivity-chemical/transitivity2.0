@@ -37,9 +37,9 @@ interface GsaParams {
 
 const DEFAULT_GSA: GsaParams = {
   maxIter: 10000,
-  qVisiting: 2.62,
-  qAcceptance: -5.0,
-  qTemperature: 2.62,
+  qVisiting: 1.1,
+  qAcceptance: 1.1,
+  qTemperature: 1.5,
 };
 
 export function FittingWizard() {
@@ -89,10 +89,12 @@ export function FittingWizard() {
         modelTypes: selectedModels,
         gsaParams: showAdvanced
           ? {
-              maxiter: gsaParams.maxIter,
-              x1: gsaParams.qVisiting,
-              x2: gsaParams.qAcceptance,
-              x3: gsaParams.qTemperature,
+              qV: gsaParams.qVisiting,
+              qA: gsaParams.qAcceptance,
+              qT: gsaParams.qTemperature,
+              T0: 1.0,
+              F: 1.0,
+              NStopMax: gsaParams.maxIter,
             }
           : undefined,
       };

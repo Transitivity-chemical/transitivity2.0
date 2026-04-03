@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+const FASTAPI_STATUS_URL = 'http://pitomba.ueg.br/theories';
+
 function StatusDot({ online }: { online: boolean }) {
   return (
     <span
@@ -12,13 +14,27 @@ function StatusDot({ online }: { online: boolean }) {
   );
 }
 
+async function checkFastApiStatus() {
+  try {
+    const response = await fetch(FASTAPI_STATUS_URL, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export default async function ServerStatusPage() {
   const t = await getTranslations('serverStatus');
+  const fastApiOnline = await checkFastApiStatus();
 
   const services = [
     { label: t('apiStatus'), online: true },
     { label: t('dbStatus'), online: true },
-    { label: t('fastapiStatus'), online: true },
+    { label: t('fastapiStatus'), online: fastApiOnline },
   ];
 
   const comingSoonServices = [

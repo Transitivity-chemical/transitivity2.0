@@ -1,0 +1,58 @@
+ Entering Gaussian System, Link 0=g16
+ Initial command:
+ /opt/gaussian/g16/l1.exe "/scratch/water/Gau-12345.inp" -scrdir="/scratch/water/"
+ Entering Link 1 = /opt/gaussian/g16/l1.exe PID=     12345.
+
+ Copyright (c) 1988-2019, Gaussian, Inc.  All Rights Reserved.
+
+ ******************************************
+ Gaussian 16:  ES64L-G16RevC.01 12-Dec-2019
+                     01-Jan-2024
+ ******************************************
+ %chk=water.chk
+ %nproc=4
+ %mem=2GB
+ -------------------------------------------------
+ # HF/STO-3G opt freq
+ -------------------------------------------------
+ 1/38=1,172=1/1;
+ 2/12=2,17=6,18=5,40=1/2;
+ Title Card Required
+ ---------
+ water HF/STO-3G optimization + frequencies
+ ---------
+ Charge =  0 Multiplicity = 1
+ O                  0.00000000    0.00000000    0.11779000
+ H                  0.00000000    0.75545000   -0.47116000
+ H                  0.00000000   -0.75545000   -0.47116000
+
+ NAtoms=      3 NActive=      3
+ Deg. of freedom     3
+ Full point group                 C2V
+ Molecular mass:    18.01056 amu.
+ Rotational symmetry number  2.
+ Rotational temperatures (Kelvin)     40.132    20.920    13.370
+ Rotational constants (GHZ):         835.840   435.685   278.461
+
+ Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering
+ activities (A**4/AMU), depolarization ratios for plane and unpolarized
+ incident light, reduced masses (AMU), force constants (mDyne/A),
+ and normal coordinates:
+
+ Vibrational temperatures:   2363.09   5403.62   5587.31
+                              (Kelvin)
+
+ Zero-point correction=                           0.021418
+ Thermal correction to Energy=                    0.024215
+ Thermal correction to Enthalpy=                  0.025159
+ Thermal correction to Gibbs Free Energy=         0.003638
+ Sum of electronic and zero-point Energies=           -75.564467
+ Sum of electronic and thermal Enthalpies=            -75.560726
+ Sum of electronic and thermal Free Energies=         -75.582247
+
+ Electronic      0.100000D+01      0.000000      0.000000
+
+ SCF Done:  E(RHF) =  -75.5858848665     A.U. after    8 cycles
+ Temperature   298.150 Kelvin.  Pressure   1.00000 Atm.
+
+ Normal termination of Gaussian 16.

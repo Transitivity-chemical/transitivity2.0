@@ -1,6 +1,6 @@
 import { ClientError } from './api-utils';
 
-const FASTAPI_URL = process.env.FASTAPI_URL || 'http://localhost:8000';
+const FASTAPI_URL = process.env.FASTAPI_URL || 'http://pitomba.ueg.br';
 
 export async function proxyToFastAPI<T>(
   path: string,

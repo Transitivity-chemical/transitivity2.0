@@ -1,6 +1,7 @@
-import { proxyToFastAPI } from '@/lib/fastapi-proxy';
+import { fetchRemoteTheoryFit, runRemoteFit, type FittingRunRequest } from '@/lib/fitting-api';
 import {
   asyncWrapper,
+  ClientError,
   shouldBeAuthorized,
   successResponse,
 } from '@/lib/api-utils';
@@ -8,9 +9,17 @@ import {
 export const POST = asyncWrapper(async (request: Request) => {
   await shouldBeAuthorized();
   const body = await request.json();
-  const data = await proxyToFastAPI('/api/v1/fitting/run', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-  return successResponse(data);
+
+  if (body?.theory) {
+    const result = await fetchRemoteTheoryFit(body as FittingRunRequest);
+    return successResponse({ result });
+  }
+
+  if (!body?.modelType) {
+    throw new ClientError('theory or modelType is required', 400);
+  }
+
+  const result = await runRemoteFit(body.modelType, body.temperatures ?? [], body.rateConstants ?? [], body.gsaParams);
+
+  return successResponse({ result });
 });

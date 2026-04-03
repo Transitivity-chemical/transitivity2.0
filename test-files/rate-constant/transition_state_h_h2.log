@@ -1,0 +1,54 @@
+ Entering Gaussian System, Link 0=g16
+ Initial command:
+ /opt/gaussian/g16/l1.exe "/scratch/ts/Gau-12346.inp" -scrdir="/scratch/ts/"
+ Entering Link 1 = /opt/gaussian/g16/l1.exe PID=     12346.
+
+ Copyright (c) 1988-2019, Gaussian, Inc.  All Rights Reserved.
+
+ ******************************************
+ Gaussian 16:  ES64L-G16RevC.01 12-Dec-2019
+                     01-Jan-2024
+ ******************************************
+ %chk=ts.chk
+ %nproc=4
+ %mem=2GB
+ -------------------------------------------------
+ # UMP2/cc-pVTZ opt=(ts,calcfc,noeigentest) freq
+ -------------------------------------------------
+ Title Card Required
+ ---------
+ H + H2 collinear transition state
+ ---------
+ Charge =  0 Multiplicity = 2
+ H                  0.00000000    0.00000000   -0.92940000
+ H                  0.00000000    0.00000000    0.00000000
+ H                  0.00000000    0.00000000    0.92940000
+
+ NAtoms=      3 NActive=      3
+ Deg. of freedom     1
+ Full point group                 D*H
+ Molecular mass:     3.02382 amu.
+ Rotational symmetry number  2.
+ Rotational temperatures (Kelvin)     28.832
+ Rotational constants (GHZ):         600.750
+
+ frequencies ---    -1513.12     930.00     2170.00
+
+ Vibrational temperatures:    930.00   2170.00
+                              (Kelvin)
+
+ Zero-point correction=                           0.003544
+ Thermal correction to Energy=                    0.007129
+ Thermal correction to Enthalpy=                  0.008073
+ Thermal correction to Gibbs Free Energy=        -0.013752
+ Sum of electronic and zero-point Energies=            -1.654209
+ Sum of electronic and thermal Enthalpies=             -1.649680
+ Sum of electronic and thermal Free Energies=          -1.671505
+
+ Electronic      0.200000D+01      0.000000      0.000000
+
+ SCF Done:  E(UHF) =  -1.65775273241     A.U. after   12 cycles
+ Temperature   298.150 Kelvin.  Pressure   1.00000 Atm.
+ Adding a0 for SCRF calculation gives     3.45000 Bohr
+
+ Normal termination of Gaussian 16.

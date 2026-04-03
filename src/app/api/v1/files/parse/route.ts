@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import { proxyToFastAPI } from '@/lib/fastapi-proxy';
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { prisma } from '@/lib/prisma';
@@ -25,19 +24,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    const content = await readFile(upload.storagePath, 'utf-8');
+    const fileBuffer = await readFile(upload.storagePath);
+    const formData = new FormData();
+    formData.append(
+      'file',
+      new Blob([fileBuffer], { type: upload.mimeType || 'application/octet-stream' }),
+      upload.originalName,
+    );
 
-    const parsed = await proxyToFastAPI<Record<string, unknown>>('/api/v1/files/parse', {
+    const response = await fetch(`${process.env.FASTAPI_URL || 'http://pitomba.ueg.br'}/api/v1/files/parse`, {
       method: 'POST',
-      body: JSON.stringify({
-        content,
-        filename: upload.originalName,
-      }),
+      body: formData,
     });
 
-    return NextResponse.json(parsed);
+    const parsed = await response.json().catch(() => ({ detail: 'FastAPI error' }));
+
+    if (!response.ok) {
+      const detail =
+        typeof parsed?.detail === 'string'
+          ? parsed.detail
+          : Array.isArray(parsed?.detail)
+            ? JSON.stringify(parsed.detail)
+            : 'Parse failed';
+
+      return NextResponse.json({ error: detail }, { status: response.status });
+    }
+
+    return NextResponse.json(parsed?.data || parsed);
   } catch (error) {
     console.error('Parse error:', error);
-    return NextResponse.json({ error: 'Parse failed' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Parse failed';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
