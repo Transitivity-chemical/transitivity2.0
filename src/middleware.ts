@@ -35,7 +35,7 @@ export default async function middleware(request: NextRequest) {
 
   if (!token) {
     const localeMatch = pathname.match(/^\/(en|pt-BR)/);
-    const locale = localeMatch ? localeMatch[1] : 'en';
+    const locale = localeMatch ? localeMatch[1] : 'pt-BR';
     const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
