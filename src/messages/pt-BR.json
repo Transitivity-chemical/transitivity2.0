@@ -129,7 +129,9 @@
     "noAccount": "Não tem conta?",
     "hasAccount": "Já tem conta?",
     "register": "Cadastrar",
-    "forgotPassword": "Esqueceu a senha?"
+    "forgotPassword": "Esqueceu a senha?",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha"
   },
   "rateConstant": {
     "title": "Constantes de Velocidade",

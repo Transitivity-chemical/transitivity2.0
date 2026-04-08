@@ -77,11 +77,14 @@ export const POST = asyncWrapper(async (request: Request) => {
 
   const errors = settled
     .map((item, index) => ({ item, modelType: body.modelTypes[index], job: jobs[index] }))
-    .filter((entry): entry is { item: PromiseRejectedResult; modelType: string } => entry.item.status === 'rejected')
-    .map((entry) => ({
-      modelType: entry.modelType,
-      error: entry.item.reason instanceof Error ? entry.item.reason.message : 'Unknown fitting error',
-    }));
+    .filter((entry) => entry.item.status === 'rejected')
+    .map((entry) => {
+      const rejected = entry.item as PromiseRejectedResult;
+      return {
+        modelType: entry.modelType,
+        error: rejected.reason instanceof Error ? rejected.reason.message : 'Unknown fitting error',
+      };
+    });
 
   await Promise.all(
     settled.map(async (item, index) => {

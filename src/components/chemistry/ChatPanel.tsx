@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Send, Loader2, Bot, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
+import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
 
 interface Message {
   id: string;
@@ -87,17 +88,24 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
+      // Build chat history including the new user message
+      const apiMessages = [...messages, userMessage].map((m) => ({
+        role: m.role.toLowerCase() as 'user' | 'assistant',
+        content: m.content,
+      }));
+
       const res = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: trimmed,
-          conversationId: currentConversationId,
+          messages: apiMessages,
+          model: DEFAULT_MODEL_ID,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to send message');
+        const errorBody = await res.json().catch(() => ({ error: 'Failed to send message' }));
+        throw new Error(errorBody.error || 'Failed to send message');
       }
 
       const reader = res.body?.getReader();
@@ -118,15 +126,18 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
           if (!line.startsWith('data: ')) continue;
           const jsonStr = line.slice(6);
 
+          if (jsonStr === '[DONE]') continue;
+
           try {
             const event = JSON.parse(jsonStr);
 
-            if (event.type === 'conversation_id') {
-              if (!currentConversationId) {
-                setCurrentConversationId(event.id);
-                onNewConversation?.(event.id);
-              }
-            } else if (event.type === 'content') {
+            if (event.error) {
+              console.error('Stream error:', event.error);
+              continue;
+            }
+
+            // The route emits { content } per chunk
+            if (typeof event.content === 'string') {
               setMessages((prev) =>
                 prev.map((msg) =>
                   msg.id === assistantId
@@ -134,8 +145,12 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
                     : msg,
                 ),
               );
-            } else if (event.type === 'error') {
-              console.error('Stream error:', event.error);
+            }
+
+            // Future-compat: if a conversation_id event is added later
+            if (event.type === 'conversation_id' && event.id && !currentConversationId) {
+              setCurrentConversationId(event.id);
+              onNewConversation?.(event.id);
             }
           } catch {
             // Ignore malformed JSON

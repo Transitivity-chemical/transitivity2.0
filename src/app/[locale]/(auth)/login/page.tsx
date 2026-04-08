@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { TransitivityLogo, GammaIcon, GammaIconRound } from '@/components/brand/TransitivityLogo';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { loginSchema } from '@/lib/validators/auth';
 
 type LoginFormData = {
@@ -145,10 +146,9 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">{t('password')}</label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 required
                 autoComplete="current-password"
                 placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"
@@ -157,7 +157,7 @@ export default function LoginPage() {
                 onBlur={() => handleFieldBlur('password')}
                 aria-invalid={Boolean(fieldErrors.password)}
                 aria-describedby={fieldErrors.password ? 'password-error' : undefined}
-                className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors focus:outline-none focus:ring-1 ${
+                className={`rounded-lg border px-4 py-2.5 text-sm transition-colors focus:outline-none focus:ring-1 h-auto ${
                   fieldErrors.password
                     ? 'border-red-300 bg-red-50/70 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-500'
                     : 'border-gray-300 focus:border-[#1e3a5f] focus:ring-[#1e3a5f]'
