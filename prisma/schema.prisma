@@ -16,6 +16,11 @@ model User {
   passwordHash        String
   avatarUrl           String?
   role                UserRole  @default(RESEARCHER)
+  plan                Plan?
+  mustChangePassword  Boolean   @default(false)
+  pendingApproval     Boolean   @default(false)
+  invitedAt           DateTime?
+  invitedById         String?
   isActive            Boolean   @default(true)
   emailVerified       Boolean   @default(false)
   emailVerifyToken    String?
@@ -30,6 +35,9 @@ model User {
   deletedAt           DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+
+  invitedBy        User?    @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedUsers     User[]   @relation("InvitedBy")
 
   refreshTokens    RefreshToken[]
   teamMemberships  TeamMembership[]
@@ -49,6 +57,7 @@ model User {
 
   @@index([email])
   @@index([stripeCustomerId])
+  @@index([pendingApproval])
   @@map("users")
 }
 
@@ -69,13 +78,33 @@ model RefreshToken {
 }
 
 model InstitutionalDomain {
-  id          String  @id @default(cuid())
-  domain      String  @unique
+  id          String   @id @default(cuid())
+  domain      String   @unique
   institution String
-  country     String  @default("BR")
-  isVerified  Boolean @default(true)
+  country     String   @default("BR")
+  isVerified  Boolean  @default(true)
+  defaultPlan Plan     @default(STUDENT)
+  allowedRole UserRole @default(RESEARCHER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("institutional_domains")
+}
+
+model PlanConfig {
+  id              String   @id @default(cuid())
+  plan            Plan     @unique
+  maxCredits      Int?
+  monthlyCredits  Int?
+  features        Json?
+  label           String
+  labelEn         String?
+  description     String?
+  descriptionEn   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("plan_configs")
 }
 
 model Team {
@@ -618,6 +647,12 @@ enum UserRole {
   ADMIN
   RESEARCHER
   VIEWER
+}
+
+enum Plan {
+  STUDENT
+  PROFESSIONAL
+  ENTERPRISE
 }
 
 enum TeamMemberRole {
