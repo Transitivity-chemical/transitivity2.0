@@ -347,11 +347,11 @@
   },
   "ml": {
     "title": "ML Predictions",
-    "description": "Run machine learning predictions on molecular structures using neural network potentials.",
+    "description": "View machine learning prediction jobs available in the platform.",
     "newPrediction": "New Prediction",
     "wizardDescription": "Configure and run a neural network potential prediction step by step.",
     "noJobs": "No predictions yet",
-    "noJobsHint": "Start by creating a new prediction.",
+    "noJobsHint": "ML prediction creation is not available in this version.",
     "untitled": "Untitled Prediction",
     "backToList": "Back to Predictions",
     "jobDetails": "Job Details",

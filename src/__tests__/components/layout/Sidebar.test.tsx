@@ -51,16 +51,21 @@ describe('Sidebar', () => {
     vi.clearAllMocks();
   });
 
-  it('renders all 8 navigation items', () => {
-    render(<Sidebar />);
+  it('hides server status for non-admin users', () => {
+    render(<Sidebar role="RESEARCHER" />);
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Rate Constant')).toBeInTheDocument();
     expect(screen.getByText('Fitting')).toBeInTheDocument();
     expect(screen.getByText('Molecular Dynamics')).toBeInTheDocument();
     expect(screen.getByText('Machine Learning')).toBeInTheDocument();
     expect(screen.getByText('Assistant')).toBeInTheDocument();
-    expect(screen.getByText('Server Status')).toBeInTheDocument();
+    expect(screen.queryByText('Server Status')).not.toBeInTheDocument();
     expect(screen.getByText('Wiki')).toBeInTheDocument();
+  });
+
+  it('shows server status for admin users', () => {
+    render(<Sidebar role="ADMIN" />);
+    expect(screen.getByText('Server Status')).toBeInTheDocument();
   });
 
   it('displays FREE tier badge by default', () => {

@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calculator, TrendingUp, Atom, Brain, MessageCircle, Activity, Coins, Briefcase } from 'lucide-react';
+import { Calculator, TrendingUp, Atom, Activity, Coins, Briefcase } from 'lucide-react';
 
 export default async function DashboardPage({
   params,
@@ -20,14 +20,13 @@ export default async function DashboardPage({
 
   const userId = session.user.id;
 
-  const [reactionCount, fittingCount, mdCount, mlCount] = await Promise.all([
+  const [reactionCount, fittingCount, mdCount] = await Promise.all([
     prisma.reaction.count({ where: { userId } }),
     prisma.fittingJob.count({ where: { userId } }),
     prisma.mDSimulation.count({ where: { userId } }),
-    prisma.mLJob.count({ where: { userId } }),
   ]);
 
-  const totalCalc = reactionCount + fittingCount + mdCount + mlCount;
+  const totalCalc = reactionCount + fittingCount + mdCount;
 
   // Fetch user credits
   const user = await prisma.user.findUnique({
@@ -37,14 +36,14 @@ export default async function DashboardPage({
   const creditsUsed = Number(user?.credits ?? 0);
 
   // Count active (running/pending) jobs
-  const [activeFitting, activeML] = await Promise.all([
+  const [activeFitting, activeMD] = await Promise.all([
     prisma.fittingJob.count({ where: { userId, status: { in: ['PENDING', 'RUNNING'] } } }),
-    prisma.mLJob.count({ where: { userId, status: { in: ['PENDING', 'RUNNING'] } } }),
+    prisma.mDSimulation.count({ where: { userId, status: { in: ['PENDING', 'RUNNING'] } } }),
   ]);
-  const activeJobs = activeFitting + activeML;
+  const activeJobs = activeFitting + activeMD;
 
   // Recent activity: last 5 items across tables
-  const [recentReactions, recentFitting, recentMD, recentML] = await Promise.all([
+  const [recentReactions, recentFitting, recentMD] = await Promise.all([
     prisma.reaction.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -63,12 +62,6 @@ export default async function DashboardPage({
       take: 5,
       select: { id: true, name: true, createdAt: true },
     }),
-    prisma.mLJob.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, createdAt: true, status: true, neuralPotential: true },
-    }),
   ]);
 
   type ActivityItem = { id: string; label: string; type: string; createdAt: Date };
@@ -76,7 +69,6 @@ export default async function DashboardPage({
     ...recentReactions.map((r) => ({ id: r.id, label: r.name, type: 'Reaction', createdAt: r.createdAt })),
     ...recentFitting.map((f) => ({ id: f.id, label: `Fitting (${f.status})`, type: 'Fitting', createdAt: f.createdAt })),
     ...recentMD.map((m) => ({ id: m.id, label: m.name ?? 'MD Simulation', type: 'MD', createdAt: m.createdAt })),
-    ...recentML.map((m) => ({ id: m.id, label: `ML ${m.neuralPotential ?? ''} (${m.status})`, type: 'ML', createdAt: m.createdAt })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 5);
@@ -102,8 +94,6 @@ export default async function DashboardPage({
     { href: `/${locale}/rate-constant/new`, icon: Calculator, label: tNav('rateConstant'), count: reactionCount },
     { href: `/${locale}/fitting`, icon: TrendingUp, label: tNav('fitting'), count: fittingCount },
     { href: `/${locale}/md`, icon: Atom, label: tNav('md'), count: mdCount },
-    { href: `/${locale}/ml`, icon: Brain, label: tNav('ml'), count: mlCount },
-    { href: `/${locale}/assistant`, icon: MessageCircle, label: tNav('assistant'), count: null },
   ];
 
   return (
@@ -113,7 +103,7 @@ export default async function DashboardPage({
       </h1>
 
       {/* Summary stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">{t('totalCalc')}</CardTitle>
@@ -139,16 +129,6 @@ export default async function DashboardPage({
           <CardContent className="flex items-center gap-3">
             <Briefcase className="size-5 text-primary" />
             <span className="text-2xl font-bold">{activeJobs}</span>
-          </CardContent>
-        </Card>
-        {/* Mini server status */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-3">
-            <span className="inline-block h-3 w-3 rounded-full bg-green-500" />
-            <span className="text-sm font-semibold">{t('allSystems')}</span>
           </CardContent>
         </Card>
       </div>

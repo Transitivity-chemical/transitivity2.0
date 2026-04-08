@@ -14,6 +14,7 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   const { locale } = await params;
+  const role = (session?.user as { role?: string } | undefined)?.role;
 
   if (!session?.user?.id) {
     redirect(`/${locale}/login`);
@@ -29,7 +30,9 @@ export default async function DashboardLayout({
   return (
     <SessionProvider>
       <TooltipProvider>
-        <DashboardShell credits={credits}>{children}</DashboardShell>
+        <DashboardShell credits={credits} role={role}>
+          {children}
+        </DashboardShell>
       </TooltipProvider>
     </SessionProvider>
   );

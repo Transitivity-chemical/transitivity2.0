@@ -17,11 +17,17 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { navItems } from '@/components/layout/Sidebar';
 import { GammaIcon } from '@/components/brand/TransitivityLogo';
+import { isAdminRole } from '@/lib/access';
 
-export function Header() {
+interface HeaderProps {
+  role?: string | null;
+}
+
+export function Header({ role: initialRole }: HeaderProps) {
   const { data: session } = useSession();
   const t = useTranslations('nav');
   const locale = useLocale();
+  const role = (session?.user as { role?: string } | undefined)?.role ?? initialRole;
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === 'undefined') return false;
 
@@ -58,6 +64,7 @@ export function Header() {
         .toUpperCase()
         .slice(0, 2)
     : '?';
+  const visibleNavItems = navItems.filter((item) => item.href !== '/server-status' || isAdminRole(role));
 
   return (
     <>
@@ -155,7 +162,7 @@ export function Header() {
 
           <div className="flex h-full flex-col">
             <nav className="flex-1 space-y-1 px-3 py-4">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const Icon = item.icon;
 
                 return (

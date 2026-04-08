@@ -87,6 +87,7 @@ export function FittingWizard() {
         temperatures: dataset.points.map((p) => p.temperature),
         rateConstants: dataset.points.map((p) => p.rateConstant),
         modelTypes: selectedModels,
+        datasetName: dataset.name,
         gsaParams: showAdvanced
           ? {
               qV: gsaParams.qVisiting,

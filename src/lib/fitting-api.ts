@@ -35,7 +35,7 @@ export type RemoteFitResponse = {
   curve: RemoteFitCurve;
 };
 
-type FitResult = {
+export type FitResult = {
   modelType: string;
   parameters: Record<string, number>;
   chiSquare: number;
@@ -64,6 +64,7 @@ export type FittingMultiRequest = {
   rateConstants: number[];
   modelTypes: string[];
   gsaParams?: Partial<GsaPayload>;
+  datasetName?: string;
 };
 
 const FITTING_ENDPOINT = 'http://pitomba.ueg.br/fit?use_queue=true';

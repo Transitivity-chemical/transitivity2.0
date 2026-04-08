@@ -1,6 +1,9 @@
 import { getTranslations } from 'next-intl/server';
+import { auth } from '@/lib/auth';
+import { isAdminRole } from '@/lib/access';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { redirect } from 'next/navigation';
 
 const FASTAPI_STATUS_URL = 'http://pitomba.ueg.br/theories';
 
@@ -27,7 +30,23 @@ async function checkFastApiStatus() {
   }
 }
 
-export default async function ServerStatusPage() {
+export default async function ServerStatusPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const session = await auth();
+  const { locale } = await params;
+  const role = (session?.user as { role?: string } | undefined)?.role;
+
+  if (!session?.user?.id) {
+    redirect(`/${locale}/login`);
+  }
+
+  if (!isAdminRole(role)) {
+    redirect(`/${locale}/dashboard`);
+  }
+
   const t = await getTranslations('serverStatus');
   const fastApiOnline = await checkFastApiStatus();
 

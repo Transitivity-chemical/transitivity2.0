@@ -9,7 +9,6 @@ import {
   Calculator,
   TrendingUp,
   Atom,
-  Brain,
   ChevronLeft,
   ChevronRight,
   Coins,
@@ -20,13 +19,13 @@ import {
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TransitivityLogo, GammaIcon } from '@/components/brand/TransitivityLogo';
+import { isAdminRole } from '@/lib/access';
 
 export const navItems = [
   { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
   { key: 'rateConstant', href: '/rate-constant', icon: Calculator },
   { key: 'fitting', href: '/fitting', icon: TrendingUp },
   { key: 'md', href: '/md', icon: Atom },
-  { key: 'ml', href: '/ml', icon: Brain },
   { key: 'assistant', href: '/assistant', icon: MessageCircle },
   { key: 'serverStatus', href: '/server-status', icon: Server },
   { key: 'wiki', href: '/wiki', icon: BookOpen },
@@ -43,9 +42,10 @@ const tierMaxCredits: Record<Tier, number | null> = {
 interface SidebarProps {
   credits?: number;
   tier?: Tier;
+  role?: string | null;
 }
 
-export function Sidebar({ credits = 0, tier = 'FREE' }: SidebarProps) {
+export function Sidebar({ credits = 0, tier = 'FREE', role }: SidebarProps) {
   const pathname = usePathname();
   const t = useTranslations('nav');
   const tc = useTranslations('common');
@@ -54,6 +54,7 @@ export function Sidebar({ credits = 0, tier = 'FREE' }: SidebarProps) {
 
   const maxCredits = tierMaxCredits[tier];
   const progressPercent = maxCredits ? Math.min((credits / maxCredits) * 100, 100) : 0;
+  const visibleNavItems = navItems.filter((item) => item.href !== '/server-status' || isAdminRole(role));
 
   return (
     <aside
@@ -81,7 +82,7 @@ export function Sidebar({ credits = 0, tier = 'FREE' }: SidebarProps) {
       </div>
 
       <nav className="flex-1 space-y-2 p-2">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = pathname.includes(item.href);
           const Icon = item.icon;
           const label = t(item.key);

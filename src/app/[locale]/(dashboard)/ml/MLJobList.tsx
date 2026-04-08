@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -11,7 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { Plus, Zap, FlaskConical, Eye } from 'lucide-react';
+import { Zap, FlaskConical, Eye } from 'lucide-react';
 
 interface MLJobSummary {
   id: string;
@@ -65,11 +64,6 @@ export function MLJobList({ jobs }: { jobs: MLJobSummary[] }) {
 
   return (
     <div className="space-y-4">
-      <Button onClick={() => router.push('ml/predict')}>
-        <Plus className="mr-2 size-4" />
-        {t('newPrediction')}
-      </Button>
-
       {jobs.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">

@@ -347,11 +347,11 @@
   },
   "ml": {
     "title": "Predicoes ML",
-    "description": "Execute predicoes de aprendizado de maquina em estruturas moleculares usando potenciais de redes neurais.",
+    "description": "Visualize os trabalhos de predicao por aprendizado de maquina disponiveis na plataforma.",
     "newPrediction": "Nova Predicao",
     "wizardDescription": "Configure e execute uma predicao de potencial neural passo a passo.",
     "noJobs": "Nenhuma predicao ainda",
-    "noJobsHint": "Comece criando uma nova predicao.",
+    "noJobsHint": "A criacao de predicoes de ML nao esta disponivel nesta versao.",
     "untitled": "Predicao Sem Titulo",
     "backToList": "Voltar para Predicoes",
     "jobDetails": "Detalhes do Trabalho",
