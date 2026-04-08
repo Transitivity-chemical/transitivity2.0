@@ -2,8 +2,18 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcrypt';
 import { prisma } from './prisma';
+import { authConfig } from '@/auth.config';
 
+/**
+ * Full NextAuth instance — Node-only.
+ *
+ * Imports the edge-safe `authConfig` and adds the Credentials provider whose
+ * `authorize` function uses Prisma + bcrypt (Node-only deps).
+ *
+ * Reference: docs/research-external.md §1 (auth.config.ts split pattern)
+ */
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: 'credentials',
@@ -37,28 +47,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.fullName,
           role: user.role,
+          plan: user.plan,
+          mustChangePassword: user.mustChangePassword,
+          pendingApproval: user.pendingApproval,
         };
       },
     }),
   ],
-  session: { strategy: 'jwt' },
-  pages: {
-    signIn: '/en/login',
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.userId = user.id;
-        token.role = (user as { role?: string }).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.userId as string;
-        (session.user as { role?: string }).role = token.role as string;
-      }
-      return session;
-    },
-  },
 });
