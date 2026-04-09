@@ -142,6 +142,14 @@
     "hint": "Se você acredita que isso é um erro ou tem urgência, entre em contato com o seu professor ou administrador da plataforma.",
     "signOut": "Sair da conta"
   },
+  "fittingHistory": {
+    "title": "Histórico de ajustes",
+    "description": "Todos os ajustes salvos por você",
+    "newFit": "Novo ajuste",
+    "savedFits": "Ajustes salvos",
+    "empty": "Nenhum ajuste salvo ainda. Execute um ajuste para começar.",
+    "confirmDelete": "Excluir este ajuste permanentemente?"
+  },
   "plans": {
     "title": "Planos disponíveis",
     "subtitle": "Escolha o plano ideal para seu trabalho de pesquisa",
