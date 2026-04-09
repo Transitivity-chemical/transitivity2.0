@@ -13,7 +13,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, Sparkles, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, Sparkles, X, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { DomainEditorModal } from './DomainEditorModal';
@@ -232,11 +232,16 @@ export function AdminUsersClient({ locale }: Props) {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('users.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('users.description')}</p>
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+            <Users className="size-6" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t('users.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('users.description')}</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowDomainEditor(true)}>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { BookOpen, Search, FileText } from 'lucide-react';
 import { PaperReaderSheet } from '@/components/wiki/PaperReaderSheet';
 
 interface WikiSection {
@@ -79,33 +80,52 @@ export default function WikiPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
+    <div className="p-8 space-y-6 max-w-6xl mx-auto">
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+          <BookOpen className="size-6" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">
+            Documentação, teoria e referências dos métodos disponíveis no Transitivity 2.0
+          </p>
+        </div>
+      </div>
 
-      <Input
-        placeholder={t('search')}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-md"
-      />
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={t('search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
         {filtered.map((section) => (
-          <Card key={section.key}>
-            <CardHeader>
-              <CardTitle>{t(section.titleKey)}</CardTitle>
+          <Card key={section.key} className="hover:border-primary/50 transition-colors">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-2">
+                <CardTitle className="text-base">{t(section.titleKey)}</CardTitle>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {section.links.length} artigo{section.links.length > 1 ? 's' : ''}
+                </span>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">{t(section.descKey)}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-1.5 pt-1">
                 {section.links.map((link) => (
                   <button
                     key={link.url}
                     type="button"
                     onClick={() => setReader({ url: link.url, title: link.label })}
-                    className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
+                    className="flex items-center gap-2 w-full text-left rounded-md border bg-background px-3 py-2 text-xs hover:bg-accent hover:border-primary/40 transition-colors"
                   >
-                    {link.label}
+                    <FileText className="size-3 text-muted-foreground flex-shrink-0" />
+                    <span className="truncate">{link.label}</span>
                   </button>
                 ))}
               </div>

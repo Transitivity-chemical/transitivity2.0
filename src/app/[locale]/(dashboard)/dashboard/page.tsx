@@ -126,57 +126,49 @@ export default async function DashboardPage({
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">
-        {t('welcome', { name: session?.user?.name ?? session?.user?.email ?? '' })}
-      </h1>
+    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('welcome', { name: (session?.user?.name ?? session?.user?.email ?? '').split(' ')[0] })}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Acompanhe suas calculações e gere novos inputs em um só lugar.
+        </p>
+      </div>
 
-      {/* Summary stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('totalCalc')}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-3">
-            <Activity className="size-5 text-primary" />
-            <span className="text-2xl font-bold">{totalCalc}</span>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('creditsUsed')}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-3">
-            <Coins className="size-5 text-primary" />
-            <span className="text-2xl font-bold">{creditsUsed}</span>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('activeJobs')}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-3">
-            <Briefcase className="size-5 text-primary" />
-            <span className="text-2xl font-bold">{activeJobs}</span>
-          </CardContent>
-        </Card>
+      {/* Stat cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard icon={Activity} label={t('totalCalc')} value={totalCalc} accent="primary" />
+        <StatCard icon={Coins} label={t('creditsUsed')} value={creditsUsed} accent="amber" />
+        <StatCard icon={Briefcase} label={t('activeJobs')} value={activeJobs} accent="green" />
       </div>
 
       {/* Quick links */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {quickLinks.map(({ href, icon: Icon, label, count }) => (
-          <Link key={href} href={href}>
-            <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-              <CardContent className="flex flex-col items-center gap-2 pt-6 pb-4">
-                <Icon className="size-8 text-primary" />
-                <p className="text-sm font-medium">{label}</p>
-                {count != null && (
-                  <p className="text-xs text-muted-foreground">{count} items</p>
-                )}
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Atalhos
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {quickLinks.map(({ href, icon: Icon, label, count }) => (
+            <Link key={href} href={href}>
+              <Card className="group hover:border-primary hover:shadow-md transition-all cursor-pointer h-full">
+                <CardContent className="flex items-center gap-4 py-5">
+                  <div className="rounded-lg bg-primary/10 p-3 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Icon className="size-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{label}</p>
+                    {count != null && (
+                      <p className="text-xs text-muted-foreground">
+                        {count} {count === 1 ? 'item' : 'itens'}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Multiple Inputs (FIX-11) — embedded into the dashboard per user request.
@@ -191,9 +183,24 @@ export default async function DashboardPage({
         </CardHeader>
         <CardContent>
           {allActivity.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              Nenhuma calculação ainda. Use a barra lateral para começar.
-            </p>
+            <div className="py-12 text-center">
+              <Activity className="mx-auto mb-3 size-10 text-muted-foreground/50" />
+              <p className="text-sm font-medium">Nenhuma calculação ainda</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                Comece gerando seu primeiro input.
+              </p>
+              <div className="flex justify-center gap-2 flex-wrap">
+                <Link href={`/${locale}/rate-constant`} className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent">
+                  Constante de velocidade
+                </Link>
+                <Link href={`/${locale}/md`} className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent">
+                  Dinâmica molecular
+                </Link>
+                <Link href={`/${locale}/fitting`} className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent">
+                  Ajuste de curvas
+                </Link>
+              </div>
+            </div>
           ) : (
             <div className="rounded-lg border overflow-hidden">
               <table className="w-full text-sm">
@@ -242,5 +249,37 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  accent: 'primary' | 'amber' | 'green';
+}) {
+  const accentCls =
+    accent === 'amber'
+      ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+      : accent === 'green'
+        ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'
+        : 'bg-primary/10 text-primary';
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-4 py-5">
+        <div className={`rounded-lg p-3 ${accentCls}`}>
+          <Icon className="size-5" />
+        </div>
+        <div>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold tracking-tight tabular-nums">{value.toLocaleString()}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

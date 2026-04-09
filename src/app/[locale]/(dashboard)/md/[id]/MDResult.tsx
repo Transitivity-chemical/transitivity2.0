@@ -136,93 +136,69 @@ export function MDResult({ simulation, locale }: Props) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header actions */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push(`/${locale}/md`)}
-        >
-          <ArrowLeft className="mr-1 size-4" />
-          {tCommon('back')}
-        </Button>
+    <div className="p-8 space-y-6 max-w-5xl mx-auto">
+      {/* Breadcrumb / back link */}
+      <button
+        type="button"
+        onClick={() => router.push(`/${locale}/md/list`)}
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-3" />
+        Voltar para todas as simulações
+      </button>
 
-        {files.length > 1 && (
-          <Button variant="outline" size="sm" onClick={downloadAll}>
-            <Download className="mr-1 size-4" />
-            {t('downloadAll')}
-          </Button>
-        )}
-
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={deleting}
-          onClick={handleDelete}
-          className="ml-auto text-destructive hover:text-destructive"
-        >
-          <Trash2 className="mr-1 size-4" />
-          {tCommon('delete')}
-        </Button>
+      {/* Hero header */}
+      <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-background p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">{simulation.mdMethod}</Badge>
+              <Badge variant="secondary">{simulation.status}</Badge>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight truncate">
+              {simulation.name || `${simulation.mdMethod} Simulation`}
+            </h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Criado em {new Date(simulation.createdAt).toLocaleString(locale)}
+            </p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            {files.length > 1 && (
+              <Button variant="outline" size="sm" onClick={downloadAll}>
+                <Download className="mr-1.5 size-4" />
+                Baixar todos
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={deleting}
+              onClick={handleDelete}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+            >
+              <Trash2 className="mr-1.5 size-4" />
+              Excluir
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Simulation info */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t('simulationDetails')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <span className="text-muted-foreground">{t('method')}</span>
-              <p className="font-medium">{simulation.mdMethod}</p>
-            </div>
-            {simulation.dftFunctional && (
-              <div>
-                <span className="text-muted-foreground">{t('functional')}</span>
-                <p className="font-medium">{simulation.dftFunctional}</p>
-              </div>
-            )}
-            {simulation.temperature != null && (
-              <div>
-                <span className="text-muted-foreground">{t('temperature')}</span>
-                <p className="font-medium">{simulation.temperature} K</p>
-              </div>
-            )}
-            {simulation.maxSteps != null && (
-              <div>
-                <span className="text-muted-foreground">{t('maxSteps')}</span>
-                <p className="font-medium">{simulation.maxSteps}</p>
-              </div>
-            )}
-            <div>
-              <span className="text-muted-foreground">{t('charge')}</span>
-              <p className="font-medium">{simulation.charge}</p>
-            </div>
-            {simulation.inputMolecules[0] && (
-              <div>
-                <span className="text-muted-foreground">{t('atoms')}</span>
-                <p className="font-medium">
-                  {simulation.inputMolecules[0].atoms.length}
-                </p>
-              </div>
-            )}
-            <div>
-              <span className="text-muted-foreground">Status</span>
-              <div>
-                <Badge variant="secondary">{simulation.status}</Badge>
-              </div>
-            </div>
-            <div>
-              <span className="text-muted-foreground">{t('createdAt')}</span>
-              <p className="font-medium">
-                {new Date(simulation.createdAt).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <MiniStat label={t('method')} value={simulation.mdMethod} />
+        {simulation.dftFunctional && <MiniStat label={t('functional')} value={simulation.dftFunctional} />}
+        {simulation.temperature != null && <MiniStat label={t('temperature')} value={`${simulation.temperature} K`} />}
+        {simulation.maxSteps != null && <MiniStat label={t('maxSteps')} value={simulation.maxSteps.toLocaleString()} />}
+        <MiniStat label={t('charge')} value={String(simulation.charge)} />
+        {simulation.inputMolecules[0] && (
+          <MiniStat label={t('atoms')} value={String(simulation.inputMolecules[0].atoms.length)} />
+        )}
+        {simulation.timeStep != null && <MiniStat label={t('timeStep')} value={`${simulation.timeStep} a.u.`} />}
+        <MiniStat
+          label="Lattice"
+          value={`${simulation.latticeA?.toFixed(1) ?? '–'} × ${simulation.latticeB?.toFixed(1) ?? '–'} × ${simulation.latticeC?.toFixed(1) ?? '–'}`}
+        />
+      </div>
 
       {/* File tabs + content */}
       {files.length > 0 && (
@@ -281,8 +257,8 @@ export function MDResult({ simulation, locale }: Props) {
                   </div>
                 </div>
 
-                <div className="max-h-[500px] overflow-auto rounded-md border bg-muted/50 p-4">
-                  <pre className="whitespace-pre font-mono text-xs leading-relaxed">
+                <div className="max-h-[500px] overflow-auto rounded-md border bg-zinc-950 dark:bg-zinc-900 p-4">
+                  <pre className="whitespace-pre font-mono text-xs leading-relaxed text-zinc-100">
                     {files[activeTab].content}
                   </pre>
                 </div>
@@ -291,6 +267,15 @@ export function MDResult({ simulation, locale }: Props) {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border bg-card px-3 py-2.5">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums truncate">{value}</p>
     </div>
   );
 }

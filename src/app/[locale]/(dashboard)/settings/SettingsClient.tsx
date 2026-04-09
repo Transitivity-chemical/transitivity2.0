@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Settings as SettingsIcon } from 'lucide-react';
 
 interface User {
   id: string;
@@ -63,7 +64,15 @@ export function SettingsClient({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+          <SettingsIcon className="size-6" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">Gerencie sua conta, plano, preferências e atividade.</p>
+        </div>
+      </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
         <TabsList>

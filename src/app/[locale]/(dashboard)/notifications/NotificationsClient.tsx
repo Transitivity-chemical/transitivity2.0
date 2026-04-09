@@ -91,21 +91,27 @@ export function NotificationsClient({ locale, initial }: Props) {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+    <div className="p-8 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+            <Bell className="size-6" />
+          </div>
           <div>
-            <CardTitle>Notificações</CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
+            <h1 className="text-3xl font-bold tracking-tight">Notificações</h1>
+            <p className="text-sm text-muted-foreground">
+              {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia ✓'}
             </p>
           </div>
-          {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={markAllRead}>
-              Marcar todas como lidas
-            </Button>
-          )}
-        </CardHeader>
+        </div>
+        {unreadCount > 0 && (
+          <Button variant="outline" size="sm" onClick={markAllRead}>
+            Marcar todas como lidas
+          </Button>
+        )}
+      </div>
+
+      <Card>
         <CardContent>
           {notifications.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
