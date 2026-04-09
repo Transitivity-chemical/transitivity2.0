@@ -133,6 +133,25 @@
     "showPassword": "Mostrar senha",
     "hidePassword": "Ocultar senha"
   },
+  "pendingApproval": {
+    "title": "Conta aguardando aprovação",
+    "description": "Você se cadastrou com um e-mail que não pertence à nossa lista de domínios autorizados. Um administrador irá revisar sua conta em breve e entrará em contato.",
+    "hint": "Se você acredita que isso é um erro ou tem urgência, entre em contato com o seu professor ou administrador da plataforma.",
+    "signOut": "Sair da conta"
+  },
+  "changePassword": {
+    "title": "Alterar senha",
+    "description": "Por segurança, defina uma nova senha antes de continuar.",
+    "currentPassword": "Senha atual",
+    "newPassword": "Nova senha",
+    "confirmPassword": "Confirmar nova senha",
+    "submit": "Salvar nova senha",
+    "submitting": "Salvando...",
+    "mismatch": "As senhas não coincidem",
+    "minLength": "A senha deve ter no mínimo 8 caracteres",
+    "wrongCurrent": "Senha atual incorreta",
+    "success": "Senha alterada com sucesso"
+  },
   "rateConstant": {
     "title": "Constantes de Velocidade",
     "description": "Calcule constantes de velocidade TST com correções de tunelamento e efeitos de solvente.",

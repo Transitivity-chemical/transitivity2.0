@@ -133,6 +133,25 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password"
   },
+  "pendingApproval": {
+    "title": "Account pending approval",
+    "description": "You signed up with an email that is not in our authorized domain list. An administrator will review your account shortly.",
+    "hint": "If you think this is a mistake or it's urgent, please contact your professor or platform administrator.",
+    "signOut": "Sign out"
+  },
+  "changePassword": {
+    "title": "Change password",
+    "description": "For security reasons, please set a new password before continuing.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "submit": "Save new password",
+    "submitting": "Saving...",
+    "mismatch": "Passwords do not match",
+    "minLength": "Password must be at least 8 characters",
+    "wrongCurrent": "Current password is incorrect",
+    "success": "Password changed successfully"
+  },
   "rateConstant": {
     "title": "Rate Constants",
     "description": "Calculate TST rate constants with tunneling corrections and solvent effects.",

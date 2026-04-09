@@ -36,6 +36,8 @@ export default function RegisterPage() {
 
     if (!res.ok) {
       setError(data.error || t('emailExists'));
+    } else if (data?.data?.pendingApproval) {
+      router.push(`/${locale}/login?pending=1`);
     } else {
       router.push(`/${locale}/login`);
     }
