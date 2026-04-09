@@ -179,42 +179,9 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        {/* Activity chart (last 7 days) + Quick actions */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t('recentActivity')} (7d)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-2 h-24">
-                {dayBuckets.map((bucket) => (
-                  <div key={bucket.label} className="flex flex-1 flex-col items-center gap-1">
-                    <div className="w-full flex justify-center">
-                      <div
-                        className="w-6 rounded-t bg-primary"
-                        style={{
-                          height: `${Math.max((bucket.count / maxCount) * 72, 4)}px`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">{bucket.label}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t('quickActions')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 text-center">
-                <p className="text-sm text-muted-foreground">{t('dropFile')}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Phase 14B of megaplan: Recent Activity (7d) and Quick Actions
+            cards removed. Activity now lives in /settings?tab=activity.
+            Multiple Inputs entry available in the sidebar. */}
       </div>
     </div>
   );
