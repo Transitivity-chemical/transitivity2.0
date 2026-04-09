@@ -100,6 +100,8 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
         body: JSON.stringify({
           messages: apiMessages,
           model: DEFAULT_MODEL_ID,
+          conversationId: currentConversationId ?? null,
+          persist: true,
         }),
       });
 

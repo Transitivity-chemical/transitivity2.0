@@ -548,6 +548,7 @@ model LLMMessage {
   conversation LLMConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
+  @@index([conversationId, createdAt])
   @@map("llm_messages")
 }
 
