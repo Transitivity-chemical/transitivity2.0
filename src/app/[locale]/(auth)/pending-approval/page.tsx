@@ -17,12 +17,12 @@ export default function PendingApprovalPage() {
   const locale = useLocale();
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-gray-50 px-6">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-sm text-center">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-6">
+      <div className="w-full max-w-md rounded-xl border bg-card p-8 shadow-sm text-center">
         <GammaIconRound size={64} />
-        <h1 className="mt-6 text-2xl font-semibold text-gray-900">{t('title')}</h1>
-        <p className="mt-3 text-sm text-gray-600">{t('description')}</p>
-        <p className="mt-2 text-xs text-gray-500">{t('hint')}</p>
+        <h1 className="mt-6 text-2xl font-semibold text-foreground">{t('title')}</h1>
+        <p className="mt-3 text-sm text-muted-foreground">{t('description')}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{t('hint')}</p>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: `/${locale}/login` })}

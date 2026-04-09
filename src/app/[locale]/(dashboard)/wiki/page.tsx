@@ -20,8 +20,7 @@ const sections: WikiSection[] = [
     titleKey: 'tst',
     descKey: 'tstDesc',
     links: [
-      { label: 'Eyring (1935)', url: 'https://doi.org/10.1063/1.1749604' },
-      { label: 'Truhlar et al. (1996)', url: 'https://doi.org/10.1021/jp953748q' },
+      { label: 'TST Review (Truhlar et al.)', url: '/papers/tst_review.pdf' },
     ],
   },
   {
@@ -29,9 +28,7 @@ const sections: WikiSection[] = [
     titleKey: 'tunneling',
     descKey: 'tunnelingDesc',
     links: [
-      { label: 'Bell (1980)', url: 'https://doi.org/10.1007/978-1-4899-2891-7' },
-      { label: 'Skodje & Truhlar (1981)', url: 'https://doi.org/10.1021/j100267a002' },
-      { label: 'Eckart (1930)', url: 'https://doi.org/10.1103/PhysRev.35.1303' },
+      { label: 'Tunneling Corrections Review', url: '/papers/tunneling_review.pdf' },
     ],
   },
   {
@@ -39,8 +36,7 @@ const sections: WikiSection[] = [
     titleKey: 'fitting',
     descKey: 'fittingDesc',
     links: [
-      { label: 'Aquilanti et al. (2010)', url: 'https://doi.org/10.1016/j.cplett.2010.03.006' },
-      { label: 'Tsallis & Stariolo (1996)', url: 'https://doi.org/10.1016/0378-4371(95)00426-2' },
+      { label: 'Generalized Simulated Annealing (Tsallis & Stariolo)', url: '/papers/gsa_simulated_annealing.pdf' },
     ],
   },
   {
@@ -48,8 +44,7 @@ const sections: WikiSection[] = [
     titleKey: 'md',
     descKey: 'mdDesc',
     links: [
-      { label: 'CPMD Manual', url: 'https://www.cpmd.org/wordpress/index.php/documentation/' },
-      { label: 'Marx & Hutter (2009)', url: 'https://doi.org/10.1017/CBO9780511609633' },
+      { label: 'CPMD / Ab initio MD intro', url: '/papers/cpmd_intro.pdf' },
     ],
   },
   {
@@ -57,9 +52,9 @@ const sections: WikiSection[] = [
     titleKey: 'ml',
     descKey: 'mlDesc',
     links: [
-      { label: 'ANI-2x', url: 'https://doi.org/10.1021/acs.jctc.0c00121' },
-      { label: 'MACE', url: 'https://doi.org/10.48550/arXiv.2206.07697' },
-      { label: 'AIQM1', url: 'https://doi.org/10.1038/s41467-021-27340-2' },
+      { label: 'ANI-2x: Extending ANI to halogens & sulfur', url: '/papers/ani2x_2020.pdf' },
+      { label: 'MACE: Equivariant Message Passing', url: '/papers/mace_2022.pdf' },
+      { label: 'AIQM1: General-purpose quantum chemistry', url: '/papers/aiqm1_2021.pdf' },
     ],
   },
 ];

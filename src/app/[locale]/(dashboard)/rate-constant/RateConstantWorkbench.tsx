@@ -402,7 +402,7 @@ export function RateConstantWorkbench() {
                 value={reactionName}
                 onChange={(event) => setReactionName(event.target.value)}
                 placeholder="OH + H2 -> H2O + H"
-                className="mt-1 bg-white"
+                className="mt-1 bg-background"
               />
             </div>
             <div className="w-full sm:w-[220px]">
@@ -411,7 +411,7 @@ export function RateConstantWorkbench() {
                 id="reaction-type"
                 value={reactionType}
                 onChange={(event) => setReactionType(event.target.value as typeof reactionType)}
-                className="mt-1 w-full rounded-md border border-input bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="UNIMOLECULAR">{t('unimolecular')}</option>
                 <option value="BIMOLECULAR">{t('bimolecular')}</option>
@@ -423,7 +423,7 @@ export function RateConstantWorkbench() {
                 id="energy-type"
                 value={energyType}
                 onChange={(event) => setEnergyType(event.target.value as typeof energyType)}
-                className="mt-1 w-full rounded-md border border-input bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="En">E (SCF Energy)</option>
                 <option value="Ent">E + H (Enthalpy)</option>
@@ -676,7 +676,7 @@ export function RateConstantWorkbench() {
                       type="number"
                       value={dParameter}
                       onChange={(event) => setDParameter(event.target.value)}
-                      className="mt-1 bg-white"
+                      className="mt-1 bg-background"
                     />
                   </div>
                 )}
@@ -687,7 +687,7 @@ export function RateConstantWorkbench() {
                     id="solvent-model"
                     value={solventModel}
                     onChange={(event) => setSolventModel(event.target.value)}
-                    className="mt-1 w-full rounded-md border border-input bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                   >
                     <option value="none">{t('noSolvent')}</option>
                     {SOLVENT_OPTIONS.map((option) => (
@@ -707,7 +707,7 @@ export function RateConstantWorkbench() {
                         value={solventName}
                         onChange={(event) => setSolventName(event.target.value)}
                         placeholder="water"
-                        className="mt-1 bg-white"
+                        className="mt-1 bg-background"
                       />
                     </div>
                     <div>
@@ -717,7 +717,7 @@ export function RateConstantWorkbench() {
                         type="number"
                         value={solventViscosity}
                         onChange={(event) => setSolventViscosity(event.target.value)}
-                        className="mt-1 bg-white"
+                        className="mt-1 bg-background"
                       />
                     </div>
                     <div>
@@ -727,7 +727,7 @@ export function RateConstantWorkbench() {
                         type="number"
                         value={radiusA}
                         onChange={(event) => setRadiusA(event.target.value)}
-                        className="mt-1 bg-white"
+                        className="mt-1 bg-background"
                       />
                     </div>
                     <div>
@@ -737,7 +737,7 @@ export function RateConstantWorkbench() {
                         type="number"
                         value={radiusB}
                         onChange={(event) => setRadiusB(event.target.value)}
-                        className="mt-1 bg-white"
+                        className="mt-1 bg-background"
                       />
                     </div>
                   </div>

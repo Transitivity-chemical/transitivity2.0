@@ -65,12 +65,12 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-gray-50 px-6">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-sm">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-6">
+      <div className="w-full max-w-md rounded-xl border bg-card p-8 shadow-sm">
         <div className="text-center">
           <GammaIconRound size={56} />
-          <h1 className="mt-5 text-2xl font-semibold text-gray-900">{t('title')}</h1>
-          <p className="mt-2 text-sm text-gray-600">{t('description')}</p>
+          <h1 className="mt-5 text-2xl font-semibold text-foreground">{t('title')}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t('description')}</p>
         </div>
 
         {error && <p className="mt-6 text-sm text-red-600 text-center">{error}</p>}

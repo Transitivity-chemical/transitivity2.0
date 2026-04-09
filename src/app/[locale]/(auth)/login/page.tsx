@@ -112,14 +112,14 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-semibold text-gray-900">{t('signIn')}</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t('signIn')}</h2>
           <p className="mt-1 text-sm text-gray-500">{tb('accessPlatform')}</p>
 
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
           <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">{t('email')}</label>
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">{t('email')}</label>
               <input
                 id="email"
                 name="email"
@@ -135,7 +135,7 @@ export default function LoginPage() {
                 className={`w-full rounded-lg border px-4 py-2.5 text-sm transition-colors focus:outline-none focus:ring-1 ${
                   fieldErrors.email
                     ? 'border-red-300 bg-red-50/70 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-[#1e3a5f] focus:ring-[#1e3a5f]'
+                    : 'border-input bg-background text-foreground focus:border-primary focus:ring-primary'
                 }`}
               />
               {fieldErrors.email && (
@@ -145,7 +145,7 @@ export default function LoginPage() {
               )}
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">{t('password')}</label>
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">{t('password')}</label>
               <PasswordInput
                 id="password"
                 name="password"
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 className={`rounded-lg border px-4 py-2.5 text-sm transition-colors focus:outline-none focus:ring-1 h-auto ${
                   fieldErrors.password
                     ? 'border-red-300 bg-red-50/70 text-red-900 placeholder:text-red-300 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-[#1e3a5f] focus:ring-[#1e3a5f]'
+                    : 'border-input bg-background text-foreground focus:border-primary focus:ring-primary'
                 }`}
               />
               {fieldErrors.password && (

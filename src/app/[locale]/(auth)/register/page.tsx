@@ -68,26 +68,26 @@ export default function RegisterPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-semibold text-gray-900">{t('signUp')}</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t('signUp')}</h2>
           <p className="mt-1 text-sm text-gray-500">{tb('createResearch')}</p>
 
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5">{t('fullName')}</label>
+              <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-1.5">{t('fullName')}</label>
               <input id="fullName" name="fullName" type="text" required minLength={2} autoComplete="name" placeholder={locale === 'pt-BR' ? 'Seu nome completo' : 'Your full name'}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]" />
+                className="w-full rounded-lg border border-input bg-background text-foreground px-4 py-2.5 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">{t('email')}</label>
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">{t('email')}</label>
               <input id="email" name="email" type="email" required autoComplete="email" placeholder="you@university.edu"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]" />
+                className="w-full rounded-lg border border-input bg-background text-foreground px-4 py-2.5 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">{t('password')}</label>
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">{t('password')}</label>
               <PasswordInput id="password" name="password" required minLength={8} autoComplete="new-password" placeholder={tb('minChars')}
-                className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] h-auto" />
+                className="rounded-lg border border-input bg-background text-foreground px-4 py-2.5 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary h-auto" />
             </div>
             <button type="submit" disabled={loading}
               className="w-full rounded-lg bg-[#1e3a5f] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50">

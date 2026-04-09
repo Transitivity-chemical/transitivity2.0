@@ -54,9 +54,12 @@ export function PaperReaderSheet({ open, onClose, url, title }: Props) {
 
     setState({ kind: 'loading' });
 
-    const proxyUrl = `/api/v1/papers/proxy?url=${encodeURIComponent(url)}`;
+    // Local /papers/*.pdf served from /public directly (no proxy needed)
+    const isLocal = url.startsWith('/papers/') || url.startsWith('/');
+    const fetchUrl = isLocal ? url : `/api/v1/papers/proxy?url=${encodeURIComponent(url)}`;
+    const proxyUrl = fetchUrl;
 
-    fetch(proxyUrl)
+    fetch(fetchUrl)
       .then(async (res) => {
         if (cancelled) return;
         if (!res.ok) {
