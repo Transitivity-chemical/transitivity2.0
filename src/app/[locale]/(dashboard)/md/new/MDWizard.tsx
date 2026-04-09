@@ -37,6 +37,7 @@ interface SimConfig {
   name: string;
   dynamicsType: string;
   functional: string;
+  pseudo: string;
   charge: number;
   lsd: number;
   temperature: number;
@@ -56,7 +57,7 @@ interface SimConfig {
 }
 
 const DYNAMICS_TYPES = ['CPMD', 'BOMD', 'PIMD', 'SHMD', 'MTD'] as const;
-const FUNCTIONALS = ['BLYP', 'PBE', 'BP86', 'PW91', 'B3LYP', 'PBE0'] as const;
+const FUNCTIONALS = ['PBE', 'BLYP', 'BP86', 'PW91', 'B3LYP', 'PBE0'] as const;
 
 let rowCounter = 0;
 function newAtomRow(): AtomRow {
@@ -94,18 +95,21 @@ export function MDWizard() {
 
   const [step, setStep] = useState(0);
   const [atoms, setAtoms] = useState<AtomRow[]>([newAtomRow(), newAtomRow()]);
+  // Defaults match the legacy Tkinter Transitivity v1 (R4 §A) so users get parity:
+  // functional=PBE, lattices=10.0, maxSteps=50000, timeStep=5.0, LSD=1
   const [config, setConfig] = useState<SimConfig>({
     name: '',
     dynamicsType: 'CPMD',
-    functional: 'BLYP',
+    functional: 'PBE',
+    pseudo: 'MT',
     charge: 0,
-    lsd: 0,
+    lsd: 1,
     temperature: 300,
-    maxSteps: 10000,
+    maxSteps: 50000,
     timeStep: 5.0,
-    latticeA: 20.0,
-    latticeB: 20.0,
-    latticeC: 20.0,
+    latticeA: 10.0,
+    latticeB: 10.0,
+    latticeC: 10.0,
     cosA: 0.0,
     cosB: 0.0,
     cosC: 0.0,
@@ -115,6 +119,8 @@ export function MDWizard() {
     generateWavefunction: true,
     generateGaussview: true,
   });
+  // Temperature unit toggle (frontend always converts to K before submit)
+  const [tempUnit, setTempUnit] = useState<'K' | 'C'>('K');
   const [submitStatus, setSubmitStatus] = useState<
     'idle' | 'loading' | 'error'
   >('idle');
@@ -181,6 +187,7 @@ export function MDWizard() {
       })),
       dynamicsType: config.dynamicsType,
       functional: config.functional,
+      pseudopotential: config.pseudo,
       charge: config.charge,
       lsd: config.lsd,
       temperature: config.temperature,
@@ -453,6 +460,17 @@ export function MDWizard() {
               </div>
 
               <div>
+                <label className={labelCls}>Pseudo</label>
+                <input
+                  type="text"
+                  value={config.pseudo}
+                  onChange={(e) => updateConfig('pseudo', e.target.value)}
+                  className={inputCls}
+                  placeholder="MT"
+                />
+              </div>
+
+              <div>
                 <label className={labelCls}>{t('charge')}</label>
                 <input
                   type="number"
@@ -475,15 +493,40 @@ export function MDWizard() {
               </div>
 
               <div>
-                <label className={labelCls}>{t('temperature')} (K)</label>
+                <label className={labelCls}>
+                  {t('temperature')}
+                  <span className="ml-2 inline-flex rounded-md border bg-muted/30 text-xs">
+                    <button
+                      type="button"
+                      className={`px-2 py-0.5 rounded-l-md ${tempUnit === 'K' ? 'bg-primary text-primary-foreground' : ''}`}
+                      onClick={() => setTempUnit('K')}
+                    >
+                      K
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-2 py-0.5 rounded-r-md ${tempUnit === 'C' ? 'bg-primary text-primary-foreground' : ''}`}
+                      onClick={() => setTempUnit('C')}
+                    >
+                      °C
+                    </button>
+                  </span>
+                </label>
                 <input
                   type="number"
-                  value={config.temperature}
-                  onChange={(e) =>
-                    updateConfig('temperature', parseFloat(e.target.value) || 300)
-                  }
+                  step="0.1"
+                  value={tempUnit === 'K' ? config.temperature : (config.temperature - 273.15).toFixed(2)}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    if (Number.isNaN(v)) return;
+                    const kelvin = tempUnit === 'K' ? v : v + 273.15;
+                    updateConfig('temperature', kelvin);
+                  }}
                   className={inputCls}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  API usa Kelvin internamente. Valor enviado: {config.temperature.toFixed(2)} K
+                </p>
               </div>
 
               <div>
@@ -492,7 +535,7 @@ export function MDWizard() {
                   type="number"
                   value={config.maxSteps}
                   onChange={(e) =>
-                    updateConfig('maxSteps', parseInt(e.target.value) || 10000)
+                    updateConfig('maxSteps', parseInt(e.target.value) || 50000)
                   }
                   className={inputCls}
                 />
