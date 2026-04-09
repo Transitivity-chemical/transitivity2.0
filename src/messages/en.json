@@ -108,6 +108,9 @@
     "ml": "ML Predict",
     "assistant": "Assistant",
     "serverStatus": "Server Status",
+    "adminUsers": "Users",
+    "multiInputs": "Multiple Inputs",
+    "plans": "Plans",
     "wiki": "Wiki",
     "settings": "Settings",
     "profile": "Profile",
@@ -138,6 +141,66 @@
     "description": "You signed up with an email that is not in our authorized domain list. An administrator will review your account shortly.",
     "hint": "If you think this is a mistake or it's urgent, please contact your professor or platform administrator.",
     "signOut": "Sign out"
+  },
+  "admin": {
+    "users": {
+      "title": "Manage users",
+      "description": "Add, edit and manage users, plans and roles.",
+      "addUser": "Add user",
+      "manageDomains": "Manage domains",
+      "create": "Create and send invite",
+      "searchPlaceholder": "Search by email or name...",
+      "allPlans": "All plans",
+      "allRoles": "All roles",
+      "allStatuses": "All statuses",
+      "active": "Active",
+      "pending": "Pending approval",
+      "inactive": "Inactive",
+      "firstLogin": "First-login pending",
+      "editAction": "Edit",
+      "editTitle": "Edit user: {name}",
+      "resendInvite": "Resend invite",
+      "resetTempPassword": "Reset temporary password",
+      "deactivate": "Deactivate",
+      "confirmDeactivate": "Deactivate this user?",
+      "confirmResetTempPassword": "Generate a new temporary password and send it by email?",
+      "pageOf": "Page {page} of {total}",
+      "col": {
+        "user": "User",
+        "role": "Role",
+        "plan": "Plan",
+        "credits": "Credits",
+        "status": "Status",
+        "lastLogin": "Last login",
+        "actions": "Actions"
+      }
+    },
+    "tempPasswordModal": {
+      "title": "Temporary password generated",
+      "password": "Temporary password",
+      "emailSent": "Email sent automatically",
+      "emailNotSent": "Email NOT sent — copy the password and send it manually",
+      "warning": "This password is displayed only once. Note it down or share it now. The user will be required to change it on first login.",
+      "close": "Close"
+    },
+    "domains": {
+      "title": "Allowed email domains",
+      "description": "Users whose email belongs to these domains may self-register and receive the configured default plan.",
+      "addNew": "Add new domain",
+      "empty": "No domains registered.",
+      "confirmDelete": "Remove this domain? New registrations with this email will be blocked.",
+      "close": "Close",
+      "col": {
+        "domain": "Domain",
+        "institution": "Institution",
+        "defaultPlan": "Default plan"
+      }
+    },
+    "plans": {
+      "student": "Student",
+      "professional": "Professional",
+      "enterprise": "Enterprise"
+    }
   },
   "changePassword": {
     "title": "Change password",

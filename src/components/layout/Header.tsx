@@ -64,7 +64,7 @@ export function Header({ role: initialRole }: HeaderProps) {
         .toUpperCase()
         .slice(0, 2)
     : '?';
-  const visibleNavItems = navItems.filter((item) => item.href !== '/server-status' || isAdminRole(role));
+  const visibleNavItems = navItems.filter((item) => !item.adminOnly || isAdminRole(role));
 
   return (
     <>

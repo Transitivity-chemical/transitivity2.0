@@ -13,8 +13,8 @@ import {
   ChevronRight,
   Coins,
   MessageCircle,
-  Server,
   BookOpen,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,13 +22,13 @@ import { TransitivityLogo, GammaIcon } from '@/components/brand/TransitivityLogo
 import { isAdminRole } from '@/lib/access';
 
 export const navItems = [
-  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { key: 'rateConstant', href: '/rate-constant', icon: Calculator },
-  { key: 'fitting', href: '/fitting', icon: TrendingUp },
-  { key: 'md', href: '/md', icon: Atom },
-  { key: 'assistant', href: '/assistant', icon: MessageCircle },
-  { key: 'serverStatus', href: '/server-status', icon: Server },
-  { key: 'wiki', href: '/wiki', icon: BookOpen },
+  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
+  { key: 'rateConstant', href: '/rate-constant', icon: Calculator, adminOnly: false },
+  { key: 'fitting', href: '/fitting', icon: TrendingUp, adminOnly: false },
+  { key: 'md', href: '/md', icon: Atom, adminOnly: false },
+  { key: 'assistant', href: '/assistant', icon: MessageCircle, adminOnly: false },
+  { key: 'wiki', href: '/wiki', icon: BookOpen, adminOnly: false },
+  { key: 'adminUsers', href: '/admin/users', icon: Users, adminOnly: true },
 ] as const;
 
 type Tier = 'FREE' | 'PRO' | 'ENTERPRISE';
@@ -58,7 +58,7 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
 
   const maxCredits = tierMaxCredits[displayTier];
   const progressPercent = maxCredits ? Math.min((credits / maxCredits) * 100, 100) : 0;
-  const visibleNavItems = navItems.filter((item) => item.href !== '/server-status' || isAdminRole(role));
+  const visibleNavItems = navItems.filter((item) => !item.adminOnly || isAdminRole(role));
 
   return (
     <aside

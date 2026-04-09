@@ -26,6 +26,7 @@
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "next-intl": "^4.8.3",
+    "nodemailer": "^8.0.5",
     "openai": "^6.27.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
@@ -35,6 +36,7 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "resend": "^6.10.0",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
   },
@@ -49,6 +51,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.4",

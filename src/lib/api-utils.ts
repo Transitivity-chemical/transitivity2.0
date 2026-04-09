@@ -27,6 +27,15 @@ export async function shouldBeAuthorized() {
   return session;
 }
 
+export async function shouldBeAdmin() {
+  const session = await shouldBeAuthorized();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((session.user as any).role !== 'ADMIN') {
+    throw new ClientError('Forbidden', 403);
+  }
+  return session;
+}
+
 export async function parseRequestJson<T>(request: Request, schema: { parse: (data: unknown) => T }) {
   try {
     const body = await request.json();

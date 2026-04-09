@@ -108,6 +108,9 @@
     "ml": "Predição ML",
     "assistant": "Assistente",
     "serverStatus": "Status do Servidor",
+    "adminUsers": "Usuários",
+    "multiInputs": "Múltiplos Inputs",
+    "plans": "Planos",
     "wiki": "Wiki",
     "settings": "Configurações",
     "profile": "Perfil",
@@ -138,6 +141,66 @@
     "description": "Você se cadastrou com um e-mail que não pertence à nossa lista de domínios autorizados. Um administrador irá revisar sua conta em breve e entrará em contato.",
     "hint": "Se você acredita que isso é um erro ou tem urgência, entre em contato com o seu professor ou administrador da plataforma.",
     "signOut": "Sair da conta"
+  },
+  "admin": {
+    "users": {
+      "title": "Gerenciar usuários",
+      "description": "Adicione, edite e gerencie usuários, planos e papéis.",
+      "addUser": "Adicionar usuário",
+      "manageDomains": "Gerenciar domínios",
+      "create": "Criar e enviar convite",
+      "searchPlaceholder": "Buscar por email ou nome...",
+      "allPlans": "Todos os planos",
+      "allRoles": "Todos os papéis",
+      "allStatuses": "Todos os status",
+      "active": "Ativo",
+      "pending": "Aguardando aprovação",
+      "inactive": "Inativo",
+      "firstLogin": "Primeiro acesso pendente",
+      "editAction": "Editar",
+      "editTitle": "Editar usuário: {name}",
+      "resendInvite": "Reenviar convite",
+      "resetTempPassword": "Redefinir senha temporária",
+      "deactivate": "Desativar",
+      "confirmDeactivate": "Desativar este usuário?",
+      "confirmResetTempPassword": "Gerar uma nova senha temporária e enviar por email?",
+      "pageOf": "Página {page} de {total}",
+      "col": {
+        "user": "Usuário",
+        "role": "Papel",
+        "plan": "Plano",
+        "credits": "Créditos",
+        "status": "Status",
+        "lastLogin": "Último login",
+        "actions": "Ações"
+      }
+    },
+    "tempPasswordModal": {
+      "title": "Senha temporária gerada",
+      "password": "Senha temporária",
+      "emailSent": "Email enviado automaticamente",
+      "emailNotSent": "Email NÃO foi enviado — copie a senha e envie manualmente",
+      "warning": "Esta senha é exibida apenas uma vez. Anote ou compartilhe agora. O usuário será obrigado a alterá-la no primeiro acesso.",
+      "close": "Fechar"
+    },
+    "domains": {
+      "title": "Domínios de email autorizados",
+      "description": "Usuários cujo email pertence a estes domínios podem se autoregistrar e recebem o plano padrão configurado.",
+      "addNew": "Adicionar novo domínio",
+      "empty": "Nenhum domínio cadastrado.",
+      "confirmDelete": "Remover este domínio? Novos registros com este email serão bloqueados.",
+      "close": "Fechar",
+      "col": {
+        "domain": "Domínio",
+        "institution": "Instituição",
+        "defaultPlan": "Plano padrão"
+      }
+    },
+    "plans": {
+      "student": "Estudante",
+      "professional": "Profissional",
+      "enterprise": "Empresarial"
+    }
   },
   "changePassword": {
     "title": "Alterar senha",
