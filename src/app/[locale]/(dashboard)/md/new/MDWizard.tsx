@@ -1,796 +1,480 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  ChevronLeft,
-  ChevronRight,
-  FlaskConical,
-  Plus,
-  Trash2,
-  Upload,
-  Loader2,
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, Loader2, Download, FlaskConical } from 'lucide-react';
 import { SAMPLE_MD_GEOMETRY } from '@/lib/sample-data';
 
-/* ---------- types ---------- */
+/**
+ * FIX-6 of post-megaplan audit:
+ *
+ * Single-page form matching the Tkinter Transitivity v1 layout exactly.
+ * Replaces the previous 4-step wizard.
+ *
+ * Reference: docs/audit-tkinter-md-multi.md §A
+ *
+ * Layout (top to bottom):
+ *   1. File upload (.xyz/.gjf/.out/.log) → parses atoms
+ *   2. Dynamics radio (5 methods)
+ *   3. Options grid (functional/pseudo/charge+LSD/maxStep/temp+unit/timeStep)
+ *   4. Lattices (a/b/c) and cos(a/b/c)
+ *   5. Generate Input button
+ *   6. Result panel with download buttons
+ */
 
-interface AtomRow {
-  id: string;
-  element: string;
-  x: string;
-  y: string;
-  z: string;
-}
+type Atom = { element: string; x: number; y: number; z: number };
 
-interface SimConfig {
-  name: string;
-  dynamicsType: string;
-  functional: string;
-  pseudo: string;
-  charge: number;
-  lsd: number;
-  temperature: number;
-  maxSteps: number;
-  timeStep: number;
-  latticeA: number;
-  latticeB: number;
-  latticeC: number;
-  cosA: number;
-  cosB: number;
-  cosC: number;
-  cutoff: number;
-  emass: number;
-  multiplicity: number;
-  generateWavefunction: boolean;
-  generateGaussview: boolean;
-}
+const DYNAMICS = [
+  { value: 'CPMD', label: 'Car Parrinello (CPMD)' },
+  { value: 'PIMD', label: 'Path Integral (PIMD)' },
+  { value: 'SHMD', label: 'Surface Hopping (TSH)' },
+  { value: 'MTD', label: 'Meta Dynamics (MTD)' },
+  { value: 'BOMD', label: 'Born Oppenheimer (BOMD)' },
+];
 
-const DYNAMICS_TYPES = ['CPMD', 'BOMD', 'PIMD', 'SHMD', 'MTD'] as const;
-const FUNCTIONALS = ['PBE', 'BLYP', 'BP86', 'PW91', 'B3LYP', 'PBE0'] as const;
-
-let rowCounter = 0;
-function newAtomRow(): AtomRow {
-  return { id: `a${++rowCounter}`, element: '', x: '', y: '', z: '' };
-}
-
-function parseXYZ(text: string): AtomRow[] | null {
-  const lines = text.trim().split('\n');
-  if (lines.length < 3) return null;
-  const nAtoms = parseInt(lines[0].trim(), 10);
-  if (isNaN(nAtoms) || lines.length < nAtoms + 2) return null;
-  const atoms: AtomRow[] = [];
-  for (let i = 2; i < 2 + nAtoms; i++) {
-    const parts = lines[i].trim().split(/\s+/);
-    if (parts.length < 4) return null;
-    atoms.push({
-      id: `a${++rowCounter}`,
-      element: parts[0],
-      x: parts[1],
-      y: parts[2],
-      z: parts[3],
-    });
+function parseXyz(text: string): Atom[] {
+  const lines = text.trim().split(/\r?\n/);
+  const n = parseInt(lines[0]?.trim() ?? '', 10);
+  if (Number.isNaN(n)) return [];
+  const out: Atom[] = [];
+  for (let i = 2; i < 2 + n && i < lines.length; i++) {
+    const p = lines[i].trim().split(/\s+/);
+    if (p.length < 4) continue;
+    out.push({ element: p[0], x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]) });
   }
-  return atoms;
+  return out;
 }
 
-const TOTAL_STEPS = 5;
+function parseGjf(text: string): Atom[] {
+  const lines = text.split(/\r?\n/);
+  const out: Atom[] = [];
+  let started = false;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!started) {
+      if (/^-?\d+\s+\d+$/.test(line)) started = true;
+      continue;
+    }
+    if (!line) break;
+    const p = line.split(/\s+/);
+    if (p.length < 4) break;
+    if (Number.isNaN(parseFloat(p[1]))) break;
+    out.push({ element: p[0], x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]) });
+  }
+  return out;
+}
 
-/* ---------- component ---------- */
+function parseGaussianLog(text: string): Atom[] {
+  // Find the LAST "Standard orientation:" block
+  const idx = text.lastIndexOf('Standard orientation:');
+  if (idx === -1) return [];
+  const block = text.slice(idx);
+  const lines = block.split(/\r?\n/);
+  const out: Atom[] = [];
+  // Skip 5 header lines, then read until ----
+  let i = 5;
+  while (i < lines.length && !lines[i].includes('---')) i++;
+  i++;
+  for (; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.includes('---')) break;
+    const p = line.trim().split(/\s+/);
+    if (p.length < 6) break;
+    const z = parseInt(p[1], 10);
+    const x = parseFloat(p[3]);
+    const y = parseFloat(p[4]);
+    const zCoord = parseFloat(p[5]);
+    if (Number.isNaN(z)) break;
+    out.push({ element: ELEMENT_BY_Z[z] ?? `Z${z}`, x, y, z: zCoord });
+  }
+  return out;
+}
+
+const ELEMENT_BY_Z: Record<number, string> = {
+  1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 10: 'Ne',
+  11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 18: 'Ar',
+  19: 'K', 20: 'Ca', 26: 'Fe', 29: 'Cu', 30: 'Zn', 35: 'Br', 53: 'I', 78: 'Pt', 79: 'Au',
+};
 
 export function MDWizard() {
   const t = useTranslations('md');
-  const tCommon = useTranslations('common');
   const router = useRouter();
 
-  const [step, setStep] = useState(0);
-  const [atoms, setAtoms] = useState<AtomRow[]>([newAtomRow(), newAtomRow()]);
-  // Defaults match the legacy Tkinter Transitivity v1 (R4 §A) so users get parity:
-  // functional=PBE, lattices=10.0, maxSteps=50000, timeStep=5.0, LSD=1
-  const [config, setConfig] = useState<SimConfig>({
-    name: '',
-    dynamicsType: 'CPMD',
-    functional: 'PBE',
-    pseudo: 'MT',
-    charge: 0,
-    lsd: 1,
-    temperature: 300,
-    maxSteps: 50000,
-    timeStep: 5.0,
-    latticeA: 10.0,
-    latticeB: 10.0,
-    latticeC: 10.0,
-    cosA: 0.0,
-    cosB: 0.0,
-    cosC: 0.0,
-    cutoff: 70.0,
-    emass: 400.0,
-    multiplicity: 1,
-    generateWavefunction: true,
-    generateGaussview: true,
-  });
-  // Temperature unit toggle (frontend always converts to K before submit)
+  // Atom data
+  const [atoms, setAtoms] = useState<Atom[]>([]);
+  const [filename, setFilename] = useState('');
+
+  // Form fields (Tkinter defaults)
+  const [name, setName] = useState('');
+  const [dynamicsType, setDynamicsType] = useState('CPMD');
+  const [functional, setFunctional] = useState('PBE');
+  const [pseudo, setPseudo] = useState('MT');
+  const [maxSteps, setMaxSteps] = useState(50000);
+  const [tempK, setTempK] = useState(300);
   const [tempUnit, setTempUnit] = useState<'K' | 'C'>('K');
-  const [submitStatus, setSubmitStatus] = useState<
-    'idle' | 'loading' | 'error'
-  >('idle');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [charge, setCharge] = useState(0);
+  const [lsd, setLsd] = useState(true);
+  const [timeStep, setTimeStep] = useState(5.0);
 
-  /* helpers */
-  const updateAtom = (id: string, field: keyof AtomRow, value: string) => {
-    setAtoms((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)),
-    );
+  const [latticeA, setLatticeA] = useState(10);
+  const [latticeB, setLatticeB] = useState(10);
+  const [latticeC, setLatticeC] = useState(10);
+  const [cosA, setCosA] = useState(0);
+  const [cosB, setCosB] = useState(0);
+  const [cosC, setCosC] = useState(0);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    files: Record<string, { filename: string; content: string; type: string }>;
+  } | null>(null);
+
+  const handleFile = async (file: File) => {
+    setError(null);
+    const text = await file.text();
+    const ext = file.name.toLowerCase().split('.').pop() ?? '';
+    let parsed: Atom[] = [];
+    if (ext === 'xyz') parsed = parseXyz(text);
+    else if (ext === 'gjf' || ext === 'com') parsed = parseGjf(text);
+    else if (ext === 'log' || ext === 'out') parsed = parseGaussianLog(text);
+    else parsed = parseXyz(text); // best effort
+
+    if (parsed.length === 0) {
+      setError(`Não foi possível extrair átomos de ${file.name}`);
+      return;
+    }
+    setAtoms(parsed);
+    setFilename(file.name);
+    if (!name) setName(file.name.replace(/\.[^.]+$/, ''));
   };
 
-  const updateConfig = <K extends keyof SimConfig>(
-    key: K,
-    value: SimConfig[K],
-  ) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
+  const loadExample = () => {
+    // SAMPLE_MD_GEOMETRY is an array of {element, x, y, z} (strings)
+    const parsed: Atom[] = (SAMPLE_MD_GEOMETRY as Array<{ element: string; x: string; y: string; z: string }>).map((a) => ({
+      element: a.element,
+      x: parseFloat(a.x),
+      y: parseFloat(a.y),
+      z: parseFloat(a.z),
+    }));
+    setAtoms(parsed);
+    setFilename('benzoic_acid_example.xyz');
+    if (!name) setName('benzoic_acid_example');
   };
 
-  const validAtoms = atoms.filter(
-    (a) =>
-      a.element.trim() !== '' &&
-      !isNaN(parseFloat(a.x)) &&
-      !isNaN(parseFloat(a.y)) &&
-      !isNaN(parseFloat(a.z)),
-  );
-
-  const canProceed = (): boolean => {
-    if (step === 0) return validAtoms.length >= 1;
-    return true;
-  };
-
-  const handleFileUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const text = reader.result as string;
-        const parsed = parseXYZ(text);
-        if (parsed && parsed.length > 0) {
-          setAtoms(parsed);
-        } else {
-          setErrorMsg(t('invalidFile'));
-          setTimeout(() => setErrorMsg(''), 3000);
-        }
-      };
-      reader.readAsText(file);
-    },
-    [t],
-  );
-
-  const handleSubmit = async () => {
-    setSubmitStatus('loading');
-    setErrorMsg('');
-
-    const payload = {
-      name: config.name || undefined,
-      atoms: validAtoms.map((a) => ({
-        element: a.element.trim(),
-        x: parseFloat(a.x),
-        y: parseFloat(a.y),
-        z: parseFloat(a.z),
-      })),
-      dynamicsType: config.dynamicsType,
-      functional: config.functional,
-      pseudopotential: config.pseudo,
-      charge: config.charge,
-      lsd: config.lsd,
-      temperature: config.temperature,
-      maxSteps: config.maxSteps,
-      timeStep: config.timeStep,
-      latticeA: config.latticeA,
-      latticeB: config.latticeB,
-      latticeC: config.latticeC,
-      cosA: config.cosA,
-      cosB: config.cosB,
-      cosC: config.cosC,
-      cutoff: config.cutoff,
-      emass: config.emass,
-      multiplicity: config.multiplicity,
-      generateWavefunction: config.generateWavefunction,
-      generateGaussview: config.generateGaussview,
-    };
-
+  const handleGenerate = async () => {
+    if (atoms.length === 0) {
+      setError('Carregue um arquivo de geometria primeiro.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResult(null);
     try {
       const res = await fetch('/api/v1/md/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name,
+          atoms,
+          dynamicsType,
+          functional,
+          pseudopotential: pseudo,
+          charge,
+          lsd: lsd ? 1 : 0,
+          temperature: tempK, // always K
+          maxSteps,
+          timeStep,
+          latticeA,
+          latticeB,
+          latticeC,
+          cosA,
+          cosB,
+          cosC,
+          generateWavefunction: true,
+          generateGaussview: true,
+        }),
       });
-
-      const json = await res.json();
-      if (!res.ok) {
-        setSubmitStatus('error');
-        setErrorMsg(json.error || 'Generation failed');
-        return;
-      }
-
-      // Navigate to the result page
-      router.push(`md/${json.id}`);
-    } catch {
-      setSubmitStatus('error');
-      setErrorMsg(tCommon('error'));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.detail || 'Erro');
+      setResult(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao gerar input');
+    } finally {
+      setLoading(false);
     }
   };
 
-  /* step labels */
-  const stepLabels = [
-    t('stepMolecule'),
-    t('stepSimulation'),
-    t('stepCell'),
-    t('stepOptions'),
-    t('stepReview'),
-  ];
-
-  /* --------- input helper --------- */
-  const inputCls =
-    'w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30';
-  const labelCls = 'mb-1 block text-sm font-medium';
-  const selectCls =
-    'w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30';
+  const downloadFile = (fname: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Load Example */}
-      <div className="flex items-center gap-3 mb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setAtoms(
-              SAMPLE_MD_GEOMETRY.map((a) => ({
-                id: `a${++rowCounter}`,
-                element: a.element,
-                x: a.x,
-                y: a.y,
-                z: a.z,
-              })),
-            );
-            updateConfig('name', 'Benzoic acid CPMD');
-          }}
-        >
-          <FlaskConical className="mr-1.5 size-4" />
-          Load Example
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Dinâmica Molecular</h1>
+          <p className="text-sm text-muted-foreground">Gere arquivos de input CPMD, BOMD, PIMD, SHMD ou MTD.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={loadExample}>
+          <FlaskConical className="h-4 w-4 mr-2" />
+          Carregar exemplo
         </Button>
-        <span className="text-xs text-muted-foreground">
-          Benzoic acid (C7H6O2) — 15 atoms
-        </span>
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2">
-        {stepLabels.map((label, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <button
-              onClick={() => i < step && setStep(i)}
-              className={`flex size-8 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
-                i === step
-                  ? 'bg-primary text-primary-foreground'
-                  : i < step
-                    ? 'bg-primary/20 text-primary cursor-pointer'
-                    : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {i + 1}
-            </button>
-            <span
-              className={`hidden text-xs sm:inline ${
-                i === step ? 'font-medium' : 'text-muted-foreground'
-              }`}
-            >
-              {label}
-            </span>
-            {i < TOTAL_STEPS - 1 && (
-              <div className="mx-1 h-px w-4 bg-border sm:w-8" />
+      {/* 1. File upload */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Arquivo de geometria</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3">
+            <label className="cursor-pointer flex-1">
+              <input
+                type="file"
+                accept=".xyz,.gjf,.com,.out,.log"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                className="hidden"
+              />
+              <span className="flex items-center gap-2 rounded-md border-2 border-dashed border-input px-4 py-3 text-sm font-medium hover:border-primary hover:bg-accent transition-colors">
+                <Upload className="size-4" />
+                {filename || 'Selecionar arquivo (.xyz, .gjf, .out, .log)'}
+              </span>
+            </label>
+            {atoms.length > 0 && (
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {atoms.length} átomos
+              </span>
             )}
           </div>
-        ))}
-      </div>
+          <div className="mt-3">
+            <Label htmlFor="md-name" className="text-xs">Nome da simulação</Label>
+            <Input
+              id="md-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="ex: H2O_CPMD"
+              className="mt-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Step 0: Molecule */}
-      {step === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('stepMolecule')}</CardTitle>
-            <CardDescription>{t('moleculeDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className={labelCls}>{t('simulationName')}</label>
-              <input
-                type="text"
-                value={config.name}
-                onChange={(e) => updateConfig('name', e.target.value)}
-                placeholder={t('simulationNamePlaceholder')}
-                className={inputCls}
-              />
-            </div>
-
-            {/* Upload XYZ */}
-            <div className="flex items-center gap-3">
-              <label className="cursor-pointer">
+      {/* 2. Dynamics radio */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Tipo de dinâmica</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {DYNAMICS.map((d) => (
+              <label
+                key={d.value}
+                className={`flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition-colors ${
+                  dynamicsType === d.value
+                    ? 'border-primary bg-primary/5 text-primary font-medium'
+                    : 'border-input hover:bg-accent'
+                }`}
+              >
                 <input
-                  type="file"
-                  accept=".xyz,.gjf,.com"
-                  onChange={handleFileUpload}
-                  className="hidden"
+                  type="radio"
+                  name="dynamics"
+                  value={d.value}
+                  checked={dynamicsType === d.value}
+                  onChange={(e) => setDynamicsType(e.target.value)}
+                  className="accent-primary"
                 />
-                <span className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent">
-                  <Upload className="size-4" />
-                  {t('uploadXYZ')}
-                </span>
+                <span className="text-sm">{d.label}</span>
               </label>
-              <span className="text-xs text-muted-foreground">
-                {t('uploadXYZHint')}
-              </span>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 3. Options grid (3 cols × 2 rows = Tkinter layout) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Opções</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="functional">Functional</Label>
+              <Input id="functional" value={functional} onChange={(e) => setFunctional(e.target.value)} className="mt-1" />
             </div>
-
-            {/* Atom table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left">
-                    <th className="px-2 py-2 font-medium">#</th>
-                    <th className="px-2 py-2 font-medium">{t('element')}</th>
-                    <th className="px-2 py-2 font-medium">X</th>
-                    <th className="px-2 py-2 font-medium">Y</th>
-                    <th className="px-2 py-2 font-medium">Z</th>
-                    <th className="px-2 py-2" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {atoms.map((atom, idx) => (
-                    <tr key={atom.id} className="border-b">
-                      <td className="px-2 py-1 text-muted-foreground">
-                        {idx + 1}
-                      </td>
-                      <td className="px-2 py-1">
-                        <input
-                          type="text"
-                          value={atom.element}
-                          onChange={(e) =>
-                            updateAtom(atom.id, 'element', e.target.value)
-                          }
-                          placeholder="C"
-                          className="w-16 rounded border border-input bg-background px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary/30"
-                        />
-                      </td>
-                      {(['x', 'y', 'z'] as const).map((coord) => (
-                        <td key={coord} className="px-2 py-1">
-                          <input
-                            type="text"
-                            value={atom[coord]}
-                            onChange={(e) =>
-                              updateAtom(atom.id, coord, e.target.value)
-                            }
-                            placeholder="0.000"
-                            className="w-24 rounded border border-input bg-background px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary/30"
-                          />
-                        </td>
-                      ))}
-                      <td className="px-2 py-1">
-                        {atoms.length > 1 && (
-                          <button
-                            onClick={() =>
-                              setAtoms((prev) =>
-                                prev.filter((a) => a.id !== atom.id),
-                              )
-                            }
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              <Label htmlFor="pseudo">Pseudo</Label>
+              <Input id="pseudo" value={pseudo} onChange={(e) => setPseudo(e.target.value)} className="mt-1" />
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAtoms((prev) => [...prev, newAtomRow()])}
-            >
-              <Plus className="mr-1 size-4" />
-              {t('addAtom')}
-            </Button>
-
-            <p className="text-xs text-muted-foreground">
-              {t('validAtoms', { count: validAtoms.length })}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 1: Simulation config */}
-      {step === 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('stepSimulation')}</CardTitle>
-            <CardDescription>{t('simulationDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <label className={labelCls}>{t('dynamicsType')}</label>
-                <select
-                  value={config.dynamicsType}
-                  onChange={(e) => updateConfig('dynamicsType', e.target.value)}
-                  className={selectCls}
-                >
-                  {DYNAMICS_TYPES.map((dt) => (
-                    <option key={dt} value={dt}>
-                      {dt}
-                    </option>
-                  ))}
-                </select>
+            <div>
+              <Label htmlFor="maxsteps">Max Step</Label>
+              <Input
+                id="maxsteps"
+                type="number"
+                value={maxSteps}
+                onChange={(e) => setMaxSteps(parseInt(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="temp">Temperatura</Label>
+                <div className="inline-flex rounded-md border bg-muted/30 text-xs overflow-hidden">
+                  <button
+                    type="button"
+                    className={`px-2 py-0.5 ${tempUnit === 'K' ? 'bg-primary text-primary-foreground' : ''}`}
+                    onClick={() => setTempUnit('K')}
+                  >
+                    K
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-2 py-0.5 ${tempUnit === 'C' ? 'bg-primary text-primary-foreground' : ''}`}
+                    onClick={() => setTempUnit('C')}
+                  >
+                    °C
+                  </button>
+                </div>
               </div>
-
-              <div>
-                <label className={labelCls}>{t('functional')}</label>
-                <select
-                  value={config.functional}
-                  onChange={(e) => updateConfig('functional', e.target.value)}
-                  className={selectCls}
-                >
-                  {FUNCTIONALS.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className={labelCls}>Pseudo</label>
-                <input
-                  type="text"
-                  value={config.pseudo}
-                  onChange={(e) => updateConfig('pseudo', e.target.value)}
-                  className={inputCls}
-                  placeholder="MT"
-                />
-              </div>
-
-              <div>
-                <label className={labelCls}>{t('charge')}</label>
-                <input
+              <Input
+                id="temp"
+                type="number"
+                step="0.1"
+                value={tempUnit === 'K' ? tempK : Number((tempK - 273.15).toFixed(2))}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (Number.isNaN(v)) return;
+                  setTempK(tempUnit === 'K' ? v : v + 273.15);
+                }}
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-0.5">Enviado: {tempK.toFixed(2)} K</p>
+            </div>
+            <div>
+              <Label>Carga &amp; LSD</Label>
+              <div className="mt-1 flex items-center gap-2">
+                <Input
                   type="number"
-                  value={config.charge}
-                  onChange={(e) => updateConfig('charge', parseInt(e.target.value) || 0)}
-                  className={inputCls}
+                  value={charge}
+                  onChange={(e) => setCharge(parseInt(e.target.value) || 0)}
+                  className="flex-1"
                 />
-              </div>
-
-              <div>
-                <label className={labelCls}>{t('lsd')}</label>
-                <select
-                  value={config.lsd}
-                  onChange={(e) => updateConfig('lsd', parseInt(e.target.value))}
-                  className={selectCls}
-                >
-                  <option value={0}>{t('lsdOff')}</option>
-                  <option value={1}>{t('lsdOn')}</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelCls}>
-                  {t('temperature')}
-                  <span className="ml-2 inline-flex rounded-md border bg-muted/30 text-xs">
-                    <button
-                      type="button"
-                      className={`px-2 py-0.5 rounded-l-md ${tempUnit === 'K' ? 'bg-primary text-primary-foreground' : ''}`}
-                      onClick={() => setTempUnit('K')}
-                    >
-                      K
-                    </button>
-                    <button
-                      type="button"
-                      className={`px-2 py-0.5 rounded-r-md ${tempUnit === 'C' ? 'bg-primary text-primary-foreground' : ''}`}
-                      onClick={() => setTempUnit('C')}
-                    >
-                      °C
-                    </button>
-                  </span>
+                <label className="flex items-center gap-1.5 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={lsd}
+                    onChange={(e) => setLsd(e.target.checked)}
+                    className="accent-primary"
+                  />
+                  LSD
                 </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={tempUnit === 'K' ? config.temperature : (config.temperature - 273.15).toFixed(2)}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    if (Number.isNaN(v)) return;
-                    const kelvin = tempUnit === 'K' ? v : v + 273.15;
-                    updateConfig('temperature', kelvin);
-                  }}
-                  className={inputCls}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  API usa Kelvin internamente. Valor enviado: {config.temperature.toFixed(2)} K
-                </p>
-              </div>
-
-              <div>
-                <label className={labelCls}>{t('maxSteps')}</label>
-                <input
-                  type="number"
-                  value={config.maxSteps}
-                  onChange={(e) =>
-                    updateConfig('maxSteps', parseInt(e.target.value) || 50000)
-                  }
-                  className={inputCls}
-                />
-              </div>
-
-              <div>
-                <label className={labelCls}>{t('timeStep')} (a.u.)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={config.timeStep}
-                  onChange={(e) =>
-                    updateConfig('timeStep', parseFloat(e.target.value) || 5.0)
-                  }
-                  className={inputCls}
-                />
-              </div>
-
-              <div>
-                <label className={labelCls}>{t('multiplicity')}</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={config.multiplicity}
-                  onChange={(e) =>
-                    updateConfig('multiplicity', parseInt(e.target.value) || 1)
-                  }
-                  className={inputCls}
-                />
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <Label htmlFor="timestep">Time Step</Label>
+              <Input
+                id="timestep"
+                type="number"
+                step="0.1"
+                value={timeStep}
+                onChange={(e) => setTimeStep(parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Step 2: Cell parameters */}
-      {step === 2 && (
+      {/* 4. Lattices */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Lattices</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'a', value: latticeA, set: setLatticeA },
+              { label: 'b', value: latticeB, set: setLatticeB },
+              { label: 'c', value: latticeC, set: setLatticeC },
+            ].map((f) => (
+              <div key={f.label}>
+                <Label>{f.label}</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={f.value}
+                  onChange={(e) => f.set(parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+            ))}
+            {[
+              { label: 'cos(a)', value: cosA, set: setCosA },
+              { label: 'cos(b)', value: cosB, set: setCosB },
+              { label: 'cos(c)', value: cosC, set: setCosC },
+            ].map((f) => (
+              <div key={f.label}>
+                <Label>{f.label}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={f.value}
+                  onChange={(e) => f.set(parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="flex justify-end">
+        <Button onClick={handleGenerate} disabled={loading || atoms.length === 0} size="lg">
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...
+            </>
+          ) : (
+            'Generate Input'
+          )}
+        </Button>
+      </div>
+
+      {result && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('stepCell')}</CardTitle>
-            <CardDescription>{t('cellDescription')}</CardDescription>
+            <CardTitle className="text-base">Arquivos gerados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(['latticeA', 'latticeB', 'latticeC'] as const).map((key) => (
-                <div key={key}>
-                  <label className={labelCls}>
-                    {t(key)} (a.u.)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={config[key]}
-                    onChange={(e) =>
-                      updateConfig(key, parseFloat(e.target.value) || 20.0)
-                    }
-                    className={inputCls}
-                  />
-                </div>
+            <div className="space-y-2">
+              {Object.entries(result.files).map(([key, file]) => (
+                <button
+                  key={key}
+                  className="w-full text-left flex items-center justify-between rounded-md border px-3 py-2 hover:bg-accent text-sm"
+                  onClick={() => downloadFile(file.filename, file.content)}
+                >
+                  <span className="font-mono">{file.filename}</span>
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                </button>
               ))}
-
-              {(['cosA', 'cosB', 'cosC'] as const).map((key) => (
-                <div key={key}>
-                  <label className={labelCls}>{t(key)}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={config[key]}
-                    onChange={(e) =>
-                      updateConfig(key, parseFloat(e.target.value) || 0)
-                    }
-                    className={inputCls}
-                  />
-                </div>
-              ))}
-
-              <div>
-                <label className={labelCls}>{t('cutoff')} (Ry)</label>
-                <input
-                  type="number"
-                  step="1"
-                  value={config.cutoff}
-                  onChange={(e) =>
-                    updateConfig('cutoff', parseFloat(e.target.value) || 70)
-                  }
-                  className={inputCls}
-                />
-              </div>
-
-              <div>
-                <label className={labelCls}>{t('emass')} (a.u.)</label>
-                <input
-                  type="number"
-                  step="10"
-                  value={config.emass}
-                  onChange={(e) =>
-                    updateConfig('emass', parseFloat(e.target.value) || 400)
-                  }
-                  className={inputCls}
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
       )}
-
-      {/* Step 3: Options */}
-      {step === 3 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('stepOptions')}</CardTitle>
-            <CardDescription>{t('optionsDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={config.generateWavefunction}
-                onChange={(e) =>
-                  updateConfig('generateWavefunction', e.target.checked)
-                }
-                className="size-4 rounded border-input"
-              />
-              <div>
-                <span className="text-sm font-medium">
-                  {t('generateWavefunction')}
-                </span>
-                <p className="text-xs text-muted-foreground">
-                  {t('generateWavefunctionHint')}
-                </p>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={config.generateGaussview}
-                onChange={(e) =>
-                  updateConfig('generateGaussview', e.target.checked)
-                }
-                className="size-4 rounded border-input"
-              />
-              <div>
-                <span className="text-sm font-medium">
-                  {t('generateGaussview')}
-                </span>
-                <p className="text-xs text-muted-foreground">
-                  {t('generateGaussviewHint')}
-                </p>
-              </div>
-            </label>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step 4: Review */}
-      {step === 4 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('stepReview')}</CardTitle>
-            <CardDescription>{t('reviewDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 rounded-md border p-4">
-                <h3 className="font-medium">{t('stepMolecule')}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('validAtoms', { count: validAtoms.length })}
-                </p>
-                {config.name && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">{t('simulationName')}:</span>{' '}
-                    {config.name}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2 rounded-md border p-4">
-                <h3 className="font-medium">{t('stepSimulation')}</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">{config.dynamicsType}</Badge>
-                  <Badge variant="secondary">{config.functional}</Badge>
-                  <Badge variant="outline">{config.temperature} K</Badge>
-                  <Badge variant="outline">
-                    {config.maxSteps} {t('steps')}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="space-y-2 rounded-md border p-4">
-                <h3 className="font-medium">{t('stepCell')}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {config.latticeA} x {config.latticeB} x {config.latticeC} a.u.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('cutoff')}: {config.cutoff} Ry | {t('emass')}: {config.emass} a.u.
-                </p>
-              </div>
-
-              <div className="space-y-2 rounded-md border p-4">
-                <h3 className="font-medium">{t('stepOptions')}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('generateWavefunction')}:{' '}
-                  {config.generateWavefunction ? tCommon('success') : '---'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('generateGaussview')}:{' '}
-                  {config.generateGaussview ? tCommon('success') : '---'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Error */}
-      {errorMsg && (
-        <p className="text-sm text-destructive">{errorMsg}</p>
-      )}
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          disabled={step === 0}
-          onClick={() => setStep((s) => s - 1)}
-        >
-          <ChevronLeft className="mr-1 size-4" />
-          {tCommon('back')}
-        </Button>
-
-        {step < TOTAL_STEPS - 1 ? (
-          <Button
-            disabled={!canProceed()}
-            onClick={() => setStep((s) => s + 1)}
-          >
-            {tCommon('next')}
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
-        ) : (
-          <Button
-            disabled={submitStatus === 'loading' || !canProceed()}
-            onClick={handleSubmit}
-          >
-            {submitStatus === 'loading' ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                {tCommon('loading')}
-              </>
-            ) : (
-              t('generate')
-            )}
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
+
+export default MDWizard;

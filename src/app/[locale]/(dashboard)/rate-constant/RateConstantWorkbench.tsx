@@ -384,17 +384,6 @@ export function RateConstantWorkbench() {
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
-        <div className="border-b border-border bg-muted/40 px-5 py-3">
-          <div className="flex flex-wrap gap-2 text-sm">
-            <div className="rounded-full border border-primary/20 bg-background px-3 py-1 font-medium text-foreground">
-              Conventional TST
-            </div>
-            <div className="rounded-full border border-border bg-background px-3 py-1 text-muted-foreground">
-              Marcus Theory
-            </div>
-          </div>
-        </div>
-
         <div className="px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8 border-b border-border pb-8 text-center">
             <h2 className="text-4xl font-bold tracking-tight text-primary">

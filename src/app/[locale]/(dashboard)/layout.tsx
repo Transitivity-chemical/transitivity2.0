@@ -14,36 +14,39 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   const { locale } = await params;
-  const sessionUser = session?.user as
-    | {
-        id?: string;
-        role?: string;
-        plan?: string | null;
-        mustChangePassword?: boolean;
-        pendingApproval?: boolean;
-      }
-    | undefined;
-  const role = sessionUser?.role;
-
   if (!session?.user?.id) {
     redirect(`/${locale}/login`);
   }
 
-  if (sessionUser?.pendingApproval) {
+  // Read role/plan/credits FRESH from DB on every dashboard load.
+  // This way an admin promotion or plan change takes effect immediately
+  // without requiring sign-out + sign-in to refresh the JWT.
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      role: true,
+      plan: true,
+      credits: true,
+      pendingApproval: true,
+      mustChangePassword: true,
+    },
+  });
+
+  if (!user) {
+    redirect(`/${locale}/login`);
+  }
+
+  if (user.pendingApproval) {
     redirect(`/${locale}/pending-approval`);
   }
 
-  if (sessionUser?.mustChangePassword) {
+  if (user.mustChangePassword) {
     redirect(`/${locale}/change-password`);
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { credits: true, plan: true },
-  });
-
-  const credits = user?.credits ? Number(user.credits) : 0;
-  const plan = user?.plan ?? null;
+  const role = user.role;
+  const credits = Number(user.credits ?? 0);
+  const plan = user.plan ?? null;
 
   return (
     <SessionProvider>

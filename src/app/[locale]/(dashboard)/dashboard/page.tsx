@@ -42,36 +42,64 @@ export default async function DashboardPage({
   ]);
   const activeJobs = activeFitting + activeMD;
 
-  // Recent activity: last 5 items across tables
+  // All calculations: latest 50 across all tables (FIX-2 of post-megaplan audit)
   const [recentReactions, recentFitting, recentMD] = await Promise.all([
     prisma.reaction.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, name: true, createdAt: true },
+      take: 50,
+      select: { id: true, name: true, status: true, createdAt: true },
     }),
     prisma.fittingJob.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, createdAt: true, status: true },
+      take: 50,
+      select: { id: true, name: true, modelType: true, createdAt: true, status: true },
     }),
     prisma.mDSimulation.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, name: true, createdAt: true },
+      take: 50,
+      select: { id: true, name: true, mdMethod: true, status: true, createdAt: true },
     }),
   ]);
 
-  type ActivityItem = { id: string; label: string; type: string; createdAt: Date };
+  type ActivityItem = {
+    id: string;
+    label: string;
+    type: string;
+    status: string;
+    createdAt: Date;
+    href: string;
+  };
   const allActivity: ActivityItem[] = [
-    ...recentReactions.map((r) => ({ id: r.id, label: r.name, type: 'Reaction', createdAt: r.createdAt })),
-    ...recentFitting.map((f) => ({ id: f.id, label: `Fitting (${f.status})`, type: 'Fitting', createdAt: f.createdAt })),
-    ...recentMD.map((m) => ({ id: m.id, label: m.name ?? 'MD Simulation', type: 'MD', createdAt: m.createdAt })),
+    ...recentReactions.map((r) => ({
+      id: r.id,
+      label: r.name,
+      type: 'Constante',
+      status: r.status,
+      createdAt: r.createdAt,
+      href: `/${locale}/rate-constant/${r.id}`,
+    })),
+    ...recentFitting.map((f) => ({
+      id: f.id,
+      label: f.name || `${f.modelType} fit`,
+      type: 'Ajuste',
+      status: f.status,
+      createdAt: f.createdAt,
+      href: `/${locale}/fitting?jobId=${f.id}`,
+    })),
+    ...recentMD.map((m) => ({
+      id: m.id,
+      label: m.name ?? `${m.mdMethod} MD`,
+      type: 'Dinâmica',
+      status: m.status,
+      createdAt: m.createdAt,
+      href: `/${locale}/md/${m.id}`,
+    })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 5);
+    .slice(0, 50);
 
   // Build last-7-days chart data
   const now = new Date();
@@ -150,39 +178,64 @@ export default async function DashboardPage({
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent activity feed */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t('recentActivity')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {allActivity.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('noActivity')}</p>
-            ) : (
-              <ul className="space-y-3">
-                {allActivity.map((item) => (
-                  <li key={`${item.type}-${item.id}`} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                        {item.type}
-                      </span>
-                      <span className="truncate max-w-[200px]">{item.label}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {item.createdAt.toLocaleDateString(locale)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Phase 14B of megaplan: Recent Activity (7d) and Quick Actions
-            cards removed. Activity now lives in /settings?tab=activity.
-            Multiple Inputs entry available in the sidebar. */}
-      </div>
+      {/* All calculations — full-width main panel (FIX-2) */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">Suas calculações</CardTitle>
+          <span className="text-xs text-muted-foreground">{allActivity.length} itens</span>
+        </CardHeader>
+        <CardContent>
+          {allActivity.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              Nenhuma calculação ainda. Use a barra lateral para começar.
+            </p>
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/40 text-left">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">Tipo</th>
+                    <th className="px-3 py-2 font-medium">Nome</th>
+                    <th className="px-3 py-2 font-medium">Status</th>
+                    <th className="px-3 py-2 font-medium">Data</th>
+                    <th className="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allActivity.map((item) => (
+                    <tr key={`${item.type}-${item.id}`} className="border-t hover:bg-muted/20">
+                      <td className="px-3 py-2">
+                        <span className="inline-block rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                          {item.type}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 font-medium">{item.label}</td>
+                      <td className="px-3 py-2">
+                        <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                          item.status === 'COMPLETED' ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
+                          : item.status === 'FAILED' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                          : item.status === 'RUNNING' || item.status === 'PENDING' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                          : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        {item.createdAt.toLocaleString(locale)}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Link href={item.href} className="text-xs text-primary hover:underline">
+                          Abrir →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

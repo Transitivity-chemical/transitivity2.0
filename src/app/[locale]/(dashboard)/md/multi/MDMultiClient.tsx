@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Download } from 'lucide-react';
+import { Loader2, Download, Upload, FileText, X, Layers } from 'lucide-react';
 
 /**
  * Phase 14B of megaplan: Multiple Inputs MD wizard.
@@ -155,78 +155,81 @@ export function MDMultiClient() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Múltiplos Inputs</h1>
-        <p className="text-sm text-muted-foreground">
-          Gere um conjunto de inputs CPMD interpolando entre duas estruturas moleculares.
-          Reference: Tkinter v1 Multiple Inputs tab.
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-primary/10 p-2 text-primary">
+          <Layers className="size-6" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-semibold">Múltiplos Inputs</h1>
+          <p className="text-sm text-muted-foreground">
+            Gere um conjunto de inputs CPMD interpolando entre duas estruturas moleculares.
+          </p>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Arquivos de molécula</CardTitle>
+          <CardTitle className="text-base">1. Arquivos de moléculas</CardTitle>
           <CardDescription>Aceita .gjf (Gaussian) ou .xyz</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Molécula 1</label>
-              <Input
-                type="file"
-                accept=".gjf,.xyz"
-                onChange={(e) => e.target.files?.[0] && handleFile(1, e.target.files[0])}
-              />
-              {mol1Name && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {mol1Name} — {mol1.length} átomos
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Molécula 2</label>
-              <Input
-                type="file"
-                accept=".gjf,.xyz"
-                onChange={(e) => e.target.files?.[0] && handleFile(2, e.target.files[0])}
-              />
-              {mol2Name && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {mol2Name} — {mol2.length} átomos
-                </p>
-              )}
-            </div>
+            <FileDropZone
+              label="Molécula 1"
+              filename={mol1Name}
+              count={mol1.length}
+              onFile={(f) => handleFile(1, f)}
+              onClear={() => { setMol1([]); setMol1Name(''); }}
+            />
+            <FileDropZone
+              label="Molécula 2"
+              filename={mol2Name}
+              count={mol2.length}
+              onFile={(f) => handleFile(2, f)}
+              onClear={() => { setMol2([]); setMol2Name(''); }}
+            />
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Parâmetros</CardTitle>
+          <CardTitle className="text-base">2. Faixas de parâmetros</CardTitle>
+          <CardDescription>Mínimo, máximo e número de passos para cada variável.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 gap-3 text-xs font-medium text-muted-foreground mb-2">
-            <span></span>
-            <span>Bond Length</span>
-            <span>Bond Angle</span>
-            <span>Dihedral / Temp</span>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="py-2 pr-2 font-medium text-muted-foreground"></th>
+                  <th className="py-2 px-2 font-medium">Bond Length</th>
+                  <th className="py-2 px-2 font-medium">Bond Angle</th>
+                  <th className="py-2 px-2 font-medium">Dihedral</th>
+                  <th className="py-2 px-2 font-medium">Temperature (K)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ParamTableRow label="Mínimo" values={[bondMin, angleMin, dihedralMin, tempMin]} setters={[setBondMin, setAngleMin, setDihedralMin, setTempMin]} />
+                <ParamTableRow label="Máximo" values={[bondMax, angleMax, dihedralMax, tempMax]} setters={[setBondMax, setAngleMax, setDihedralMax, setTempMax]} />
+                <ParamTableRow label="Passos" values={[bondSteps, angleSteps, dihedralSteps, tempSteps]} setters={[setBondSteps, setAngleSteps, setDihedralSteps, setTempSteps]} integer />
+              </tbody>
+            </table>
           </div>
-          <ParamRow label="Mínimo" values={[bondMin, angleMin, dihedralMin, tempMin]} setters={[setBondMin, setAngleMin, setDihedralMin, setTempMin]} />
-          <ParamRow label="Máximo" values={[bondMax, angleMax, dihedralMax, tempMax]} setters={[setBondMax, setAngleMax, setDihedralMax, setTempMax]} />
-          <ParamRow label="Passos" values={[bondSteps, angleSteps, dihedralSteps, tempSteps]} setters={[setBondSteps, setAngleSteps, setDihedralSteps, setTempSteps]} integer />
 
-          <div className="flex items-center gap-4 mt-4">
-            <div className="flex items-center gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
-                id="chiral"
                 type="checkbox"
                 checked={addChiral}
                 onChange={(e) => setAddChiral(e.target.checked)}
+                className="accent-primary"
               />
-              <label htmlFor="chiral" className="text-sm">Add Chiral</label>
-            </div>
+              <span>Adicionar inversão chiral</span>
+            </label>
+
             <div className="flex items-center gap-2">
-              <label className="text-sm">Dinâmica</label>
+              <label className="text-sm font-medium">Dinâmica:</label>
               <select
                 className="rounded-md border bg-background px-3 py-1.5 text-sm"
                 value={dynamicsType}
@@ -239,50 +242,71 @@ export function MDMultiClient() {
                 <option value="MTD">MTD</option>
               </select>
             </div>
-            <div className="flex-1 text-right">
-              <span className="text-sm">
-                Total de inputs: <strong>{totalInputs}</strong>
-                {addChiral && <span className="text-muted-foreground"> (×2 com chiral)</span>}
-              </span>
+
+            <div className="flex-1 min-w-fit text-right">
+              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm">
+                <span className="text-muted-foreground">Total de inputs:</span>
+                <strong className="text-primary">
+                  {totalInputs}
+                  {addChiral ? ` × 2 = ${totalInputs * 2}` : ''}
+                </strong>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+          {error}
+        </div>
+      )}
+
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={loading || mol1.length === 0 || mol2.length === 0}>
-          {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...</> : 'Gerar Múltiplos Inputs'}
+        <Button
+          onClick={handleSubmit}
+          disabled={loading || mol1.length === 0 || mol2.length === 0}
+          size="lg"
+        >
+          {loading ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...</>
+          ) : (
+            'Gerar Múltiplos Inputs'
+          )}
         </Button>
       </div>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
 
       {result && (
         <Card>
           <CardHeader>
-            <CardTitle>Resultado: {result.files.length} arquivos gerados</CardTitle>
-            <CardDescription>{result.totalConfigs} configurações calculadas</CardDescription>
+            <CardTitle className="text-base">3. Resultado</CardTitle>
+            <CardDescription>
+              {result.files.length} arquivos gerados em {result.totalConfigs} configurações
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             {result.xyzTrajectory && (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => downloadFile('xyz_file.xyz', result.xyzTrajectory!)}
+                className="w-full sm:w-auto"
               >
                 <Download className="mr-2 h-4 w-4" />
-                xyz_file.xyz (trajetória completa)
+                Trajetória completa (xyz_file.xyz)
               </Button>
             )}
-            <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto rounded-md border p-2">
               {result.files.map((f) => (
                 <button
                   key={f.filename}
-                  className="text-left text-xs rounded-md border px-3 py-2 hover:bg-accent"
+                  className="flex items-center justify-between gap-2 text-left text-xs rounded-md border bg-background px-3 py-2 hover:bg-accent transition-colors"
                   onClick={() => downloadFile(f.filename, f.content)}
                 >
-                  <span className="font-mono">{f.filename}</span>
-                  <span className="ml-2 text-muted-foreground">[{f.type}]</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="size-3.5 text-muted-foreground flex-shrink-0" />
+                    <span className="font-mono truncate">{f.filename}</span>
+                  </div>
+                  <Download className="size-3.5 text-muted-foreground flex-shrink-0" />
                 </button>
               ))}
             </div>
@@ -293,7 +317,74 @@ export function MDMultiClient() {
   );
 }
 
-function ParamRow({
+function FileDropZone({
+  label,
+  filename,
+  count,
+  onFile,
+  onClear,
+}: {
+  label: string;
+  filename: string;
+  count: number;
+  onFile: (file: File) => void;
+  onClear: () => void;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+
+  return (
+    <div>
+      <div className="text-sm font-medium mb-1.5">{label}</div>
+      {filename ? (
+        <div className="rounded-md border bg-muted/30 px-3 py-3 flex items-center gap-3">
+          <div className="rounded-md bg-primary/10 p-2 text-primary flex-shrink-0">
+            <FileText className="size-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{filename}</p>
+            <p className="text-xs text-muted-foreground">{count} átomos</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClear}
+            className="rounded-md p-1 hover:bg-background text-muted-foreground hover:text-foreground"
+            aria-label="Remover arquivo"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      ) : (
+        <label
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            const f = e.dataTransfer.files[0];
+            if (f) onFile(f);
+          }}
+          className={`flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-8 cursor-pointer transition-colors ${
+            isDragging
+              ? 'border-primary bg-primary/5'
+              : 'border-input hover:border-primary hover:bg-accent/30'
+          }`}
+        >
+          <input
+            type="file"
+            accept=".gjf,.xyz,.com"
+            onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+            className="hidden"
+          />
+          <Upload className="size-6 text-muted-foreground" />
+          <p className="text-sm font-medium">Selecione ou arraste um arquivo</p>
+          <p className="text-xs text-muted-foreground">.gjf, .xyz</p>
+        </label>
+      )}
+    </div>
+  );
+}
+
+function ParamTableRow({
   label,
   values,
   setters,
@@ -305,20 +396,21 @@ function ParamRow({
   integer?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-3 mb-2 items-center">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+    <tr className="border-b last:border-0">
+      <td className="py-2 pr-2 text-sm font-medium text-muted-foreground">{label}</td>
       {values.map((v, i) => (
-        <Input
-          key={i}
-          type="number"
-          step={integer ? 1 : 0.1}
-          value={v}
-          onChange={(e) => {
-            const n = integer ? parseInt(e.target.value) : parseFloat(e.target.value);
-            if (!Number.isNaN(n)) setters[i](n);
-          }}
-        />
+        <td key={i} className="py-2 px-1">
+          <Input
+            type="number"
+            step={integer ? 1 : 0.1}
+            value={v}
+            onChange={(e) => {
+              const n = integer ? parseInt(e.target.value) : parseFloat(e.target.value);
+              if (!Number.isNaN(n)) setters[i](n);
+            }}
+          />
+        </td>
       ))}
-    </div>
+    </tr>
   );
 }

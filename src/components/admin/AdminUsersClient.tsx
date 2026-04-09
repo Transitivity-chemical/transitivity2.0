@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -313,9 +314,12 @@ function AddUserModal({ onClose, onCreate }: { onClose: () => void; onCreate: (f
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('users.addUser')}</DialogTitle>
+          <DialogDescription>
+            O sistema vai gerar uma senha temporária e enviar por email.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -374,9 +378,10 @@ function TempPasswordModal({
   };
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('tempPasswordModal.title')}</DialogTitle>
+          <DialogDescription>{t('tempPasswordModal.warning')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -430,9 +435,10 @@ function EditUserModal({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('users.editTitle', { name: user.fullName })}</DialogTitle>
+          <DialogDescription>Edite papel, plano e créditos.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {

@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Trash2, Plus } from 'lucide-react';
@@ -88,11 +89,11 @@ export function DomainEditorModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('domains.title')}</DialogTitle>
+          <DialogDescription>{t('domains.description')}</DialogDescription>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground mb-4">{t('domains.description')}</p>
 
         <div className="rounded-lg border overflow-hidden mb-4">
           <table className="w-full text-sm">
