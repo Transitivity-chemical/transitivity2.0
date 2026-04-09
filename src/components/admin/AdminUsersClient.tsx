@@ -166,6 +166,25 @@ export function AdminUsersClient({ locale }: Props) {
     load();
   };
 
+  const handleApproveUser = async (id: string, email: string) => {
+    const res = await fetch(`/api/v1/admin/users/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pendingApproval: false,
+        plan: 'STUDENT',
+        // Backend auto-refills credits when plan changes and credits is undefined
+      }),
+    });
+    if (res.ok) {
+      toast.success(`${email} aprovado como Estudante`);
+      load();
+    } else {
+      const data = await res.json();
+      toast.error(data.error || 'Erro ao aprovar');
+    }
+  };
+
   const handleResetTempPassword = async (id: string, email: string) => {
     const ok = await confirm({
       title: 'Redefinir senha temporária?',
@@ -374,7 +393,18 @@ export function AdminUsersClient({ locale }: Props) {
                   {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString(locale) : '—'}
                 </td>
                 <td className="px-3 py-2">
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 items-center">
+                    {u.pendingApproval && (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => handleApproveUser(u.id, u.email)}
+                      >
+                        <Check className="h-3.5 w-3.5 mr-1" />
+                        Aprovar
+                      </Button>
+                    )}
                     <Button size="sm" variant="ghost" title={t('users.editAction')} onClick={() => setEditingUser(u)}>
                       Edit
                     </Button>
@@ -548,12 +578,30 @@ function EditUserModal({
   const [plan, setPlan] = useState<string>(user.plan ?? '');
   const [credits, setCredits] = useState(String(user.credits));
 
+  // Default credit caps per plan — mirrors backend PlanConfig seeds.
+  // When the admin picks a plan, we auto-fill the credits to this value
+  // (admin can still override before submitting).
+  const PLAN_CREDITS: Record<string, number> = {
+    STUDENT: 100,
+    PROFESSIONAL: 1000,
+    ENTERPRISE: 999999,
+  };
+
+  const handlePlanChange = (newPlan: string) => {
+    setPlan(newPlan);
+    if (newPlan && PLAN_CREDITS[newPlan] !== undefined) {
+      setCredits(String(PLAN_CREDITS[newPlan]));
+    } else if (!newPlan) {
+      setCredits('0');
+    }
+  };
+
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('users.editTitle', { name: user.fullName })}</DialogTitle>
-          <DialogDescription>Edite papel, plano e créditos.</DialogDescription>
+          <DialogDescription>Edite papel, plano e créditos. Mudar o plano preenche os créditos automaticamente.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -580,16 +628,17 @@ function EditUserModal({
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">{t('users.col.plan')}</label>
-            <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={plan} onChange={(e) => setPlan(e.target.value)}>
+            <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={plan} onChange={(e) => handlePlanChange(e.target.value)}>
               <option value="">— (no plan)</option>
-              <option value="STUDENT">Student</option>
-              <option value="PROFESSIONAL">Professional</option>
-              <option value="ENTERPRISE">Enterprise</option>
+              <option value="STUDENT">Student (100 créditos)</option>
+              <option value="PROFESSIONAL">Professional (1000 créditos)</option>
+              <option value="ENTERPRISE">Enterprise (ilimitado)</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">{t('users.col.credits')}</label>
             <Input type="number" value={credits} onChange={(e) => setCredits(e.target.value)} min={0} />
+            <p className="text-[10px] text-muted-foreground mt-1">Auto-preenchido pelo plano. Você pode ajustar manualmente.</p>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
