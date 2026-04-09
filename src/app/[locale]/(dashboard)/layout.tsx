@@ -14,23 +14,41 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   const { locale } = await params;
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const sessionUser = session?.user as
+    | {
+        id?: string;
+        role?: string;
+        plan?: string | null;
+        mustChangePassword?: boolean;
+        pendingApproval?: boolean;
+      }
+    | undefined;
+  const role = sessionUser?.role;
 
   if (!session?.user?.id) {
     redirect(`/${locale}/login`);
   }
 
+  if (sessionUser?.pendingApproval) {
+    redirect(`/${locale}/pending-approval`);
+  }
+
+  if (sessionUser?.mustChangePassword) {
+    redirect(`/${locale}/change-password`);
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { credits: true },
+    select: { credits: true, plan: true },
   });
 
   const credits = user?.credits ? Number(user.credits) : 0;
+  const plan = user?.plan ?? null;
 
   return (
     <SessionProvider>
       <TooltipProvider>
-        <DashboardShell credits={credits} role={role}>
+        <DashboardShell credits={credits} role={role} plan={plan}>
           {children}
         </DashboardShell>
       </TooltipProvider>

@@ -43,16 +43,20 @@ interface SidebarProps {
   credits?: number;
   tier?: Tier;
   role?: string | null;
+  plan?: string | null;
 }
 
-export function Sidebar({ credits = 0, tier = 'FREE', role }: SidebarProps) {
+export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps) {
+  // plan is the new field from User.plan; tier is legacy and will be removed in Phase 9
+  // For now, derive tier-equivalent display from plan if present
+  const displayTier = plan === 'PROFESSIONAL' ? 'PRO' : plan === 'ENTERPRISE' ? 'ENTERPRISE' : tier;
   const pathname = usePathname();
   const t = useTranslations('nav');
   const tc = useTranslations('common');
   const locale = useLocale();
   const [collapsed, setCollapsed] = useState(false);
 
-  const maxCredits = tierMaxCredits[tier];
+  const maxCredits = tierMaxCredits[displayTier];
   const progressPercent = maxCredits ? Math.min((credits / maxCredits) * 100, 100) : 0;
   const visibleNavItems = navItems.filter((item) => item.href !== '/server-status' || isAdminRole(role));
 
@@ -126,7 +130,7 @@ export function Sidebar({ credits = 0, tier = 'FREE', role }: SidebarProps) {
             </TooltipTrigger>
             <TooltipContent side="right">
               <div className="text-xs">
-                <span className="font-semibold">{tier}</span>
+                <span className="font-semibold">{displayTier}</span>
                 {maxCredits ? (
                   <span className="ml-1">{credits}/{maxCredits}</span>
                 ) : (
@@ -141,7 +145,7 @@ export function Sidebar({ credits = 0, tier = 'FREE', role }: SidebarProps) {
               className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
               style={{ backgroundColor: '#1e3a5f', color: '#fff' }}
             >
-              {tier}
+              {displayTier}
             </span>
 
             {maxCredits ? (

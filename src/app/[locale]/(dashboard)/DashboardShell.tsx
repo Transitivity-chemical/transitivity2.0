@@ -8,13 +8,14 @@ interface DashboardShellProps {
   children: React.ReactNode;
   credits: number;
   role?: string | null;
+  plan?: string | null;
 }
 
-export function DashboardShell({ children, credits, role }: DashboardShellProps) {
+export function DashboardShell({ children, credits, role, plan }: DashboardShellProps) {
   return (
     <>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar credits={credits} role={role} />
+        <Sidebar credits={credits} role={role} plan={plan} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <Header role={role} />
           <main className="flex-1 overflow-y-auto">{children}</main>
