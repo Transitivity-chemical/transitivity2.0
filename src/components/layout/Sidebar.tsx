@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TransitivityLogo, GammaIcon } from '@/components/brand/TransitivityLogo';
 import { isAdminRole } from '@/lib/access';
+import { PlansModal } from '@/components/plans/PlansModal';
 
 export const navItems = [
   { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
@@ -55,6 +56,7 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
   const tc = useTranslations('common');
   const locale = useLocale();
   const [collapsed, setCollapsed] = useState(false);
+  const [showPlansModal, setShowPlansModal] = useState(false);
 
   const maxCredits = tierMaxCredits[displayTier];
   const progressPercent = maxCredits ? Math.min((credits / maxCredits) * 100, 100) : 0;
@@ -121,56 +123,70 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
       </nav>
 
       <div className="border-t p-3">
-        {collapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex justify-center">
-                <Coins size={18} className="text-muted-foreground" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <div className="text-xs">
-                <span className="font-semibold">{displayTier}</span>
-                {maxCredits ? (
-                  <span className="ml-1">{credits}/{maxCredits}</span>
-                ) : (
-                  <span className="ml-1">{tc('credits')}</span>
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <div className="space-y-2">
-            <span
-              className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-              style={{ backgroundColor: '#1e3a5f', color: '#fff' }}
-            >
-              {displayTier}
-            </span>
-
-            {maxCredits ? (
-              <div className="space-y-1">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: `${progressPercent}%`,
-                      backgroundColor: '#1e3a5f',
-                    }}
-                  />
+        <button
+          type="button"
+          onClick={() => setShowPlansModal(true)}
+          className="w-full text-left rounded-md p-1 hover:bg-sidebar-accent transition-colors"
+          aria-label="Open plans"
+        >
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex justify-center">
+                  <Coins size={18} className="text-muted-foreground" />
                 </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <div className="text-xs">
+                  <span className="font-semibold">{displayTier}</span>
+                  {maxCredits ? (
+                    <span className="ml-1">{credits}/{maxCredits}</span>
+                  ) : (
+                    <span className="ml-1">{tc('credits')}</span>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="space-y-2">
+              <span
+                className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                style={{ backgroundColor: '#1e3a5f', color: '#fff' }}
+              >
+                {displayTier}
+              </span>
+
+              {maxCredits ? (
+                <div className="space-y-1">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${progressPercent}%`,
+                        backgroundColor: '#1e3a5f',
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {credits} / {maxCredits} {tc('credits')}
+                  </p>
+                </div>
+              ) : (
                 <p className="text-xs text-muted-foreground">
-                  {credits} / {maxCredits} {tc('credits')}
+                  {tc('credits')}: unlimited
                 </p>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {tc('credits')}: unlimited
-              </p>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </button>
       </div>
+      <PlansModal
+        open={showPlansModal}
+        onClose={() => setShowPlansModal(false)}
+        locale={locale}
+        currentPlan={(plan as 'STUDENT' | 'PROFESSIONAL' | 'ENTERPRISE' | null) ?? null}
+        credits={credits}
+      />
     </aside>
   );
 }

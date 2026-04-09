@@ -142,6 +142,31 @@
     "hint": "If you think this is a mistake or it's urgent, please contact your professor or platform administrator.",
     "signOut": "Sign out"
   },
+  "plans": {
+    "title": "Available plans",
+    "subtitle": "Choose the plan that fits your research workflow",
+    "youreOn": "You're on the",
+    "credits": "credits",
+    "creditsPerMonth": "credits / month",
+    "current": "Current plan",
+    "requestUpgrade": "Request upgrade",
+    "requesting": "Requesting...",
+    "requestSent": "Request sent. An administrator will be in touch.",
+    "feat": {
+      "gsaFitting": "GSA kinetic model fitting",
+      "tstRate": "TST rate constants with tunneling corrections",
+      "assistant": "AI assistant",
+      "wiki": "Wiki and documentation",
+      "allStudent": "Everything in Student",
+      "cpmd": "CPMD/BOMD/PIMD input generation",
+      "fittingHistory": "Saved fitting history",
+      "priority": "Priority support",
+      "allPro": "Everything in Professional",
+      "unlimited": "Unlimited credits",
+      "multiInputs": "Batch multiple inputs",
+      "dedicatedSupport": "Dedicated support and training"
+    }
+  },
   "admin": {
     "users": {
       "title": "Manage users",

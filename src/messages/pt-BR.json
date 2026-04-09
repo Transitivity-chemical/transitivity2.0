@@ -142,6 +142,31 @@
     "hint": "Se você acredita que isso é um erro ou tem urgência, entre em contato com o seu professor ou administrador da plataforma.",
     "signOut": "Sair da conta"
   },
+  "plans": {
+    "title": "Planos disponíveis",
+    "subtitle": "Escolha o plano ideal para seu trabalho de pesquisa",
+    "youreOn": "Você está no plano",
+    "credits": "créditos",
+    "creditsPerMonth": "créditos / mês",
+    "current": "Plano atual",
+    "requestUpgrade": "Solicitar upgrade",
+    "requesting": "Solicitando...",
+    "requestSent": "Solicitação enviada. Um administrador entrará em contato.",
+    "feat": {
+      "gsaFitting": "Ajuste GSA de modelos cinéticos",
+      "tstRate": "Constantes TST com correções de tunelamento",
+      "assistant": "Assistente de IA",
+      "wiki": "Wiki e documentação",
+      "allStudent": "Tudo do plano Estudante",
+      "cpmd": "Geração de input CPMD/BOMD/PIMD",
+      "fittingHistory": "Histórico de ajustes salvos",
+      "priority": "Suporte prioritário",
+      "allPro": "Tudo do plano Profissional",
+      "unlimited": "Créditos ilimitados",
+      "multiInputs": "Múltiplos inputs em batch",
+      "dedicatedSupport": "Suporte dedicado e treinamento"
+    }
+  },
   "admin": {
     "users": {
       "title": "Gerenciar usuários",
