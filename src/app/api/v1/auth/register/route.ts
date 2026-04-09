@@ -83,24 +83,38 @@ export const POST = asyncWrapper(async (request: Request) => {
     },
   });
 
-  // Notify all admins if pending approval
-  if (pendingApproval) {
-    const admins = await prisma.user.findMany({
-      where: { role: 'ADMIN', isActive: true },
-      select: { id: true },
+  // Notify admins on every registration
+  const admins = await prisma.user.findMany({
+    where: { role: 'ADMIN', isActive: true },
+    select: { id: true },
+  });
+  if (admins.length > 0) {
+    await prisma.notification.createMany({
+      data: admins.map((a) => ({
+        userId: a.id,
+        type: 'USER_REGISTERED' as const,
+        title: pendingApproval ? 'Novo registro aguardando aprovação' : 'Novo usuário registrado',
+        message: pendingApproval
+          ? `${data.fullName} (${data.email}) se registrou com um domínio não autorizado.`
+          : `${data.fullName} (${data.email}) entrou no plano ${plan ?? '—'}.`,
+        link: '/admin/users',
+        metadata: { newUserId: user.id, email: data.email, pendingApproval },
+      })),
     });
-    if (admins.length > 0) {
-      await prisma.notification.createMany({
-        data: admins.map((a) => ({
-          userId: a.id,
-          type: 'SYSTEM' as const,
-          title: 'Novo registro aguardando aprovação',
-          message: `${data.fullName} (${data.email}) se registrou com um domínio não autorizado e aguarda sua aprovação.`,
-          metadata: { newUserId: user.id, email: data.email },
-        })),
-      });
-    }
   }
+
+  // Welcome notification for the user themselves
+  await prisma.notification.create({
+    data: {
+      userId: user.id,
+      type: pendingApproval ? 'SYSTEM' : 'WELCOME',
+      title: pendingApproval ? 'Conta aguardando aprovação' : 'Bem-vindo ao Transitivity 2.0!',
+      message: pendingApproval
+        ? 'Um administrador irá revisar sua conta em breve.'
+        : `Sua conta foi criada no plano ${plan}. Você tem ${credits} créditos para começar.`,
+      link: pendingApproval ? null : '/dashboard',
+    },
+  });
 
   return successResponse({ user, pendingApproval }, 201);
 });

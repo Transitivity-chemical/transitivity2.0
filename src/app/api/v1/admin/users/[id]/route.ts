@@ -69,6 +69,31 @@ export async function PATCH(request: NextRequest, ctx: RouteContext) {
       },
     });
 
+    // Notify the affected user when something meaningful changes
+    if (data.plan !== undefined && data.plan !== existing.plan) {
+      await prisma.notification.create({
+        data: {
+          userId: id,
+          type: 'PLAN_CHANGED',
+          title: 'Seu plano foi atualizado',
+          message: `Seu plano foi alterado para ${data.plan ?? 'sem plano'}.`,
+          link: '/plans',
+          metadata: { previousPlan: existing.plan, newPlan: data.plan },
+        },
+      });
+    }
+    if (data.pendingApproval === false && existing.pendingApproval) {
+      await prisma.notification.create({
+        data: {
+          userId: id,
+          type: 'ACCOUNT_APPROVED',
+          title: 'Sua conta foi aprovada',
+          message: 'Você já pode usar todas as funcionalidades do Transitivity 2.0.',
+          link: '/dashboard',
+        },
+      });
+    }
+
     return successResponse({ user: updated });
   } catch (err) {
     if (err instanceof ClientError) return errorResponse(err.message, err.statusCode);

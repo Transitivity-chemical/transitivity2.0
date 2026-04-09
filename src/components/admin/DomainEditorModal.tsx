@@ -13,6 +13,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Trash2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 
 /**
  * Phase 7 of megaplan: editable email-domain allowlist modal.
@@ -31,6 +33,7 @@ type Domain = {
 
 export function DomainEditorModal({ onClose }: { onClose: () => void }) {
   const t = useTranslations('admin');
+  const confirmDialog = useConfirm();
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [newDomain, setNewDomain] = useState('');
@@ -65,17 +68,29 @@ export function DomainEditorModal({ onClose }: { onClose: () => void }) {
     if (res.ok) {
       setNewDomain('');
       setNewInstitution('');
+      toast.success('Domínio adicionado');
       load();
     } else {
       const data = await res.json();
-      alert(data.error || 'Erro');
+      toast.error(data.error || 'Erro');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('domains.confirmDelete'))) return;
+    const ok = await confirmDialog({
+      title: 'Remover domínio?',
+      description: t('domains.confirmDelete'),
+      confirmLabel: 'Remover',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/v1/admin/domains/${id}`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) {
+      toast.success('Domínio removido');
+      load();
+    } else {
+      toast.error('Erro ao remover');
+    }
   };
 
   const handlePatchPlan = async (id: string, plan: Domain['defaultPlan']) => {

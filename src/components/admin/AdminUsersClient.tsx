@@ -13,7 +13,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check } from 'lucide-react';
+import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, Sparkles, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { DomainEditorModal } from './DomainEditorModal';
 
 /**
@@ -42,6 +44,15 @@ type AdminUser = {
 
 type Pagination = { page: number; pageSize: number; total: number; totalPages: number };
 
+type PendingRequest = {
+  id: string;
+  currentPlan: string | null;
+  targetPlan: string;
+  reason: string | null;
+  createdAt: string;
+  user: { id: string; email: string; fullName: string; plan: string | null };
+};
+
 interface Props {
   locale: string;
 }
@@ -49,6 +60,8 @@ interface Props {
 export function AdminUsersClient({ locale }: Props) {
   const t = useTranslations('admin');
   const tc = useTranslations('common');
+  const confirm = useConfirm();
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,6 +101,49 @@ export function AdminUsersClient({ locale }: Props) {
     load();
   }, [load]);
 
+  // Load pending plan requests
+  const loadRequests = useCallback(async () => {
+    const res = await fetch('/api/v1/admin/plan-requests?status=PENDING');
+    if (res.ok) {
+      const data = await res.json();
+      setPendingRequests(data.requests || []);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRequests();
+  }, [loadRequests]);
+
+  const handleApproveRequest = async (id: string) => {
+    const res = await fetch(`/api/v1/admin/plan-requests/${id}/approve`, { method: 'POST' });
+    if (res.ok) {
+      toast.success('Solicitação aprovada');
+      loadRequests();
+      load();
+    } else {
+      const data = await res.json();
+      toast.error(data.error || 'Erro');
+    }
+  };
+
+  const handleRejectRequest = async (id: string) => {
+    const ok = await confirm({
+      title: 'Rejeitar solicitação?',
+      description: 'O usuário será notificado.',
+      confirmLabel: 'Rejeitar',
+      variant: 'destructive',
+    });
+    if (!ok) return;
+    const res = await fetch(`/api/v1/admin/plan-requests/${id}/reject`, { method: 'POST' });
+    if (res.ok) {
+      toast.success('Solicitação rejeitada');
+      loadRequests();
+    } else {
+      const data = await res.json();
+      toast.error(data.error || 'Erro');
+    }
+  };
+
   const handleCreate = async (form: { email: string; fullName: string; plan: string; role: string }) => {
     const res = await fetch('/api/v1/admin/users', {
       method: 'POST',
@@ -96,7 +152,7 @@ export function AdminUsersClient({ locale }: Props) {
     });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || 'Erro ao criar usuário');
+      toast.error(data.error || 'Erro ao criar usuário');
       return;
     }
     setShowAdd(false);
@@ -106,15 +162,21 @@ export function AdminUsersClient({ locale }: Props) {
       emailSent: data.email?.sent ?? false,
       emailProvider: data.email?.provider ?? 'console',
     });
+    toast.success(`Usuário ${data.user.email} criado`);
     load();
   };
 
   const handleResetTempPassword = async (id: string, email: string) => {
-    if (!confirm(t('confirmResetTempPassword'))) return;
+    const ok = await confirm({
+      title: 'Redefinir senha temporária?',
+      description: t('confirmResetTempPassword'),
+      confirmLabel: 'Redefinir',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/v1/admin/users/${id}/reset-temp-password`, { method: 'POST' });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || 'Erro');
+      toast.error(data.error || 'Erro');
       return;
     }
     setTempPasswordModal({
@@ -129,7 +191,7 @@ export function AdminUsersClient({ locale }: Props) {
     const res = await fetch(`/api/v1/admin/users/${id}/resend-invite`, { method: 'POST' });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || 'Erro');
+      toast.error(data.error || 'Erro');
       return;
     }
     setTempPasswordModal({
@@ -141,9 +203,20 @@ export function AdminUsersClient({ locale }: Props) {
   };
 
   const handleDeactivate = async (id: string) => {
-    if (!confirm(t('confirmDeactivate'))) return;
+    const ok = await confirm({
+      title: 'Desativar usuário?',
+      description: t('confirmDeactivate'),
+      confirmLabel: 'Desativar',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/v1/admin/users/${id}`, { method: 'DELETE' });
-    if (res.ok) load();
+    if (res.ok) {
+      toast.success('Usuário desativado');
+      load();
+    } else {
+      toast.error('Erro ao desativar');
+    }
   };
 
   const handleSaveEdit = async (id: string, patch: Partial<AdminUser>) => {
@@ -176,6 +249,45 @@ export function AdminUsersClient({ locale }: Props) {
           </Button>
         </div>
       </div>
+
+      {pendingRequests.length > 0 && (
+        <div className="mb-6 rounded-lg border border-purple-200 dark:border-purple-900 bg-purple-50/40 dark:bg-purple-950/20 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-purple-600" />
+            <h2 className="text-sm font-semibold">Solicitações pendentes ({pendingRequests.length})</h2>
+          </div>
+          <ul className="space-y-2">
+            {pendingRequests.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-sm"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium truncate">{r.user.fullName}</span>
+                    <span className="text-xs text-muted-foreground">({r.user.email})</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Mudar de <strong>{r.currentPlan ?? '—'}</strong> para <strong>{r.targetPlan}</strong>
+                    <span className="ml-2">· {new Date(r.createdAt).toLocaleString(locale)}</span>
+                  </p>
+                  {r.reason && <p className="text-xs italic text-muted-foreground mt-1">&ldquo;{r.reason}&rdquo;</p>}
+                </div>
+                <div className="flex gap-1 flex-shrink-0">
+                  <Button size="sm" variant="default" onClick={() => handleApproveRequest(r.id)}>
+                    <Check className="h-3.5 w-3.5 mr-1" />
+                    Aprovar
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleRejectRequest(r.id)}>
+                    <X className="h-3.5 w-3.5 mr-1" />
+                    Rejeitar
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative">

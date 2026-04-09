@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 
 type FittingJob = {
   id: string;
@@ -23,12 +25,24 @@ type FittingJob = {
 
 export function FittingHistoryClient({ locale, jobs: initialJobs }: { locale: string; jobs: FittingJob[] }) {
   const t = useTranslations('fittingHistory');
+  const confirmDialog = useConfirm();
   const [jobs, setJobs] = useState(initialJobs);
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('confirmDelete'))) return;
+    const ok = await confirmDialog({
+      title: 'Excluir ajuste?',
+      description: t('confirmDelete'),
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/v1/fitting/${id}`, { method: 'DELETE' });
-    if (res.ok) setJobs((prev) => prev.filter((j) => j.id !== id));
+    if (res.ok) {
+      setJobs((prev) => prev.filter((j) => j.id !== id));
+      toast.success('Ajuste excluído');
+    } else {
+      toast.error('Erro ao excluir');
+    }
   };
 
   return (

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Loader2, Download, FlaskConical } from 'lucide-react';
+import { toast } from 'sonner';
 import { SAMPLE_MD_GEOMETRY } from '@/lib/sample-data';
 
 /**
@@ -130,8 +131,11 @@ export function MDWizard() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Route returns the persisted MDSimulation with `generatedFiles` array
   const [result, setResult] = useState<{
-    files: Record<string, { filename: string; content: string; type: string }>;
+    id: string;
+    name: string | null;
+    generatedFiles: Array<{ id: string; filename: string; content: string; fileType: string }>;
   } | null>(null);
 
   const handleFile = async (file: File) => {
@@ -169,11 +173,13 @@ export function MDWizard() {
   const handleGenerate = async () => {
     if (atoms.length === 0) {
       setError('Carregue um arquivo de geometria primeiro.');
+      toast.error('Carregue um arquivo de geometria primeiro');
       return;
     }
     setLoading(true);
     setError(null);
     setResult(null);
+    const toastId = toast.loading('Gerando arquivos de input...');
     try {
       const res = await fetch('/api/v1/md/generate', {
         method: 'POST',
@@ -202,8 +208,29 @@ export function MDWizard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.detail || 'Erro');
       setResult(data);
+
+      const fileCount = data.generatedFiles?.length ?? 0;
+      toast.success(`${fileCount} arquivo${fileCount !== 1 ? 's' : ''} gerado${fileCount !== 1 ? 's' : ''}`, {
+        id: toastId,
+        description: 'Baixando automaticamente e abrindo o resultado',
+      });
+
+      // Auto-download every generated file
+      if (data.generatedFiles && Array.isArray(data.generatedFiles)) {
+        for (const f of data.generatedFiles) {
+          downloadFile(f.filename, f.content);
+        }
+      }
+
+      // Navigate to the result page
+      if (data.id) {
+        const locale = window.location.pathname.split('/')[1] || 'pt-BR';
+        setTimeout(() => router.push(`/${locale}/md/${data.id}`), 600);
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao gerar input');
+      const msg = e instanceof Error ? e.message : 'Erro ao gerar input';
+      setError(msg);
+      toast.error('Falha ao gerar input', { id: toastId, description: msg });
     } finally {
       setLoading(false);
     }
@@ -455,21 +482,28 @@ export function MDWizard() {
       {result && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Arquivos gerados</CardTitle>
+            <CardTitle className="text-base">
+              Arquivos gerados ({result.generatedFiles?.length ?? 0})
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {Object.entries(result.files).map(([key, file]) => (
-                <button
-                  key={key}
-                  className="w-full text-left flex items-center justify-between rounded-md border px-3 py-2 hover:bg-accent text-sm"
-                  onClick={() => downloadFile(file.filename, file.content)}
-                >
-                  <span className="font-mono">{file.filename}</span>
-                  <Download className="h-4 w-4 text-muted-foreground" />
-                </button>
-              ))}
-            </div>
+            {(!result.generatedFiles || result.generatedFiles.length === 0) ? (
+              <p className="text-sm text-muted-foreground">Nenhum arquivo retornado.</p>
+            ) : (
+              <div className="space-y-2">
+                {result.generatedFiles.map((file) => (
+                  <button
+                    key={file.id}
+                    className="w-full text-left flex items-center justify-between rounded-md border px-3 py-2 hover:bg-accent text-sm"
+                    onClick={() => downloadFile(file.filename, file.content)}
+                  >
+                    <span className="font-mono">{file.filename}</span>
+                    <span className="text-xs text-muted-foreground">{file.fileType}</span>
+                    <Download className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -39,6 +39,9 @@ model User {
   invitedBy        User?    @relation("InvitedBy", fields: [invitedById], references: [id])
   invitedUsers     User[]   @relation("InvitedBy")
 
+  planRequests           PlanChangeRequest[] @relation("PlanRequestUser")
+  resolvedPlanRequests   PlanChangeRequest[] @relation("PlanRequestResolver")
+
   refreshTokens    RefreshToken[]
   teamMemberships  TeamMembership[]
   ownedTeams       Team[]
@@ -105,6 +108,31 @@ model PlanConfig {
   updatedAt       DateTime @updatedAt
 
   @@map("plan_configs")
+}
+
+model PlanChangeRequest {
+  id            String              @id @default(cuid())
+  userId        String
+  currentPlan   Plan?
+  targetPlan    Plan
+  status        PlanRequestStatus   @default(PENDING)
+  reason        String?
+  createdAt     DateTime            @default(now())
+  resolvedAt    DateTime?
+  resolvedById  String?
+
+  user       User  @relation("PlanRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("PlanRequestResolver", fields: [resolvedById], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("plan_change_requests")
+}
+
+enum PlanRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Team {
@@ -617,6 +645,7 @@ model Notification {
   type      NotificationType
   title     String
   message   String
+  link      String?
   isRead    Boolean          @default(false)
   metadata  Json?
   createdAt DateTime         @default(now())
@@ -624,6 +653,7 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
   @@map("notifications")
 }
 
@@ -797,6 +827,11 @@ enum NotificationType {
   CREDITS_LOW
   TEAM_INVITE
   SYSTEM
+  PLAN_UPGRADE_REQUEST
+  PLAN_CHANGED
+  USER_REGISTERED
+  ACCOUNT_APPROVED
+  WELCOME
 }
 
 enum MLProvider {

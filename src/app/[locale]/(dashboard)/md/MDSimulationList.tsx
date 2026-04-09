@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { Plus, Trash2, Eye, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,15 +41,25 @@ export function MDSimulationList({ simulations, locale }: Props) {
   const t = useTranslations('md');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const confirmDialog = useConfirm();
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('deleteConfirm'))) return;
+    const ok = await confirmDialog({
+      title: 'Excluir simulação?',
+      description: t('deleteConfirm'),
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     setDeleting(id);
     try {
       const res = await fetch(`/api/v1/md/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        toast.success('Simulação excluída');
         router.refresh();
+      } else {
+        toast.error('Erro ao excluir');
       }
     } finally {
       setDeleting(null);

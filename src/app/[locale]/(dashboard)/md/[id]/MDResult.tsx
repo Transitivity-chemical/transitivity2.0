@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -81,6 +83,7 @@ export function MDResult({ simulation, locale }: Props) {
   const t = useTranslations('md');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const confirmDialog = useConfirm();
   const [activeTab, setActiveTab] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -109,14 +112,23 @@ export function MDResult({ simulation, locale }: Props) {
   };
 
   const handleDelete = async () => {
-    if (!confirm(t('deleteConfirm'))) return;
+    const ok = await confirmDialog({
+      title: 'Excluir simulação?',
+      description: t('deleteConfirm'),
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/v1/md/${simulation.id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
-        router.push(`/${locale}/md`);
+        toast.success('Simulação excluída');
+        router.push(`/${locale}/md/list`);
+      } else {
+        toast.error('Erro ao excluir');
       }
     } finally {
       setDeleting(false);

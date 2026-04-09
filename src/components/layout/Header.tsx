@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { navItems } from '@/components/layout/Sidebar';
 import { GammaIcon } from '@/components/brand/TransitivityLogo';
@@ -89,6 +90,7 @@ export function Header({ role: initialRole }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <NotificationBell />
           <LanguageSwitcher />
 
           <button
