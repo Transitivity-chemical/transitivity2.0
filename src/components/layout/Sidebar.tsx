@@ -15,6 +15,10 @@ import {
   MessageCircle,
   BookOpen,
   Users,
+  Layers,
+  User as UserIcon,
+  Settings as SettingsIcon,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,10 +29,14 @@ import { PlansModal } from '@/components/plans/PlansModal';
 export const navItems = [
   { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
   { key: 'rateConstant', href: '/rate-constant', icon: Calculator, adminOnly: false },
-  { key: 'fitting', href: '/fitting', icon: TrendingUp, adminOnly: false },
   { key: 'md', href: '/md', icon: Atom, adminOnly: false },
+  { key: 'multiInputs', href: '/md/multi', icon: Layers, adminOnly: false },
+  { key: 'fitting', href: '/fitting', icon: TrendingUp, adminOnly: false },
   { key: 'assistant', href: '/assistant', icon: MessageCircle, adminOnly: false },
   { key: 'wiki', href: '/wiki', icon: BookOpen, adminOnly: false },
+  { key: 'profile', href: '/settings?tab=profile', icon: UserIcon, adminOnly: false },
+  { key: 'settings', href: '/settings', icon: SettingsIcon, adminOnly: false },
+  { key: 'plans', href: '/plans', icon: Sparkles, adminOnly: false },
   { key: 'adminUsers', href: '/admin/users', icon: Users, adminOnly: true },
 ] as const;
 

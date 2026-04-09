@@ -386,17 +386,6 @@ export function RateConstantWorkbench() {
       <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
         <div className="border-b border-border bg-muted/40 px-5 py-3">
           <div className="flex flex-wrap gap-2 text-sm">
-            <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 font-medium text-primary">
-              {t('title')}
-            </div>
-            <div className="rounded-full border border-border bg-background px-3 py-1 text-muted-foreground">
-              Molecular Dynamic
-            </div>
-            <div className="rounded-full border border-border bg-background px-3 py-1 text-muted-foreground">
-              Fitting
-            </div>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2 text-sm">
             <div className="rounded-full border border-primary/20 bg-background px-3 py-1 font-medium text-foreground">
               Conventional TST
             </div>
