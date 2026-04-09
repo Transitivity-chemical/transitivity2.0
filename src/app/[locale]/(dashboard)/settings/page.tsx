@@ -1,4 +1,3 @@
-import { getTranslations } from 'next-intl/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -20,6 +19,7 @@ export default async function SettingsPage({
       email: true,
       fullName: true,
       role: true,
+      plan: true,
       credits: true,
       institution: true,
       isInstitutional: true,
@@ -41,11 +41,49 @@ export default async function SettingsPage({
     },
   });
 
+  // Activity tab data — last 30 of each type, merged + sorted
+  const [reactions, fittings, mds, mls] = await Promise.all([
+    prisma.reaction.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { id: true, name: true, status: true, createdAt: true },
+    }),
+    prisma.fittingJob.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { id: true, name: true, status: true, createdAt: true },
+    }),
+    prisma.mDSimulation.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { id: true, name: true, status: true, createdAt: true },
+    }),
+    prisma.mLJob.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { id: true, name: true, status: true, createdAt: true },
+    }),
+  ]);
+
+  const activity = [
+    ...reactions.map((r) => ({ ...r, type: 'Rate' })),
+    ...fittings.map((r) => ({ ...r, type: 'Fitting' })),
+    ...mds.map((r) => ({ ...r, type: 'MD' })),
+    ...mls.map((r) => ({ ...r, type: 'ML' })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 30);
+
   return (
     <div className="p-6">
       <SettingsClient
         user={JSON.parse(JSON.stringify(user))}
         usageRecords={JSON.parse(JSON.stringify(usageRecords))}
+        activity={JSON.parse(JSON.stringify(activity))}
       />
     </div>
   );
