@@ -1,13 +1,15 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { isAdminRole } from '@/lib/access';
 import { AdminUsersClient } from '@/components/admin/AdminUsersClient';
 
 /**
- * Phase 6 of megaplan: Admin Users page (replaces Server Status).
+ * Admin Users page.
  *
- * Server-side admin gate. Renders the client component which handles the table,
- * filters, modals, and CRUD calls.
+ * Reads role FRESH FROM DB (not from JWT) so an admin promotion takes
+ * effect immediately without sign-out + sign-in. Mirrors the dashboard
+ * layout's pattern (FIX-3 of post-megaplan audit).
  */
 export default async function AdminUsersPage({
   params,
@@ -16,10 +18,16 @@ export default async function AdminUsersPage({
 }) {
   const { locale } = await params;
   const session = await auth();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = (session?.user as any)?.role;
+  if (!session?.user?.id) {
+    redirect(`/${locale}/login`);
+  }
 
-  if (!isAdminRole(role)) {
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (!user || !isAdminRole(user.role)) {
     redirect(`/${locale}/dashboard`);
   }
 
