@@ -27,7 +27,7 @@ type AdminUser = {
   id: string;
   email: string;
   fullName: string;
-  role: 'ADMIN' | 'RESEARCHER' | 'VIEWER';
+  role: 'USER' | 'ADMIN';
   plan: 'STUDENT' | 'PROFESSIONAL' | 'ENTERPRISE' | null;
   credits: number | string;
   isActive: boolean;
@@ -198,9 +198,8 @@ export function AdminUsersClient({ locale }: Props) {
         </select>
         <select className="rounded-md border bg-background px-3 text-sm" value={roleFilter} onChange={(e) => { setPage(1); setRoleFilter(e.target.value); }}>
           <option value="">{t('users.allRoles')}</option>
+          <option value="USER">Usuário</option>
           <option value="ADMIN">Admin</option>
-          <option value="RESEARCHER">Researcher</option>
-          <option value="VIEWER">Viewer</option>
         </select>
         <select className="rounded-md border bg-background px-3 text-sm" value={statusFilter} onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}>
           <option value="">{t('users.allStatuses')}</option>
@@ -310,7 +309,7 @@ function AddUserModal({ onClose, onCreate }: { onClose: () => void; onCreate: (f
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [plan, setPlan] = useState('STUDENT');
-  const [role, setRole] = useState('RESEARCHER');
+  const [role, setRole] = useState('USER');
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -347,8 +346,7 @@ function AddUserModal({ onClose, onCreate }: { onClose: () => void; onCreate: (f
           <div>
             <label className="block text-sm font-medium mb-1">{t('users.col.role')}</label>
             <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="RESEARCHER">Researcher</option>
-              <option value="VIEWER">Viewer</option>
+              <option value="USER">Usuário</option>
               <option value="ADMIN">Admin</option>
             </select>
           </div>
@@ -459,9 +457,8 @@ function EditUserModal({
           <div>
             <label className="block text-sm font-medium mb-1">{t('users.col.role')}</label>
             <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={role} onChange={(e) => setRole(e.target.value as AdminUser['role'])}>
-              <option value="RESEARCHER">Researcher</option>
+              <option value="USER">Usuário</option>
               <option value="ADMIN">Admin</option>
-              <option value="VIEWER">Viewer</option>
             </select>
           </div>
           <div>

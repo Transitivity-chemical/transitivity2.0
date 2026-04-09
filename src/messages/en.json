@@ -157,9 +157,11 @@
     "credits": "credits",
     "creditsPerMonth": "credits / month",
     "current": "Current plan",
+    "currentPlanBadge": "Current plan",
     "requestUpgrade": "Request upgrade",
+    "requestDowngrade": "Request downgrade",
     "requesting": "Requesting...",
-    "requestSent": "Request sent. An administrator will be in touch.",
+    "requestSent": "Request sent",
     "feat": {
       "gsaFitting": "GSA kinetic model fitting",
       "tstRate": "TST rate constants with tunneling corrections",

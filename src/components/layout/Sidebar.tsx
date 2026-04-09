@@ -15,9 +15,8 @@ import {
   MessageCircle,
   BookOpen,
   Users,
-  Layers,
   Settings as SettingsIcon,
-  Sparkles,
+  CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -29,11 +28,10 @@ export const navItems = [
   { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
   { key: 'rateConstant', href: '/rate-constant', icon: Calculator, adminOnly: false },
   { key: 'md', href: '/md', icon: Atom, adminOnly: false },
-  { key: 'multiInputs', href: '/md/multi', icon: Layers, adminOnly: false },
   { key: 'fitting', href: '/fitting', icon: TrendingUp, adminOnly: false },
   { key: 'assistant', href: '/assistant', icon: MessageCircle, adminOnly: false },
   { key: 'wiki', href: '/wiki', icon: BookOpen, adminOnly: false },
-  { key: 'plans', href: '/plans', icon: Sparkles, adminOnly: false },
+  { key: 'plans', href: '/plans', icon: CreditCard, adminOnly: false },
   { key: 'settings', href: '/settings', icon: SettingsIcon, adminOnly: false },
   { key: 'adminUsers', href: '/admin/users', icon: Users, adminOnly: true },
 ] as const;

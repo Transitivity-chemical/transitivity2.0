@@ -53,7 +53,7 @@ export const POST = asyncWrapper(async (request: Request) => {
       email: data.email,
       fullName: data.fullName,
       passwordHash,
-      role: 'RESEARCHER',
+      role: 'USER',
       plan,
       credits,
       pendingApproval,

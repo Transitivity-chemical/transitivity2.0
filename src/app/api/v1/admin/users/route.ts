@@ -21,7 +21,7 @@ const createSchema = z
     email: z.string().email().toLowerCase(),
     fullName: z.string().min(1).max(200),
     plan: z.enum(['STUDENT', 'PROFESSIONAL', 'ENTERPRISE']),
-    role: z.enum(['ADMIN', 'RESEARCHER', 'VIEWER']).default('RESEARCHER'),
+    role: z.enum(['USER', 'ADMIN']).default('USER'),
   })
   .strict();
 
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     if (planFilter && ['STUDENT', 'PROFESSIONAL', 'ENTERPRISE'].includes(planFilter)) {
       where.plan = planFilter;
     }
-    if (roleFilter && ['ADMIN', 'RESEARCHER', 'VIEWER'].includes(roleFilter)) {
+    if (roleFilter && ['USER', 'ADMIN'].includes(roleFilter)) {
       where.role = roleFilter;
     }
     if (statusFilter === 'pending') where.pendingApproval = true;

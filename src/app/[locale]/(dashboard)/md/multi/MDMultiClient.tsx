@@ -154,14 +154,14 @@ export function MDMultiClient() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="rounded-lg bg-primary/10 p-2 text-primary">
-          <Layers className="size-6" />
+          <Layers className="size-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold">Múltiplos Inputs</h1>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-xl font-semibold">Múltiplos Inputs</h2>
+          <p className="text-xs text-muted-foreground">
             Gere um conjunto de inputs CPMD interpolando entre duas estruturas moleculares.
           </p>
         </div>

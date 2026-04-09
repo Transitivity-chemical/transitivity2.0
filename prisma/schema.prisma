@@ -15,7 +15,7 @@ model User {
   phone               String?
   passwordHash        String
   avatarUrl           String?
-  role                UserRole  @default(RESEARCHER)
+  role                UserRole  @default(USER)
   plan                Plan?
   mustChangePassword  Boolean   @default(false)
   pendingApproval     Boolean   @default(false)
@@ -84,7 +84,7 @@ model InstitutionalDomain {
   country     String   @default("BR")
   isVerified  Boolean  @default(true)
   defaultPlan Plan     @default(STUDENT)
-  allowedRole UserRole @default(RESEARCHER)
+  allowedRole UserRole @default(USER)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -645,9 +645,8 @@ model AuditLog {
 }
 
 enum UserRole {
+  USER
   ADMIN
-  RESEARCHER
-  VIEWER
 }
 
 enum Plan {

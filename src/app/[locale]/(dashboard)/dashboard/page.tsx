@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, TrendingUp, Atom, Activity, Coins, Briefcase } from 'lucide-react';
+import { MDMultiClient } from '../md/multi/MDMultiClient';
 
 export default async function DashboardPage({
   params,
@@ -177,6 +178,10 @@ export default async function DashboardPage({
           </Link>
         ))}
       </div>
+
+      {/* Multiple Inputs (FIX-11) — embedded into the dashboard per user request.
+          Replaces the old Recent Activity / Quick Actions cards. */}
+      <MDMultiClient />
 
       {/* All calculations — full-width main panel (FIX-2) */}
       <Card>

@@ -52,7 +52,7 @@ describe('Sidebar', () => {
   });
 
   it('hides server status for non-admin users', () => {
-    render(<Sidebar role="RESEARCHER" />);
+    render(<Sidebar role="USER" />);
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Rate Constant')).toBeInTheDocument();
     expect(screen.getByText('Fitting')).toBeInTheDocument();

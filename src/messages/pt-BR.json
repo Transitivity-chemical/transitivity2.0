@@ -157,9 +157,11 @@
     "credits": "créditos",
     "creditsPerMonth": "créditos / mês",
     "current": "Plano atual",
+    "currentPlanBadge": "Plano atual",
     "requestUpgrade": "Solicitar upgrade",
+    "requestDowngrade": "Solicitar downgrade",
     "requesting": "Solicitando...",
-    "requestSent": "Solicitação enviada. Um administrador entrará em contato.",
+    "requestSent": "Solicitação enviada",
     "feat": {
       "gsaFitting": "Ajuste GSA de modelos cinéticos",
       "tstRate": "Constantes TST com correções de tunelamento",

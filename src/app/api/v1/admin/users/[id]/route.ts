@@ -10,7 +10,7 @@ import { shouldBeAdmin, ClientError, successResponse, errorResponse } from '@/li
 const patchSchema = z
   .object({
     fullName: z.string().min(1).max(200).optional(),
-    role: z.enum(['ADMIN', 'RESEARCHER', 'VIEWER']).optional(),
+    role: z.enum(['USER', 'ADMIN']).optional(),
     plan: z.enum(['STUDENT', 'PROFESSIONAL', 'ENTERPRISE']).nullable().optional(),
     credits: z.number().min(0).optional(),
     isActive: z.boolean().optional(),
