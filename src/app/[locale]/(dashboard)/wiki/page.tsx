@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { PaperReaderSheet } from '@/components/wiki/PaperReaderSheet';
 
 interface WikiSection {
   key: string;
@@ -65,6 +66,7 @@ const sections: WikiSection[] = [
 export default function WikiPage() {
   const t = useTranslations('wiki');
   const [search, setSearch] = useState('');
+  const [reader, setReader] = useState<{ url: string; title: string } | null>(null);
 
   const filtered = sections.filter((section) => {
     if (!search.trim()) return true;
@@ -97,15 +99,14 @@ export default function WikiPage() {
               <p className="text-sm text-muted-foreground">{t(section.descKey)}</p>
               <div className="flex flex-wrap gap-2">
                 {section.links.map((link) => (
-                  <a
+                  <button
                     key={link.url}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    type="button"
+                    onClick={() => setReader({ url: link.url, title: link.label })}
                     className="text-xs text-primary underline underline-offset-2 hover:text-primary/80"
                   >
                     {link.label}
-                  </a>
+                  </button>
                 ))}
               </div>
             </CardContent>
@@ -118,6 +119,13 @@ export default function WikiPage() {
           </p>
         )}
       </div>
+
+      <PaperReaderSheet
+        open={reader !== null}
+        onClose={() => setReader(null)}
+        url={reader?.url ?? null}
+        title={reader?.title ?? ''}
+      />
     </div>
   );
 }
