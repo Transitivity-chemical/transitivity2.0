@@ -22,6 +22,12 @@ export type SendInviteParams = {
   loginUrl: string;
 };
 
+export type SendPasswordResetParams = {
+  to: string;
+  name: string;
+  resetUrl: string;
+};
+
 export type SendResult = {
   sent: boolean;
   provider: 'resend' | 'smtp' | 'console';
@@ -53,6 +59,36 @@ URL de login: ${loginUrl}
 Senha temporária: ${tempPassword}
 
 Você será obrigado(a) a alterar essa senha no primeiro acesso.
+	`;
+}
+
+function buildPasswordResetHtml({ name, resetUrl }: Omit<SendPasswordResetParams, 'to'>): string {
+  return `<!doctype html>
+<html lang="pt-BR">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1f2937;">
+  <h1 style="color: #1e3a5f; font-size: 24px; margin: 0 0 16px;">Recuperação de senha, ${escapeHtml(name)}</h1>
+  <p>Recebemos um pedido para redefinir a senha da sua conta no Transitivity 2.0.</p>
+  <p style="margin: 24px 0;">
+    <a href="${resetUrl}" style="display: inline-block; background: #1e3a5f; color: #ffffff; text-decoration: none; padding: 12px 18px; border-radius: 8px; font-weight: 600;">
+      Redefinir senha
+    </a>
+  </p>
+  <p>Ou use este link:</p>
+  <p><a href="${resetUrl}">${resetUrl}</a></p>
+  <p style="color: #6b7280; font-size: 13px; margin-top: 24px;">Este link expira em 1 hora. Se você não solicitou a recuperação, ignore este e-mail.</p>
+</body>
+</html>`;
+}
+
+function buildPasswordResetText({ name, resetUrl }: Omit<SendPasswordResetParams, 'to'>): string {
+  return `Recuperação de senha, ${name}
+
+Recebemos um pedido para redefinir a senha da sua conta no Transitivity 2.0.
+
+Use este link para continuar:
+${resetUrl}
+
+Este link expira em 1 hora. Se você não solicitou a recuperação, ignore este e-mail.
 `;
 }
 
@@ -114,5 +150,55 @@ export async function sendInviteEmail(params: SendInviteParams): Promise<SendRes
   console.log(`Subject: ${subject}`);
   console.log(text);
   console.log('==============================================================');
+  return { sent: false, provider: 'console' };
+}
+
+export async function sendPasswordResetEmail(params: SendPasswordResetParams): Promise<SendResult> {
+  const { to, name, resetUrl } = params;
+  const subject = 'Recuperação de senha no Transitivity 2.0';
+  const html = buildPasswordResetHtml({ name, resetUrl });
+  const text = buildPasswordResetText({ name, resetUrl });
+  const from = process.env.EMAIL_FROM || 'Transitivity <no-reply@transitivity.local>';
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const result = await resend.emails.send({ from, to, subject, html, text });
+      if (result.error) {
+        return { sent: false, provider: 'resend', error: String(result.error) };
+      }
+      return { sent: true, provider: 'resend' };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[email] Resend failed:', msg);
+      return { sent: false, provider: 'resend', error: msg };
+    }
+  }
+
+  if (process.env.SMTP_HOST) {
+    try {
+      const transport = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth:
+          process.env.SMTP_USER && process.env.SMTP_PASS
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+            : undefined,
+      });
+      await transport.sendMail({ from, to, subject, html, text });
+      return { sent: true, provider: 'smtp' };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[email] SMTP failed:', msg);
+      return { sent: false, provider: 'smtp', error: msg };
+    }
+  }
+
+  console.log('================== PASSWORD RESET EMAIL (console fallback) ==================');
+  console.log(`To: ${to}`);
+  console.log(`Subject: ${subject}`);
+  console.log(text);
+  console.log('============================================================================');
   return { sent: false, provider: 'console' };
 }

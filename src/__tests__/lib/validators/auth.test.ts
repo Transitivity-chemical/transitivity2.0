@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { registerSchema, loginSchema } from '@/lib/validators/auth';
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from '@/lib/validators/auth';
 
 describe('registerSchema', () => {
   it('accepts valid registration input', () => {
@@ -87,6 +92,42 @@ describe('loginSchema', () => {
     const result = loginSchema.safeParse({
       email: 'bad',
       password: 'password',
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('forgotPasswordSchema', () => {
+  it('accepts valid email and locale', () => {
+    const result = forgotPasswordSchema.safeParse({
+      email: 'user@example.com',
+      locale: 'en',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects invalid locale', () => {
+    const result = forgotPasswordSchema.safeParse({
+      email: 'user@example.com',
+      locale: 'es',
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('resetPasswordSchema', () => {
+  it('accepts valid token and password', () => {
+    const result = resetPasswordSchema.safeParse({
+      token: 'token-123',
+      newPassword: 'NovaSenhaSegura123!',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects short password', () => {
+    const result = resetPasswordSchema.safeParse({
+      token: 'token-123',
+      newPassword: '123',
     });
     expect(result.success).toBe(false);
   });

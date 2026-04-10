@@ -382,20 +382,11 @@ export function RateConstantWorkbench() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
-        <div className="px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-8 border-b border-border pb-8 text-center">
-            <h2 className="text-4xl font-bold tracking-tight text-primary">
-              {t('title')}
-            </h2>
-            <p className="mx-auto mt-3 max-w-3xl text-sm text-muted-foreground">
-              {t('workspaceDesc')}
-            </p>
-          </div>
-
-          <div className="mb-8 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-            <div className="min-w-[260px] flex-1">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:rounded-[2rem]">
+        <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+          <div className="mb-6 grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_220px_220px] lg:items-end">
+            <div className="min-w-0">
               <Label htmlFor="reaction-name">{t('reactionName')}</Label>
               <Input
                 id="reaction-name"
@@ -405,7 +396,7 @@ export function RateConstantWorkbench() {
                 className="mt-1 bg-background"
               />
             </div>
-            <div className="w-full sm:w-[220px]">
+            <div className="w-full">
               <Label htmlFor="reaction-type">{t('reactionType')}</Label>
               <select
                 id="reaction-type"
@@ -417,7 +408,7 @@ export function RateConstantWorkbench() {
                 <option value="BIMOLECULAR">{t('bimolecular')}</option>
               </select>
             </div>
-            <div className="w-full sm:w-[220px]">
+            <div className="w-full">
               <Label htmlFor="energy-type">{t('energyType')}</Label>
               <select
                 id="energy-type"
@@ -432,17 +423,19 @@ export function RateConstantWorkbench() {
             </div>
           </div>
 
-          <div className="overflow-x-auto pb-2">
-            <div className="grid min-w-[980px] grid-cols-5 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
               {SPECIES_SLOTS.map((slot) => {
                 const slotSpecies = getSpeciesForSlot(slot.key);
 
                 return (
-                  <div key={slot.key} className="rounded-2xl border border-border bg-card shadow-sm transition hover:border-primary/20">
+                  <div
+                    key={slot.key}
+                    className="rounded-2xl border border-border bg-card shadow-sm transition hover:border-primary/20"
+                  >
                     <div className="border-b border-border px-4 py-3 text-sm font-semibold text-foreground">
                       {slot.title}
                     </div>
-                    <div className="space-y-3 p-4">
+                    <div className="flex h-full flex-col gap-3 p-4">
                       <input
                         ref={(node) => {
                           fileInputsRef.current[slot.key] = node;
@@ -461,7 +454,7 @@ export function RateConstantWorkbench() {
                       <button
                         type="button"
                         onClick={() => fileInputsRef.current[slot.key]?.click()}
-                        className="mx-auto block rounded-lg border border-input bg-background px-5 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-muted/60"
+                        className="w-full rounded-lg border border-input bg-background px-5 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-muted/60"
                       >
                         Open File
                       </button>
@@ -496,8 +489,8 @@ export function RateConstantWorkbench() {
                         />
                       </div>
 
-                      <div className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
-                        {slotSpecies ? (
+                      {slotSpecies && (
+                        <div className="flex-1 rounded-lg border border-border bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
                           <div className="space-y-0.5">
                             <p>Multiplicity: {slotSpecies.parsedData.multiplicity || 1}</p>
                             <p>Mass: {formatMetric(slotSpecies.parsedData.molecularMassKg, 4)} kg</p>
@@ -508,10 +501,8 @@ export function RateConstantWorkbench() {
                                 : '--'}
                             </p>
                           </div>
-                        ) : (
-                          <p>Upload a parsed species file.</p>
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       {slotSpecies && (
                         <Button
@@ -529,10 +520,9 @@ export function RateConstantWorkbench() {
                   </div>
                 );
               })}
-            </div>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-[280px_minmax(220px,280px)_1fr]">
+          <div className="mt-8 grid gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,280px)_minmax(0,280px)_minmax(0,1fr)]">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
               <Label htmlFor="temperatures" className="text-base text-foreground">
                 Set Temperature
@@ -543,7 +533,7 @@ export function RateConstantWorkbench() {
                     + Add Row
                   </Button>
                 </div>
-                <div className="overflow-hidden rounded-xl border border-border">
+                <div className="overflow-x-auto rounded-xl border border-border">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/40">
@@ -598,7 +588,7 @@ export function RateConstantWorkbench() {
                   type="button"
                   onClick={handleRun}
                   disabled={status === 'loading' || status === 'parsing'}
-                  className="mx-auto flex h-14 min-w-[170px] rounded-xl bg-primary px-8 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+                  className="mx-auto flex h-14 w-full rounded-xl bg-primary px-6 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 sm:w-auto sm:min-w-[170px] sm:px-8 sm:text-lg"
                 >
                   {status === 'loading' || status === 'parsing' ? (
                     <>
@@ -617,7 +607,7 @@ export function RateConstantWorkbench() {
                   type="button"
                   variant="outline"
                   onClick={() => scrollToRef(speciesRef)}
-                  className="mx-auto flex min-h-[54px] w-full max-w-[210px] whitespace-normal text-center"
+                  className="mx-auto flex min-h-[54px] w-full whitespace-normal text-center sm:max-w-[210px]"
                 >
                   Quick Check on
                   <br />
@@ -632,7 +622,7 @@ export function RateConstantWorkbench() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm lg:col-span-2 xl:col-span-1">
               <Button type="button" variant="outline" className="w-full" onClick={() => scrollToRef(speciesRef)}>
                 Species Properties
               </Button>
@@ -762,10 +752,10 @@ export function RateConstantWorkbench() {
                   {t('noEndpointResult')}
                 </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-xs text-muted-foreground">{t('forwardBarrier')}</p>
-                    <p className="mt-1 text-lg font-semibold">{formatMetric(result.forwardBarrier)} kJ/mol</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-border bg-card p-4">
+                      <p className="text-xs text-muted-foreground">{t('forwardBarrier')}</p>
+                      <p className="mt-1 text-lg font-semibold">{formatMetric(result.forwardBarrier)} kJ/mol</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-4">
                     <p className="text-xs text-muted-foreground">{t('reverseBarrier')}</p>
@@ -802,7 +792,7 @@ export function RateConstantWorkbench() {
                       <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
                         {item.label}
                       </span>
-                      <span className="font-medium">{item.filename}</span>
+                      <span className="min-w-0 break-all text-sm font-medium sm:text-base">{item.filename}</span>
                     </div>
                     <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
                       <p>SCF: {formatMetric(item.parsedData.scfEnergy, 6)}</p>

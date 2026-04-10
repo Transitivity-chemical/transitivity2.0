@@ -66,6 +66,8 @@ export const authConfig = {
         stripped === '/' ||
         stripped.startsWith('/login') ||
         stripped.startsWith('/register') ||
+        stripped.startsWith('/forgot-password') ||
+        stripped.startsWith('/reset-password') ||
         stripped.startsWith('/course') ||
         stripped.startsWith('/api/auth') ||
         stripped.startsWith('/pending-approval') ||

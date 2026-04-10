@@ -71,6 +71,17 @@ export function FittingWorkbench() {
   const [result, setResult] = useState<FitResponse | null>(null);
 
   const theoryConfig = THEORY_CONFIG[theory];
+  const filledPointCount = useMemo(
+    () =>
+      points.filter(
+        (point) => point.temperature.trim() !== '' || point.rateConstant.trim() !== '',
+      ).length,
+    [points],
+  );
+  const unlockedParamsCount = useMemo(
+    () => locks.filter((item) => !item).length,
+    [locks],
+  );
 
   const arrheniusSeries = useMemo(() => {
     if (!result) return [];
@@ -214,107 +225,113 @@ export function FittingWorkbench() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('endpointData')}</CardTitle>
-              <CardDescription>{t('endpointDataDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataEntryTable
-                points={points}
-                onChange={setPoints}
-                errors={validationErrors}
-              />
-            </CardContent>
-          </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('endpointData')}</CardTitle>
+          <CardDescription>{t('endpointDataDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DataEntryTable
+            points={points}
+            onChange={setPoints}
+            errors={validationErrors}
+          />
+        </CardContent>
+      </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('theorySetup')}</CardTitle>
-              <CardDescription>{t('theorySetupDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">{t('theoryField')}</label>
-                <select
-                  value={theory}
-                  onChange={(event) => handleTheoryChange(event.target.value as FittingTheory)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {THEORY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                {theoryConfig.labels.map((label, index) => (
-                  <div key={label} className="rounded-xl border border-border bg-card p-3">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <span className="text-sm font-medium">{label}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => toggleLock(index)}
-                        aria-label={locks[index] ? t('unlockParameter') : t('lockParameter')}
-                      >
-                        {locks[index] ? <Lock /> : <Unlock />}
-                      </Button>
-                    </div>
-                    <input
-                      type="number"
-                      step="0.001"
-                      value={initialParams[index]}
-                      onChange={(event) => updateInitialParam(index, event.target.value)}
-                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-                    />
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {locks[index] ? t('parameterLocked') : t('parameterUnlocked')}
-                    </p>
-                  </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('theorySetup')}</CardTitle>
+            <CardDescription>{t('theorySetupDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{t('theoryField')}</label>
+              <select
+                value={theory}
+                onChange={(event) => handleTheoryChange(event.target.value as FittingTheory)}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                {THEORY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+              </select>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('gsaFields')}</CardTitle>
-              <CardDescription>{t('gsaFieldsDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {[
-                ['qA', 'qA'],
-                ['qT', 'qT'],
-                ['qV', 'qV'],
-                ['T0', 'T0'],
-                ['F', 'F'],
-                ['NStopMax', 'NStopMax'],
-              ].map(([key, label]) => (
-                <div key={key}>
-                  <label className="mb-1.5 block text-sm font-medium">{label}</label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {theoryConfig.labels.map((label, index) => (
+                <div key={label} className="rounded-xl border border-border bg-card p-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium">{label}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => toggleLock(index)}
+                      aria-label={locks[index] ? t('unlockParameter') : t('lockParameter')}
+                    >
+                      {locks[index] ? <Lock /> : <Unlock />}
+                    </Button>
+                  </div>
                   <input
                     type="number"
-                    step={key === 'NStopMax' ? 1 : 0.1}
-                    min={key === 'NStopMax' ? 1 : undefined}
-                    value={gsa[key as keyof typeof gsa]}
-                    onChange={(event) =>
-                      updateGsa(key as keyof typeof DEFAULT_GSA, event.target.value)
-                    }
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                    step="0.001"
+                    value={initialParams[index]}
+                    onChange={(event) => updateInitialParam(index, event.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                   />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {locks[index] ? t('parameterLocked') : t('parameterUnlocked')}
+                  </p>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={handleRunFitting} disabled={status === 'loading'}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('gsaFields')}</CardTitle>
+            <CardDescription>{t('gsaFieldsDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            {[
+              ['qA', 'qA'],
+              ['qT', 'qT'],
+              ['qV', 'qV'],
+              ['T0', 'T0'],
+              ['F', 'F'],
+              ['NStopMax', 'NStopMax'],
+            ].map(([key, label]) => (
+              <div key={key}>
+                <label className="mb-1.5 block text-sm font-medium">{label}</label>
+                <input
+                  type="number"
+                  step={key === 'NStopMax' ? 1 : 0.1}
+                  min={key === 'NStopMax' ? 1 : undefined}
+                  value={gsa[key as keyof typeof gsa]}
+                  onChange={(event) =>
+                    updateGsa(key as keyof typeof DEFAULT_GSA, event.target.value)
+                  }
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader className="space-y-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <CardTitle>{t('runEndpointFit')}</CardTitle>
+              <CardDescription>{t('endpointOutputDesc')}</CardDescription>
+            </div>
+            <Button onClick={handleRunFitting} disabled={status === 'loading'} className="w-full sm:w-auto">
               {status === 'loading' ? (
                 <>
                   <RefreshCw className="animate-spin" />
@@ -327,121 +344,120 @@ export function FittingWorkbench() {
                 </>
               )}
             </Button>
-
-            {status === 'success' && !errorMessage && (
-              <p className="text-sm text-green-600 dark:text-green-400">{t('fitSuccess')}</p>
-            )}
-
-            {errorMessage && (
-              <p className="text-sm text-destructive">{errorMessage}</p>
-            )}
           </div>
-        </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t('pointsLoaded')}
+              </p>
+              <p className="mt-2 text-2xl font-semibold">{filledPointCount}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t('theoryField')}
+              </p>
+              <p className="mt-2 text-sm font-semibold">{theory}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t('notesParameters')}
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {unlockedParamsCount} / {locks.length}
+              </p>
+            </div>
+          </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('endpointOutput')}</CardTitle>
-              <CardDescription>{t('endpointOutputDesc')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!result ? (
-                <div className="rounded-xl border border-dashed border-border bg-muted/30 px-5 py-10 text-center">
-                  <Orbit className="mx-auto mb-3 size-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">{t('noEndpointResult')}</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {t('theoryField')}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold">{result.theory}</p>
-                    </div>
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Chi-square
-                      </p>
-                      <p className="mt-2 text-sm font-semibold">{formatScientific(result.chi_square)}</p>
-                    </div>
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {t('pointsLoaded')}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold">{result.curve.temperature.length}</p>
-                    </div>
-                  </div>
+          {status === 'success' && !errorMessage && (
+            <p className="text-sm text-green-600 dark:text-green-400">{t('fitSuccess')}</p>
+          )}
 
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {Object.entries(result.parameters).map(([name, value]) => (
-                      <div key={name} className="rounded-xl border border-border bg-card p-4">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{name}</p>
-                        <p className="mt-2 font-mono text-sm font-semibold">{formatScientific(value)}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="rounded-xl border border-border bg-card p-3">
-                    <SimpleChart
-                      series={arrheniusSeries}
-                      xLabel="1000/T (K^-1)"
-                      yLabel="ln(k)"
-                      title={t('arrheniusPlot')}
-                    />
-                  </div>
-
-                  <div className="overflow-x-auto rounded-xl border border-border">
-                    <table className="w-full min-w-[760px] text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/40">
-                          <th className="px-3 py-2 text-left font-medium">{tFitting('temperature')} (K)</th>
-                          <th className="px-3 py-2 text-left font-medium">1/T</th>
-                          <th className="px-3 py-2 text-left font-medium">k exp</th>
-                          <th className="px-3 py-2 text-left font-medium">ln(k) exp</th>
-                          <th className="px-3 py-2 text-left font-medium">ln(k) fit</th>
-                          <th className="px-3 py-2 text-left font-medium">k fit</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {result.curve.temperature.map((temperature, index) => (
-                          <tr key={`${temperature}-${index}`} className="border-b last:border-b-0">
-                            <td className="px-3 py-2 font-mono text-xs">{formatScientific(temperature)}</td>
-                            <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.inv_temperature[index])}</td>
-                            <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.k_exp[index])}</td>
-                            <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.ln_k_exp[index])}</td>
-                            <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.ln_k_fit[index])}</td>
-                            <td className="px-3 py-2 font-mono text-xs">{formatScientific(Math.exp(result.curve.ln_k_fit[index]))}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+          {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('endpointNotes')}</CardTitle>
-          <CardDescription>{t('endpointNotesDesc')}</CardDescription>
+          <CardTitle>{t('endpointOutput')}</CardTitle>
+          <CardDescription>{t('endpointOutputDesc')}</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-sm font-medium">{t('notesTheory')}</p>
-            <p className="mt-2 text-sm text-muted-foreground">{t('notesTheoryDesc')}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-sm font-medium">{t('notesParameters')}</p>
-            <p className="mt-2 text-sm text-muted-foreground">{t('notesParametersDesc')}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-sm font-medium">{t('notesOutput')}</p>
-            <p className="mt-2 text-sm text-muted-foreground">{t('notesOutputDesc')}</p>
-          </div>
+        <CardContent className="space-y-6">
+          {!result ? (
+            <div className="rounded-xl border border-dashed border-border bg-muted/30 px-5 py-12 text-center">
+              <Orbit className="mx-auto mb-3 size-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">{t('noEndpointResult')}</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t('theoryField')}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">{result.theory}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Chi-square
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">{formatScientific(result.chi_square)}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t('pointsLoaded')}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">{result.curve.temperature.length}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {Object.entries(result.parameters).map(([name, value]) => (
+                  <div key={name} className="rounded-xl border border-border bg-card p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{name}</p>
+                    <p className="mt-2 font-mono text-sm font-semibold">{formatScientific(value)}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl border border-border bg-card p-3">
+                <SimpleChart
+                  series={arrheniusSeries}
+                  xLabel="1000/T (K^-1)"
+                  yLabel="ln(k)"
+                  title={t('arrheniusPlot')}
+                />
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-border">
+                <table className="w-full min-w-[760px] text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/40">
+                      <th className="px-3 py-2 text-left font-medium">{tFitting('temperature')} (K)</th>
+                      <th className="px-3 py-2 text-left font-medium">1/T</th>
+                      <th className="px-3 py-2 text-left font-medium">k exp</th>
+                      <th className="px-3 py-2 text-left font-medium">ln(k) exp</th>
+                      <th className="px-3 py-2 text-left font-medium">ln(k) fit</th>
+                      <th className="px-3 py-2 text-left font-medium">k fit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.curve.temperature.map((temperature, index) => (
+                      <tr key={`${temperature}-${index}`} className="border-b last:border-b-0">
+                        <td className="px-3 py-2 font-mono text-xs">{formatScientific(temperature)}</td>
+                        <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.inv_temperature[index])}</td>
+                        <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.k_exp[index])}</td>
+                        <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.ln_k_exp[index])}</td>
+                        <td className="px-3 py-2 font-mono text-xs">{formatScientific(result.curve.ln_k_fit[index])}</td>
+                        <td className="px-3 py-2 font-mono text-xs">{formatScientific(Math.exp(result.curve.ln_k_fit[index]))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

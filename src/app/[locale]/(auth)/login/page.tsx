@@ -1,7 +1,7 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
@@ -19,10 +19,17 @@ export default function LoginPage() {
   const t = useTranslations('auth');
   const tb = useTranslations('loginBranding');
   const locale = useLocale();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const successMessage = searchParams.get('reset')
+    ? t('passwordResetSuccess')
+    : searchParams.get('changed')
+      ? t('passwordChangedSuccess')
+      : '';
 
   function validateFields(values: LoginFormData) {
     const result = loginSchema.safeParse(values);
@@ -115,6 +122,7 @@ export default function LoginPage() {
           <h2 className="text-2xl font-semibold text-foreground">{t('signIn')}</h2>
           <p className="mt-1 text-sm text-gray-500">{tb('accessPlatform')}</p>
 
+          {successMessage && <p className="mt-4 text-sm text-green-700">{successMessage}</p>}
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
           <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
@@ -168,6 +176,11 @@ export default function LoginPage() {
                   {fieldErrors.password}
                 </p>
               )}
+              <div className="mt-3 text-right">
+                <Link href={`/${locale}/forgot-password`} className="text-sm font-medium text-[#1e3a5f] hover:underline">
+                  {t('forgotPassword')}
+                </Link>
+              </div>
             </div>
             <button type="submit" disabled={loading}
               className="w-full rounded-lg bg-[#1e3a5f] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50">

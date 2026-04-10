@@ -33,9 +33,9 @@ describe('mdGenerateSchema', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.dynamicsType).toBe('CPMD');
-      expect(result.data.functional).toBe('BLYP');
+      expect(result.data.functional).toBe('PBE');
       expect(result.data.temperature).toBe(300);
-      expect(result.data.maxSteps).toBe(10000);
+      expect(result.data.maxSteps).toBe(50000);
     }
   });
 

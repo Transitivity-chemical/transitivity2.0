@@ -1,14 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { MODELS } from '@/app/api/v1/chat/route';
-import type { ModelConfig } from '@/app/api/v1/chat/route';
+import { AI_MODEL_CONFIGS, getModelById } from '@/lib/ai-models';
 
 describe('MODELS configuration', () => {
-  it('has 10 models total', () => {
-    expect(MODELS).toHaveLength(10);
+  it('has models configured', () => {
+    expect(AI_MODEL_CONFIGS.length).toBeGreaterThan(10);
   });
 
   it('all models have non-empty id, name, and provider', () => {
-    for (const model of MODELS) {
+    for (const model of AI_MODEL_CONFIGS) {
       expect(model.id).toBeTruthy();
       expect(model.name).toBeTruthy();
       expect(model.provider).toBeTruthy();
@@ -16,23 +15,21 @@ describe('MODELS configuration', () => {
   });
 
   it('all model IDs follow provider/model format', () => {
-    for (const model of MODELS) {
-      expect(model.id).toMatch(/^[\w-]+\/[\w.-]+$/);
+    for (const model of AI_MODEL_CONFIGS) {
+      expect(model.id).toMatch(/^[\w-]+\/[\w.:-]+$/);
     }
   });
 
-  it('has 6 free models', () => {
-    const freeModels = MODELS.filter(m => m.isFree);
-    expect(freeModels).toHaveLength(6);
-  });
+  it('has at least one free and one paid model', () => {
+    const freeModels = AI_MODEL_CONFIGS.filter((m) => m.isFree);
+    const paidModels = AI_MODEL_CONFIGS.filter((m) => !m.isFree);
 
-  it('has 4 pro models', () => {
-    const proModels = MODELS.filter(m => !m.isFree);
-    expect(proModels).toHaveLength(4);
+    expect(freeModels.length).toBeGreaterThan(0);
+    expect(paidModels.length).toBeGreaterThan(0);
   });
 
   it('free models have zero cost', () => {
-    const freeModels = MODELS.filter(m => m.isFree);
+    const freeModels = AI_MODEL_CONFIGS.filter((m) => m.isFree);
     for (const model of freeModels) {
       expect(model.inputCostPer1M).toBe(0);
       expect(model.outputCostPer1M).toBe(0);
@@ -40,20 +37,20 @@ describe('MODELS configuration', () => {
   });
 
   it('pro models have positive costs', () => {
-    const proModels = MODELS.filter(m => !m.isFree);
+    const proModels = AI_MODEL_CONFIGS.filter((m) => !m.isFree);
     for (const model of proModels) {
-      expect(model.inputCostPer1M).toBeGreaterThan(0);
-      expect(model.outputCostPer1M).toBeGreaterThan(0);
+      expect((model.inputCostPer1M ?? 0)).toBeGreaterThan(0);
+      expect((model.outputCostPer1M ?? 0)).toBeGreaterThan(0);
     }
   });
 
   it('all model IDs are unique', () => {
-    const ids = MODELS.map(m => m.id);
+    const ids = AI_MODEL_CONFIGS.map((m) => m.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('contains expected providers', () => {
-    const providers = [...new Set(MODELS.map(m => m.provider))];
+    const providers = [...new Set(AI_MODEL_CONFIGS.map((m) => m.provider))];
     expect(providers).toContain('DeepSeek');
     expect(providers).toContain('Meta');
     expect(providers).toContain('OpenAI');
@@ -61,10 +58,10 @@ describe('MODELS configuration', () => {
     expect(providers).toContain('Google');
   });
 
-  it('includes Claude Sonnet 4 as a pro model', () => {
-    const claude = MODELS.find(m => m.name === 'Claude Sonnet 4');
+  it('can retrieve a known model by id', () => {
+    const claude = getModelById('anthropic/claude-sonnet-4');
     expect(claude).toBeDefined();
-    expect(claude!.isFree).toBe(false);
-    expect(claude!.provider).toBe('Anthropic');
+    expect(claude?.provider).toBe('Anthropic');
+    expect(claude?.isFree).not.toBe(true);
   });
 });

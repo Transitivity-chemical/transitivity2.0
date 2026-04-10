@@ -14,12 +14,13 @@ vi.mock('next-intl', () => ({
       nav: {
         dashboard: 'Dashboard',
         rateConstant: 'Rate Constant',
-        fitting: 'Fitting',
         md: 'Molecular Dynamics',
-        ml: 'Machine Learning',
+        fitting: 'Fitting',
         assistant: 'Assistant',
-        serverStatus: 'Server Status',
         wiki: 'Wiki',
+        plans: 'Plans',
+        settings: 'Settings',
+        adminUsers: 'Admin Users',
       },
       common: {
         credits: 'credits',
@@ -55,17 +56,18 @@ describe('Sidebar', () => {
     render(<Sidebar role="USER" />);
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Rate Constant')).toBeInTheDocument();
-    expect(screen.getByText('Fitting')).toBeInTheDocument();
     expect(screen.getByText('Molecular Dynamics')).toBeInTheDocument();
-    expect(screen.getByText('Machine Learning')).toBeInTheDocument();
+    expect(screen.getByText('Fitting')).toBeInTheDocument();
     expect(screen.getByText('Assistant')).toBeInTheDocument();
-    expect(screen.queryByText('Server Status')).not.toBeInTheDocument();
     expect(screen.getByText('Wiki')).toBeInTheDocument();
+    expect(screen.getByText('Plans')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
+    expect(screen.queryByText('Admin Users')).not.toBeInTheDocument();
   });
 
   it('shows server status for admin users', () => {
     render(<Sidebar role="ADMIN" />);
-    expect(screen.getByText('Server Status')).toBeInTheDocument();
+    expect(screen.getByText('Admin Users')).toBeInTheDocument();
   });
 
   it('displays FREE tier badge by default', () => {

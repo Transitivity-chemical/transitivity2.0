@@ -25,6 +25,8 @@ model User {
   emailVerified       Boolean   @default(false)
   emailVerifyToken    String?
   emailVerifyExpiry   DateTime?
+  passwordResetTokenHash String?
+  passwordResetExpiry DateTime?
   isInstitutional     Boolean   @default(false)
   institution         String?
   trialExpiresAt      DateTime?

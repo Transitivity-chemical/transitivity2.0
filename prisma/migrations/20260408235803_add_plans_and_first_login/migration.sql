@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - Added the required column `updatedAt` to the `institutional_domains` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "Plan" AS ENUM ('STUDENT', 'PROFESSIONAL', 'ENTERPRISE');
 
@@ -11,7 +5,9 @@ CREATE TYPE "Plan" AS ENUM ('STUDENT', 'PROFESSIONAL', 'ENTERPRISE');
 ALTER TABLE "institutional_domains" ADD COLUMN     "allowedRole" "UserRole" NOT NULL DEFAULT 'RESEARCHER',
 ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN     "defaultPlan" "Plan" NOT NULL DEFAULT 'STUDENT',
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL;
+ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE "institutional_domains" ALTER COLUMN "updatedAt" DROP DEFAULT;
 
 -- AlterTable
 ALTER TABLE "users" ADD COLUMN     "invitedAt" TIMESTAMP(3),

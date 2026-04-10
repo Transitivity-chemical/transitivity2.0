@@ -29,10 +29,10 @@ export default async function MdListPage({
   });
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="flex flex-col gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-primary">{t('title')}</h1>
+          <h1 className="text-2xl font-bold text-primary sm:text-3xl">{t('title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
         </div>
       </div>
