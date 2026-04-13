@@ -1,4 +1,16 @@
 {
+  "mdTabs": {
+    "singleTab": "Entrada única",
+    "multiTab": "Entradas múltiplas"
+  },
+  "rateConstantTabs": {
+    "ctstTab": "TST Convencional",
+    "marcusTab": "Teoria de Marcus"
+  },
+  "fittingTabs": {
+    "arrheniusTab": "Curva de Arrhenius",
+    "transitivityTab": "Curva de Transitividade"
+  },
   "common": {
     "appName": "Transitivity 2.0",
     "tagline": "Plataforma SaaS de Química Computacional",

@@ -61,7 +61,7 @@ function HeroBackground() {
         />
       ))}
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/75" />
+      <div className="absolute inset-0 bg-[oklch(12%_0.01_250)]/75" />
     </div>
   );
 }

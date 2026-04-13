@@ -58,6 +58,7 @@ export function FileList() {
   const t = useTranslations('files');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const fileTableLabel = t('fileTableLabel', { defaultMessage: 'Arquivos carregados' });
 
   const fetcher = useCallback(async (): Promise<FileListResponse> => {
     const res = await fetch('/api/v1/files?limit=50');
@@ -114,28 +115,42 @@ export function FileList() {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" aria-label={fileTableLabel}>
+        <caption className="sr-only">{fileTableLabel}</caption>
         <thead>
           <tr className="border-b text-left text-xs font-medium text-muted-foreground">
-            <th className="pb-2 pr-4">{t('name')}</th>
-            <th className="pb-2 pr-4">{t('size')}</th>
-            <th className="pb-2 pr-4">{t('date')}</th>
-            <th className="pb-2 pr-4">{t('type')}</th>
-            <th className="pb-2" />
+            <th scope="col" className="pb-2 pr-4 text-[11px] uppercase tracking-wide">
+              {t('name')}
+            </th>
+            <th scope="col" className="pb-2 pr-4 text-[11px] uppercase tracking-wide">
+              {t('size')}
+            </th>
+            <th scope="col" className="pb-2 pr-4 text-[11px] uppercase tracking-wide">
+              {t('date')}
+            </th>
+            <th scope="col" className="pb-2 pr-4 text-[11px] uppercase tracking-wide">
+              {t('type')}
+            </th>
+            <th scope="col" className="pb-2 text-[11px] uppercase tracking-wide">
+              {t('actionColumn', { defaultMessage: 'Ação' })}
+            </th>
           </tr>
         </thead>
         <tbody>
           {files.map((file) => (
             <tr key={file.id} className="border-b last:border-0">
               <td className="py-2.5 pr-4 font-medium">{file.originalName}</td>
-              <td className="py-2.5 pr-4 text-muted-foreground">
+              <td className="py-2.5 pr-4 font-mono text-[13px] text-muted-foreground">
                 {formatFileSize(file.sizeBytes)}
               </td>
-              <td className="py-2.5 pr-4 text-muted-foreground">
+              <td className="py-2.5 pr-4 font-mono text-[13px] text-muted-foreground">
                 {formatDate(file.createdAt)}
               </td>
               <td className="py-2.5 pr-4">
-                <Badge variant={FILE_TYPE_COLORS[file.fileType] ?? 'outline'}>
+                <Badge
+                  variant={FILE_TYPE_COLORS[file.fileType] ?? 'outline'}
+                  className="rounded-sm px-2 py-0.5 text-[11px] font-mono uppercase tracking-wide"
+                >
                   {file.fileType.replace(/_/g, ' ')}
                 </Badge>
               </td>
@@ -156,20 +171,24 @@ export function FileList() {
                       size="xs"
                       disabled={deleting}
                       onClick={() => setConfirmDeleteId(null)}
-                    >
-                      {t('confirmNo')}
-                    </Button>
-                  </span>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => setConfirmDeleteId(file.id)}
                   >
-                    <Trash2 className="size-3.5 text-muted-foreground hover:text-destructive" />
+                    {t('confirmNo')}
                   </Button>
-                )}
-              </td>
+                </span>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => setConfirmDeleteId(file.id)}
+                  aria-label={t('deleteFileLabel', {
+                    file: file.originalName,
+                    defaultMessage: `Excluir ${file.originalName}`,
+                  })}
+                >
+                  <Trash2 className="size-3.5 text-muted-foreground hover:text-destructive" />
+                </Button>
+              )}
+            </td>
             </tr>
           ))}
         </tbody>

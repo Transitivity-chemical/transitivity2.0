@@ -3,8 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calculator, TrendingUp, Atom, Activity, Coins, Briefcase } from 'lucide-react';
+
+type QuickLink = {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  count?: number;
+};
 
 export default async function DashboardPage({
   params,
@@ -118,131 +125,287 @@ export default async function DashboardPage({
   }
   const maxCount = Math.max(...dayBuckets.map((b) => b.count), 1);
 
-  const quickLinks = [
+  const quickLinks: QuickLink[] = [
     { href: `/${locale}/rate-constant/new`, icon: Calculator, label: tNav('rateConstant'), count: reactionCount },
     { href: `/${locale}/fitting`, icon: TrendingUp, label: tNav('fitting'), count: fittingCount },
     { href: `/${locale}/md`, icon: Atom, label: tNav('md'), count: mdCount },
   ];
 
+  const firstName =
+    (session?.user?.name ?? session?.user?.email ?? '').split(' ')[0] || '';
+  const latestItem = allActivity[0];
+  const totalWeekActivity = dayBuckets.reduce((sum, bucket) => sum + bucket.count, 0);
+  const formatStatus = (status: string) =>
+    status
+      .toLowerCase()
+      .split('_')
+      .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+      .join(' ');
+
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          {t('welcome', { name: (session?.user?.name ?? session?.user?.email ?? '').split(' ')[0] })}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Acompanhe suas calculações e gere novos inputs em um só lugar.
-        </p>
-      </div>
-
-      {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={Activity} label={t('totalCalc')} value={totalCalc} accent="primary" />
-        <StatCard icon={Coins} label={t('creditsUsed')} value={creditsUsed} accent="amber" />
-        <StatCard icon={Briefcase} label={t('activeJobs')} value={activeJobs} accent="green" />
-      </div>
-
-      {/* Quick links */}
-      <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Atalhos
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {quickLinks.map(({ href, icon: Icon, label, count }) => (
-            <Link key={href} href={href}>
-              <Card className="group hover:border-primary hover:shadow-md transition-all cursor-pointer h-full">
-                <CardContent className="flex items-center gap-4 py-5">
-                  <div className="rounded-lg bg-primary/10 p-3 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <Icon className="size-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{label}</p>
-                    {count != null && (
-                      <p className="text-xs text-muted-foreground">
-                        {count} {count === 1 ? 'item' : 'itens'}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-5 pb-16 pt-8 lg:px-10">
+      <section className="rounded-lg border border-border/60 bg-background/60 p-6 shadow-[0_30px_80px_-60px_rgba(15,23,42,0.7)]">
+        <div className="flex flex-wrap items-start gap-6">
+          <div className="min-w-[240px] flex-1">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-muted-foreground/70">
+              {t('quickStart')}
+            </p>
+            <h1 className="mt-3 text-[32px] font-semibold leading-tight tracking-tight">
+              {t('welcome', { name: firstName })}
+            </h1>
+            <p className="mt-2 max-w-2xl text-[13px] leading-5 text-muted-foreground">
+              {t('dropFile')}
+            </p>
+          </div>
+          <div className="rounded-lg border border-border/50 px-5 py-4 text-right">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground/70">
+              {t('recentActivity')}
+            </p>
+            <p className="mt-2 text-[26px] font-semibold font-mono tabular-nums">
+              {allActivity.length.toLocaleString(locale)}
+            </p>
+            <p className="text-xs text-muted-foreground/80">50 max snapshot</p>
+          </div>
         </div>
-      </div>
 
-      {/* All calculations — full-width main panel (FIX-2) */}
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">Suas calculações</CardTitle>
-          <span className="text-xs text-muted-foreground">{allActivity.length} itens</span>
-        </CardHeader>
-        <CardContent>
-          {allActivity.length === 0 ? (
-            <div className="py-12 text-center">
-              <Activity className="mx-auto mb-3 size-10 text-muted-foreground/50" />
-              <p className="text-sm font-medium">Nenhuma calculação ainda</p>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">
-                Comece gerando seu primeiro input.
-              </p>
-              <div className="flex justify-center gap-2 flex-wrap">
-                <Link href={`/${locale}/rate-constant`} className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent">
-                  Constante de velocidade
-                </Link>
-                <Link href={`/${locale}/md`} className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent">
-                  Dinâmica molecular
-                </Link>
-                <Link href={`/${locale}/fitting`} className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent">
-                  Ajuste de curvas
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <StatCard icon={Activity} label={t('totalCalc')} value={totalCalc} accent="primary" locale={locale} />
+          <StatCard icon={Coins} label={t('creditsUsed')} value={creditsUsed} accent="amber" locale={locale} />
+          <StatCard icon={Briefcase} label={t('activeJobs')} value={activeJobs} accent="green" locale={locale} />
+        </div>
+
+        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(260px,1fr)]">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70">
+              {t('quickActions')}
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {quickLinks.map((item) => (
+                <QuickLaunchCard key={item.href} {...item} locale={locale} />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border/60 bg-card/60 p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70">{t('usage')}</p>
+              <span className="text-xs text-muted-foreground/70">7d</span>
+            </div>
+            <div className="mt-5 flex items-end gap-1.5 sm:gap-2 min-w-0">
+              {dayBuckets.map((bucket) => {
+                const height = (bucket.count / maxCount) * 72;
+                return (
+                  <div key={bucket.label} className="flex min-w-0 flex-1 flex-col items-center gap-1 text-[10px] text-muted-foreground/80">
+                    <div
+                      className="flex w-full items-end justify-center rounded-sm border border-border/50 bg-foreground/[0.04] px-1 pb-1 pt-2"
+                      style={{ height: `${height + 24}px` }}
+                    >
+                      <span
+                        className="w-1.5 rounded-sm bg-foreground/70"
+                        style={{ height: `${Math.max(6, height)}px` }}
+                      />
+                    </div>
+                    <span className="truncate font-semibold tracking-wide">{bucket.label}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground/60 tabular-nums">{bucket.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground/70 font-mono">
+              {totalWeekActivity.toLocaleString(locale)} / 7d
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.9fr)]">
+        <div className="rounded-lg border border-border/60 bg-card/70">
+          <CardHeader className="flex flex-col gap-1 border-b border-border/50 px-6 py-6">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-muted-foreground/70">{t('recentActivity')}</p>
+            <CardTitle className="text-2xl font-semibold tracking-tight">
+              {t('usage')}
+            </CardTitle>
+            <span className="text-xs text-muted-foreground/80">
+              {allActivity.length.toLocaleString(locale)} {allActivity.length === 1 ? 'registro' : 'registros'}
+            </span>
+          </CardHeader>
+          <CardContent className="p-0">
+            {allActivity.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+                <div className="inline-flex size-11 items-center justify-center rounded-md border border-dashed border-border/60 text-muted-foreground/70">
+                  <Activity className="size-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold tracking-tight">{t('noActivity')}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t('quickStart')}
+                  </p>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {quickLinks.map(({ href, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="rounded-md border border-border/60 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 transition hover:border-foreground/50 hover:text-foreground"
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border border-transparent px-2 pb-2 pt-2 sm:px-4">
+                <div className="rounded-lg border border-border/50">
+                  <table className="w-full text-sm" aria-label={t('recentActivity')}>
+                    <thead className="bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground/80">
+                      <tr>
+                        <th scope="col" className="px-4 py-3 font-medium">
+                          Tipo
+                        </th>
+                        <th scope="col" className="px-4 py-3 font-medium">
+                          Nome
+                        </th>
+                        <th scope="col" className="px-4 py-3 font-medium">
+                          Status
+                        </th>
+                        <th scope="col" className="px-4 py-3 font-medium">
+                          Data
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium">
+                          Link
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allActivity.map((item) => (
+                        <tr key={`${item.type}-${item.id}`} className="border-t border-border/40 hover:bg-muted/10">
+                          <td className="px-4 py-3">
+                            <span className="inline-flex rounded-md border border-border/60 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.2em]">
+                              {item.type}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-medium">{item.label}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              aria-label={formatStatus(item.status)}
+                              className={`inline-flex rounded-md px-2 py-0.5 text-xs font-semibold ${
+                                item.status === 'COMPLETED'
+                                  ? 'bg-emerald-500/10 text-emerald-500'
+                                  : item.status === 'FAILED'
+                                    ? 'bg-rose-500/10 text-rose-500'
+                                    : item.status === 'RUNNING' || item.status === 'PENDING'
+                                      ? 'bg-amber-400/10 text-amber-400'
+                                      : 'bg-muted text-muted-foreground'
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap tabular-nums">
+                            {item.createdAt.toLocaleString(locale)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Link href={item.href} className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground transition hover:text-primary">
+                              Abrir
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </div>
+
+        <aside className="space-y-6">
+          <div className="rounded-lg border border-border/60 bg-card/70 p-5">
+            <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70">
+              {t('usage')}
+            </p>
+            <div className="mt-4 space-y-3">
+              {quickLinks.map((item) => (
+                <QueueRow key={`${item.href}-summary`} {...item} locale={locale} />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card/70 p-5">
+            <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70">{t('recentActivity')}</p>
+            {latestItem ? (
+              <div className="mt-4 space-y-3">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/80">
+                  {latestItem.type}
+                </p>
+                <p className="text-[22px] font-semibold leading-snug tracking-tight">{latestItem.label}</p>
+                <div className="text-[12px] leading-5 text-muted-foreground">
+                  <p>{formatStatus(latestItem.status)}</p>
+                  <p className="mt-1">{latestItem.createdAt.toLocaleString(locale)}</p>
+                </div>
+                <Link
+                  href={latestItem.href}
+                  className="inline-flex items-center gap-2 text-[13px] font-semibold text-primary transition hover:text-primary/80"
+                >
+                  Abrir registro →
                 </Link>
               </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40 text-left">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Tipo</th>
-                    <th className="px-3 py-2 font-medium">Nome</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Data</th>
-                    <th className="px-3 py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allActivity.map((item) => (
-                    <tr key={`${item.type}-${item.id}`} className="border-t hover:bg-muted/20">
-                      <td className="px-3 py-2">
-                        <span className="inline-block rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                          {item.type}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 font-medium">{item.label}</td>
-                      <td className="px-3 py-2">
-                        <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-                          item.status === 'COMPLETED' ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
-                          : item.status === 'FAILED' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
-                          : item.status === 'RUNNING' || item.status === 'PENDING' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-                          : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        {item.createdAt.toLocaleString(locale)}
-                      </td>
-                      <td className="px-3 py-2 text-right">
-                        <Link href={item.href} className="text-xs text-primary hover:underline">
-                          Abrir →
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            ) : (
+              <p className="mt-4 text-[13px] leading-5 text-muted-foreground">{t('noActivity')}</p>
+            )}
+          </div>
+        </aside>
+      </section>
+
+    </div>
+  );
+}
+
+function QuickLaunchCard({
+  href,
+  icon: Icon,
+  label,
+  count,
+  locale,
+}: QuickLink & { locale: string }) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between rounded-lg border border-border/60 bg-card/80 px-4 py-3 transition hover:-translate-y-0.5 hover:border-foreground/60"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="inline-flex size-10 items-center justify-center rounded-md bg-foreground/[0.08] text-foreground/80 transition group-hover:bg-foreground/[0.15] group-hover:text-foreground">
+          <Icon className="size-5" />
+        </span>
+        <span className="truncate text-sm font-semibold tracking-tight">{label}</span>
+      </div>
+      {typeof count === 'number' && (
+        <span className="rounded-md border border-border/60 px-2 py-0.5 text-[11px] font-semibold font-mono tabular-nums text-muted-foreground/80">
+          {count.toLocaleString(locale)}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function QueueRow({
+  icon: Icon,
+  label,
+  count,
+  locale,
+}: QuickLink & { locale: string }) {
+  return (
+    <div className="flex min-w-0 items-center justify-between rounded-lg border border-border/60 px-4 py-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="inline-flex size-9 items-center justify-center rounded-md bg-foreground/[0.06] text-foreground/70">
+          <Icon className="size-4" />
+        </span>
+        <span className="truncate text-sm font-medium tracking-tight">{label}</span>
+      </div>
+      {typeof count === 'number' && (
+        <span className="font-mono text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground/70 tabular-nums">
+          {count.toLocaleString(locale)}
+        </span>
+      )}
     </div>
   );
 }
@@ -252,29 +415,33 @@ function StatCard({
   label,
   value,
   accent,
+  locale,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
   accent: 'primary' | 'amber' | 'green';
+  locale: string;
 }) {
   const accentCls =
     accent === 'amber'
-      ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+      ? 'bg-amber-500/15 text-amber-300'
       : accent === 'green'
-        ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'
-        : 'bg-primary/10 text-primary';
+        ? 'bg-emerald-500/15 text-emerald-300'
+        : 'bg-primary/15 text-primary';
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 py-5">
-        <div className={`rounded-lg p-3 ${accentCls}`}>
-          <Icon className="size-5" />
-        </div>
+    <div className="rounded-lg border border-border/60 bg-background/80 p-4 shadow-[0_25px_45px_-40px_rgba(15,23,42,0.8)]">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold tracking-tight tabular-nums">{value.toLocaleString()}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-muted-foreground/70">{label}</p>
+          <p className="mt-1 text-[28px] font-semibold tracking-tight font-mono tabular-nums">
+            {value.toLocaleString(locale)}
+          </p>
         </div>
-      </CardContent>
-    </Card>
+        <span className={`inline-flex size-10 items-center justify-center rounded-md ${accentCls}`}>
+          <Icon className="size-5" />
+        </span>
+      </div>
+    </div>
   );
 }

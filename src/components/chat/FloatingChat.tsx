@@ -36,6 +36,7 @@ export function FloatingChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const t = useTranslations('assistant');
+  const panelId = 'floating-chat-panel';
 
   const isOnAssistantPage = pathname.includes('/assistant');
 
@@ -148,12 +149,18 @@ export function FloatingChat() {
   return (
     <>
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900" style={{ width: 400, height: 520 }}>
+        <div
+          id={panelId}
+          role="region"
+          aria-label={t('title')}
+          className="fixed bottom-24 right-6 z-50 flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+          style={{ width: 400, height: 520 }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-200 bg-[#1e3a5f] px-4 py-3 dark:border-gray-700">
             <div className="flex items-center gap-2">
               <GammaIcon size={20} color="#fff" />
-              <span className="text-sm font-semibold text-white">{t('title')}</span>
+              <span className="text-[13px] font-semibold text-white">{t('title')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -186,25 +193,35 @@ export function FloatingChat() {
                   </div>
                 )}
               </div>
-              <button onClick={() => setIsOpen(false)} className="rounded-md p-1 text-white hover:bg-white/20">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded-md p-1 text-white hover:bg-white/20"
+                aria-label={t('title')}
+              >
                 <X size={16} />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ scrollBehavior: 'smooth' }}>
+          <div
+            className="flex-1 space-y-3 overflow-y-auto p-4"
+            style={{ scrollBehavior: 'smooth' }}
+            role="log"
+            aria-live="polite"
+            aria-busy={isStreaming}
+          >
             {messages.length === 0 && (
               <div className="flex h-full items-center justify-center text-center">
                 <div>
                   <GammaIcon size={48} color="#d1d5db" className="mx-auto" />
-                  <p className="mt-3 text-sm text-gray-400">{t('placeholder')}</p>
+                  <p className="mt-3 text-[13px] text-gray-400">{t('placeholder')}</p>
                 </div>
               </div>
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${msg.role === 'user' ? 'bg-[#1e3a5f] text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 rounded-tl-sm'}`}>
+                <div className={`max-w-[85%] rounded-lg px-3.5 py-2 text-[13px] ${msg.role === 'user' ? 'bg-[#1e3a5f] text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 rounded-tl-sm'} min-w-0`}>
                   {msg.role === 'assistant' ? (
                     <MarkdownMessage content={msg.content} />
                   ) : (
@@ -216,7 +233,7 @@ export function FloatingChat() {
 
             {isStreaming && messages[messages.length - 1]?.role === 'assistant' && !messages[messages.length - 1]?.content && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-gray-100 dark:bg-gray-800 px-3 py-2">
+                <div className="flex items-center gap-2 rounded-lg rounded-tl-sm bg-gray-100 dark:bg-gray-800 px-3 py-2">
                   <Loader2 size={14} className="animate-spin text-gray-400" />
                   <span className="text-xs text-gray-400">...</span>
                 </div>
@@ -230,12 +247,13 @@ export function FloatingChat() {
           <div className="border-t border-gray-200 p-3 dark:border-gray-700">
             <div className="flex items-end gap-2">
               <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                placeholder={t('placeholder')} rows={1}
-                className="max-h-24 flex-1 resize-none rounded-xl border border-gray-300 bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-[#1e3a5f] dark:border-gray-600 dark:text-white"
+                placeholder={t('placeholder')} rows={1} aria-label={t('placeholder')}
+                className="max-h-24 flex-1 resize-none rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-[13px] outline-none transition-colors focus:border-[#1e3a5f] dark:border-gray-600 dark:text-white"
                 style={{ minHeight: 38 }} />
               <button onClick={sendMessage} disabled={!input.trim() || isStreaming}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1e3a5f] text-white transition-opacity hover:opacity-90 disabled:opacity-40">
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1e3a5f] text-white transition-opacity hover:opacity-90 disabled:opacity-40">
                 <Send size={16} />
+                <span className="sr-only">{t('sendMessage')}</span>
               </button>
             </div>
           </div>
@@ -243,8 +261,12 @@ export function FloatingChat() {
       )}
 
       {/* Floating button */}
-      <button onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#1e3a5f] text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        aria-controls={panelId}
+        aria-expanded={isOpen}
+        aria-label={t('title')}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-lg bg-[#1e3a5f] text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
         style={{ animation: isOpen ? 'none' : 'pulse-soft 3s ease-in-out infinite' }}>
         {isOpen ? <X size={24} /> : <GammaIcon size={28} color="#fff" />}
       </button>

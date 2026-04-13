@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useRef, useCallback } from 'react';
+import type { CSSProperties } from 'react';
 
 interface Atom {
   element: string;
@@ -64,6 +65,7 @@ export function MoleculeViewer({
   const [rotation, setRotation] = useState({ x: -20, y: 30 });
   const [dragging, setDragging] = useState(false);
   const lastMouse = useRef({ x: 0, y: 0 });
+  const ariaLabel = `${atoms.length} átomos no visualizador molecular`;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setDragging(true);
@@ -85,6 +87,20 @@ export function MoleculeViewer({
   );
 
   const handleMouseUp = useCallback(() => setDragging(false), []);
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<SVGSVGElement>) => {
+    if (e.key === 'ArrowLeft') {
+      setRotation((prev) => ({ ...prev, y: prev.y - 5 }));
+    } else if (e.key === 'ArrowRight') {
+      setRotation((prev) => ({ ...prev, y: prev.y + 5 }));
+    } else if (e.key === 'ArrowUp') {
+      setRotation((prev) => ({ ...prev, x: prev.x - 5 }));
+    } else if (e.key === 'ArrowDown') {
+      setRotation((prev) => ({ ...prev, x: prev.x + 5 }));
+    } else {
+      return;
+    }
+    e.preventDefault();
+  }, []);
 
   const { projected, bonds } = useMemo(() => {
     if (atoms.length === 0) return { projected: [], bonds: [] };
@@ -163,10 +179,10 @@ export function MoleculeViewer({
   if (atoms.length === 0) {
     return (
       <div
-        className={`flex items-center justify-center bg-muted/30 rounded-lg ${className}`}
+        className={`flex items-center justify-center rounded-md bg-muted/30 ${className}`}
         style={{ width, height }}
       >
-        <p className="text-sm text-muted-foreground">No atoms to display</p>
+        <p className="text-sm text-muted-foreground">Sem átomos para visualizar</p>
       </div>
     );
   }
@@ -175,11 +191,21 @@ export function MoleculeViewer({
     <svg
       width={width}
       height={height}
-      className={`cursor-grab active:cursor-grabbing rounded-lg bg-card border select-none ${className || ''}`}
+      className={`cursor-grab select-none rounded-md border bg-card active:cursor-grabbing ${className || ''}`}
+      tabIndex={0}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onKeyDown={handleKeyDown}
+      role="img"
+      aria-label={ariaLabel}
+      style={
+        {
+          '--chemistry-accent': '#1e3a5f',
+          '--chemistry-bond': 'color-mix(in oklch, var(--chemistry-accent), white 40%)',
+        } as CSSProperties
+      }
     >
       {/* Bonds */}
       {bonds.map(({ i, j }, bi) => (
@@ -189,7 +215,7 @@ export function MoleculeViewer({
           y1={projected[i].sy}
           x2={projected[j].sx}
           y2={projected[j].sy}
-          stroke="currentColor"
+          stroke="var(--chemistry-bond)"
           strokeWidth="2"
           opacity="0.3"
         />

@@ -68,6 +68,49 @@ export type FittingMultiRequest = {
 };
 
 const FITTING_ENDPOINT = 'http://pitomba.ueg.br/fit?use_queue=true';
+const TRANSITIVITY_FITTING_ENDPOINT = 'http://pitomba.ueg.br/fit/transitivity?use_queue=true';
+
+export type TransitivityFittingTheory = 'Arrhenius' | 'Aquilanti-Mundim' | 'VFT';
+
+export type TransitivityFitRequest = {
+  temperatures: number[];
+  rate_constants: number[];
+  theory: TransitivityFittingTheory;
+  initial_params: number[];
+  lock: boolean[];
+  gsa?: Partial<GsaPayload>;
+  apply_sg?: boolean;
+  sg_poly_order?: number;
+};
+
+export const TRANSITIVITY_THEORY_CONFIG: Record<TransitivityFittingTheory, TheoryConfig> = {
+  Arrhenius: { labels: ['Ea', 'd'], initialParams: [0.1, 0.1], lock: [false, false] },
+  'Aquilanti-Mundim': { labels: ['Ea', 'd'], initialParams: [0.1, 0.1], lock: [false, false] },
+  VFT: { labels: ['Ea', 'd'], initialParams: [0.1, 0.1], lock: [false, false] },
+};
+
+export async function fetchRemoteTransitivityFit(payload: TransitivityFitRequest) {
+  const response = await fetch(TRANSITIVITY_FITTING_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({
+      temperatures: payload.temperatures,
+      rate_constants: payload.rate_constants,
+      theory: payload.theory,
+      initial_params: payload.initial_params,
+      lock: payload.lock,
+      gsa: { ...DEFAULT_GSA, ...payload.gsa },
+      apply_sg: payload.apply_sg ?? false,
+      sg_poly_order: payload.sg_poly_order ?? 2,
+    }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({ detail: `HTTP ${response.status}` }));
+    throw new Error(body.detail || body.error || `HTTP ${response.status}`);
+  }
+  return (await response.json()) as RemoteFitResponse;
+}
 
 export const THEORY_CONFIG: Record<FittingTheory, TheoryConfig> = {
   Arrhenius: {

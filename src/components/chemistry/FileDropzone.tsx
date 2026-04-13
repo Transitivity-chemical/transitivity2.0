@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useCallback, type DragEvent } from 'react';
+import { useState, useRef, useCallback, type DragEvent, useId, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Upload, FileUp, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const ALLOWED_EXTENSIONS = '.log,.out,.gjf,.com,.xyz,.mol,.txt,.dat,.csv';
+const MAX_FILE_SIZE_MB = 25;
 
 interface UploadedFile {
   id: string;
@@ -28,14 +29,29 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState(() => t('dropzone'));
   const inputRef = useRef<HTMLInputElement>(null);
+  const reduceMotion = usePrefersReducedMotion();
+  const dropzoneDescriptionId = useId();
+  const statusRegionId = useId();
 
   const handleUpload = useCallback(
     async (file: File) => {
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        setStatus('error');
+        const tooLargeMessage = t('fileTooLarge', {
+          size: MAX_FILE_SIZE_MB,
+          defaultMessage: `Arquivo acima de ${MAX_FILE_SIZE_MB} MB.`,
+        });
+        setErrorMessage(tooLargeMessage);
+        setStatusMessage(tooLargeMessage);
+        return;
+      }
       setUploading(true);
       setProgress(0);
       setStatus('idle');
       setErrorMessage('');
+      setStatusMessage(`${t('uploading')}: ${file.name}`);
 
       const formData = new FormData();
       formData.append('file', file);
@@ -69,10 +85,12 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
 
         setStatus('success');
         setProgress(100);
+        setStatusMessage(`${file.name} pronto`);
         onUploadComplete?.(result);
       } catch (err) {
         setStatus('error');
         setErrorMessage(err instanceof Error ? err.message : t('uploadError'));
+        setStatusMessage(t('uploadError'));
       } finally {
         setUploading(false);
       }
@@ -117,6 +135,18 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
     [handleUpload],
   );
 
+  const handleKeyboardActivate = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        inputRef.current?.click();
+      }
+    },
+    [],
+  );
+
+  const openPicker = useCallback(() => inputRef.current?.click(), []);
+
   return (
     <div
       className={cn(
@@ -129,6 +159,12 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      role="button"
+      tabIndex={0}
+      aria-describedby={dropzoneDescriptionId}
+      aria-busy={uploading}
+      onKeyDown={handleKeyboardActivate}
+      aria-live="polite"
     >
       <input
         ref={inputRef}
@@ -137,14 +173,23 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
         onChange={handleFileSelect}
         className="hidden"
       />
+      <p id={dropzoneDescriptionId} className="sr-only">
+        {t('dropzone')}, {t('browse')}
+      </p>
+      <p id={statusRegionId} className="sr-only" aria-live="polite">
+        {statusMessage}
+      </p>
 
       {uploading ? (
         <div className="space-y-3">
           <FileUp className="mx-auto size-10 animate-pulse text-primary" />
           <p className="text-sm font-medium">{t('uploading')}</p>
-          <div className="mx-auto h-2 w-48 overflow-hidden rounded-full bg-muted">
+          <div className="mx-auto h-2 w-48 overflow-hidden rounded-sm bg-muted">
             <div
-              className="h-full bg-primary transition-all duration-300"
+              className={cn(
+                'h-full bg-primary',
+                reduceMotion ? '' : 'transition-all duration-300',
+              )}
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -174,7 +219,7 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
               variant="link"
               size="sm"
               className="mt-1"
-              onClick={() => inputRef.current?.click()}
+              onClick={openPicker}
             >
               {t('browse')}
             </Button>
@@ -187,4 +232,16 @@ export function FileDropzone({ onUploadComplete, className }: FileDropzoneProps)
       )}
     </div>
   );
+}
+
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduce(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+  return reduce;
 }

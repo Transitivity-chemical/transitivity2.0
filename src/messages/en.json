@@ -1,4 +1,16 @@
 {
+  "mdTabs": {
+    "singleTab": "Single Input",
+    "multiTab": "Multiple Inputs"
+  },
+  "rateConstantTabs": {
+    "ctstTab": "Conventional TST",
+    "marcusTab": "Marcus Theory"
+  },
+  "fittingTabs": {
+    "arrheniusTab": "Arrhenius Plot",
+    "transitivityTab": "Transitivity Plot"
+  },
   "common": {
     "appName": "Transitivity 2.0",
     "tagline": "Computational Chemistry SaaS Platform",

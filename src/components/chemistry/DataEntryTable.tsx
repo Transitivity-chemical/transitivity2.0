@@ -167,7 +167,11 @@ export function DataEntryTable({ points, onChange, errors = [] }: DataEntryTable
       </div>
 
       {uploadError && (
-        <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div
+          className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          role="status"
+          aria-live="assertive"
+        >
           {uploadError}
         </div>
       )}
@@ -175,22 +179,33 @@ export function DataEntryTable({ points, onChange, errors = [] }: DataEntryTable
       {/* Table */}
       <div className="overflow-x-auto rounded-md border" onPaste={handlePaste}>
         <table className="w-full text-sm">
+          <caption className="sr-only">
+            {t('tableCaption', { defaultMessage: 'Pontos experimentais' })}
+          </caption>
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="px-3 py-2 text-left font-medium w-12">#</th>
-              <th className="px-3 py-2 text-left font-medium">
+              <th scope="col" className="px-3 py-2 text-left font-medium w-12">
+                #
+              </th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">
                 {t('temperature')} (K)
               </th>
-              <th className="px-3 py-2 text-left font-medium">
+              <th scope="col" className="px-3 py-2 text-left font-medium">
                 {t('rateConstant')} k(T)
               </th>
-              <th className="px-3 py-2 text-right font-medium w-16" />
+              <th scope="col" className="px-3 py-2 text-right font-medium w-16">
+                {t('actionsColumn', { defaultMessage: 'Ações' })}
+              </th>
             </tr>
           </thead>
           <tbody>
             {points.map((point, index) => {
               const tempError = getError(point.id, 'temperature');
               const rateError = getError(point.id, 'rateConstant');
+              const tempInputId = `${point.id}-temperature`;
+              const rateInputId = `${point.id}-rate`;
+              const tempErrorId = tempError ? `${point.id}-temperature-error` : undefined;
+              const rateErrorId = rateError ? `${point.id}-rate-error` : undefined;
 
               return (
                 <tr key={point.id} className="border-b last:border-b-0">
@@ -199,6 +214,7 @@ export function DataEntryTable({ points, onChange, errors = [] }: DataEntryTable
                   </td>
                   <td className="px-3 py-1.5">
                     <input
+                      id={tempInputId}
                       type="text"
                       inputMode="decimal"
                       value={point.temperature}
@@ -206,20 +222,23 @@ export function DataEntryTable({ points, onChange, errors = [] }: DataEntryTable
                         updateRow(point.id, 'temperature', e.target.value)
                       }
                       placeholder="e.g. 300"
-                      className={`w-full rounded-md border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${
+                      className={`w-full rounded-md border px-2 py-1 text-[13px] font-mono outline-none focus:ring-2 focus:ring-primary/30 ${
                         tempError
                           ? 'border-destructive bg-destructive/5'
                           : 'border-input bg-background'
                       }`}
+                      aria-invalid={Boolean(tempError)}
+                      aria-describedby={tempErrorId}
                     />
                     {tempError && (
-                      <p className="mt-0.5 text-xs text-destructive">
+                      <p id={tempErrorId} className="mt-0.5 text-xs text-destructive">
                         {tempError.message}
                       </p>
                     )}
                   </td>
                   <td className="px-3 py-1.5">
                     <input
+                      id={rateInputId}
                       type="text"
                       inputMode="decimal"
                       value={point.rateConstant}
@@ -227,14 +246,16 @@ export function DataEntryTable({ points, onChange, errors = [] }: DataEntryTable
                         updateRow(point.id, 'rateConstant', e.target.value)
                       }
                       placeholder="e.g. 1.5e-12"
-                      className={`w-full rounded-md border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${
+                      className={`w-full rounded-md border px-2 py-1 text-[13px] font-mono outline-none focus:ring-2 focus:ring-primary/30 ${
                         rateError
                           ? 'border-destructive bg-destructive/5'
                           : 'border-input bg-background'
                       }`}
+                      aria-invalid={Boolean(rateError)}
+                      aria-describedby={rateErrorId}
                     />
                     {rateError && (
-                      <p className="mt-0.5 text-xs text-destructive">
+                      <p id={rateErrorId} className="mt-0.5 text-xs text-destructive">
                         {rateError.message}
                       </p>
                     )}
@@ -260,7 +281,7 @@ export function DataEntryTable({ points, onChange, errors = [] }: DataEntryTable
 
       {/* Info */}
       <p className="text-xs text-muted-foreground">
-        {t('dataPoints')}: {points.length} &middot; {t('minPoints')}
+        {t('dataPoints')}: <span className="font-mono">{points.length}</span>, {t('minPoints')}
       </p>
     </div>
   );

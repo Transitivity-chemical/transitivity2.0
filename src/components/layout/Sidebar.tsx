@@ -154,7 +154,7 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
           ) : (
             <div className="space-y-2">
               <span
-                className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                className="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
                 style={{ backgroundColor: '#1e3a5f', color: '#fff' }}
               >
                 {displayTier}
@@ -162,9 +162,9 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
 
               {maxCredits ? (
                 <div className="space-y-1">
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="h-2 w-full overflow-hidden rounded-sm bg-muted">
                     <div
-                      className="h-full rounded-full transition-all duration-300"
+                      className="h-full rounded-sm transition-all duration-300"
                       style={{
                         width: `${progressPercent}%`,
                         backgroundColor: '#1e3a5f',

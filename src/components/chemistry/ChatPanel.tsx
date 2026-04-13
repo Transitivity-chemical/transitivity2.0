@@ -26,8 +26,10 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | undefined>(conversationId);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messageInputLabel = t('placeholder');
 
   // Load existing messages when conversationId changes
   useEffect(() => {
@@ -52,8 +54,9 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
   };
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+    const behavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     scrollToBottom();
@@ -191,13 +194,18 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
   return (
     <div className="flex h-full flex-col">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        role="log"
+        aria-live="polite"
+        aria-busy={isStreaming}
+      >
         {messages.length === 0 && (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <div className="text-center">
               <Bot className="mx-auto mb-3 size-12 opacity-40" />
               <p className="text-lg font-medium">{t('title')}</p>
-              <p className="mt-1 text-sm">{t('placeholder')}</p>
+              <p className="mt-1 text-[13px]">{t('placeholder')}</p>
             </div>
           </div>
         )}
@@ -211,13 +219,13 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
             )}
           >
             {msg.role === 'ASSISTANT' && (
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Bot className="size-4" />
               </div>
             )}
             <div
               className={cn(
-                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                'max-w-[80%] rounded-lg px-4 py-2.5 text-[13px] leading-relaxed break-words min-w-0',
                 msg.role === 'USER'
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-foreground',
@@ -236,7 +244,7 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
               )}
             </div>
             {msg.role === 'USER' && (
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
                 <User className="size-4" />
               </div>
             )}
@@ -256,8 +264,9 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
             placeholder={t('placeholder')}
             disabled={isStreaming}
             rows={1}
+            aria-label={messageInputLabel}
             className={cn(
-              'flex-1 resize-none rounded-xl border bg-muted/50 px-4 py-3 text-sm',
+              'flex-1 resize-none rounded-lg border bg-muted/50 px-4 py-3 text-[13px]',
               'placeholder:text-muted-foreground',
               'focus:outline-none focus:ring-2 focus:ring-primary/50',
               'disabled:opacity-50',
@@ -267,7 +276,7 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
             size="icon"
-            className="shrink-0 rounded-xl"
+            className="shrink-0 rounded-lg"
           >
             {isStreaming ? (
               <Loader2 className="size-4 animate-spin" />
@@ -280,4 +289,18 @@ export default function ChatPanel({ conversationId, onNewConversation }: ChatPan
       </div>
     </div>
   );
+}
+
+function usePrefersReducedMotion() {
+  const [prefersReduce, setPrefersReduce] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReduce(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return prefersReduce;
 }

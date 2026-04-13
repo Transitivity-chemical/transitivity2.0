@@ -37,6 +37,7 @@ const DYNAMICS = [
   { value: 'MTD', label: 'Meta Dynamics (MTD)' },
   { value: 'BOMD', label: 'Born Oppenheimer (BOMD)' },
 ];
+const MAX_ATOMS = 1200;
 
 function parseXyz(text: string): Atom[] {
   const lines = text.trim().split(/\r?\n/);
@@ -140,21 +141,29 @@ export function MDWizard() {
 
   const handleFile = async (file: File) => {
     setError(null);
-    const text = await file.text();
-    const ext = file.name.toLowerCase().split('.').pop() ?? '';
-    let parsed: Atom[] = [];
-    if (ext === 'xyz') parsed = parseXyz(text);
-    else if (ext === 'gjf' || ext === 'com') parsed = parseGjf(text);
-    else if (ext === 'log' || ext === 'out') parsed = parseGaussianLog(text);
-    else parsed = parseXyz(text); // best effort
+    try {
+      const text = await file.text();
+      const ext = file.name.toLowerCase().split('.').pop() ?? '';
+      let parsed: Atom[] = [];
+      if (ext === 'xyz') parsed = parseXyz(text);
+      else if (ext === 'gjf' || ext === 'com') parsed = parseGjf(text);
+      else if (ext === 'log' || ext === 'out') parsed = parseGaussianLog(text);
+      else parsed = parseXyz(text); // best effort
 
-    if (parsed.length === 0) {
-      setError(`Não foi possível extrair átomos de ${file.name}`);
-      return;
+      if (parsed.length === 0) {
+        setError(`Não foi possível extrair átomos de ${file.name}`);
+        return;
+      }
+      if (parsed.length > MAX_ATOMS) {
+        setError(`Limite de ${MAX_ATOMS} átomos excedido (${parsed.length}).`);
+        return;
+      }
+      setAtoms(parsed);
+      setFilename(file.name);
+      if (!name) setName(file.name.replace(/\.[^.]+$/, ''));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Falha ao ler arquivo.');
     }
-    setAtoms(parsed);
-    setFilename(file.name);
-    if (!name) setName(file.name.replace(/\.[^.]+$/, ''));
   };
 
   const loadExample = () => {
@@ -247,7 +256,7 @@ export function MDWizard() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Dinâmica Molecular</h1>
@@ -259,85 +268,95 @@ export function MDWizard() {
         </Button>
       </div>
 
-      {/* 1. File upload */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Arquivo de geometria</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3">
-            <label className="cursor-pointer flex-1">
-              <input
-                type="file"
-                accept=".xyz,.gjf,.com,.out,.log"
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                className="hidden"
-              />
-              <span className="flex items-center gap-2 rounded-md border-2 border-dashed border-input px-4 py-3 text-sm font-medium hover:border-primary hover:bg-accent transition-colors">
-                <Upload className="size-4" />
-                {filename || 'Selecionar arquivo (.xyz, .gjf, .out, .log)'}
-              </span>
-            </label>
-            {atoms.length > 0 && (
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {atoms.length} átomos
-              </span>
-            )}
-          </div>
-          <div className="mt-3">
-            <Label htmlFor="md-name" className="text-xs">Nome da simulação</Label>
-            <Input
-              id="md-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="ex: H2O_CPMD"
-              className="mt-1"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 2. Dynamics radio */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Tipo de dinâmica</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {DYNAMICS.map((d) => (
-              <label
-                key={d.value}
-                className={`flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition-colors ${
-                  dynamicsType === d.value
-                    ? 'border-primary bg-primary/5 text-primary font-medium'
-                    : 'border-input hover:bg-accent'
-                }`}
-              >
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_minmax(0,1fr)]">
+        {/* 1. File upload */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Arquivo de geometria</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <label className="flex-1 cursor-pointer">
                 <input
-                  type="radio"
-                  name="dynamics"
-                  value={d.value}
-                  checked={dynamicsType === d.value}
-                  onChange={(e) => setDynamicsType(e.target.value)}
-                  className="accent-primary"
+                  type="file"
+                  accept=".xyz,.gjf,.com,.out,.log"
+                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                  className="hidden"
                 />
-                <span className="text-sm">{d.label}</span>
+                <span className="flex items-center gap-2 rounded-md border-2 border-dashed border-input px-4 py-3 text-sm font-medium transition-colors hover:border-primary hover:bg-accent">
+                  <Upload className="size-4" />
+                  {filename || 'Selecionar arquivo (.xyz, .gjf, .out, .log)'}
+                </span>
               </label>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              {atoms.length > 0 && (
+                <span className="whitespace-nowrap text-xs text-muted-foreground">
+                  {atoms.length} átomos
+                </span>
+              )}
+            </div>
+            <div className="mt-3">
+              <Label htmlFor="md-name" className="text-xs">
+                Nome da simulação
+              </Label>
+              <Input
+                id="md-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="ex: H2O_CPMD"
+                className="mt-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* 3. Options grid (3 cols × 2 rows = Tkinter layout) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Opções</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="functional">Functional</Label>
-              <Input id="functional" value={functional} onChange={(e) => setFunctional(e.target.value)} className="mt-1" />
+        {/* 2. Dynamics radio */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Tipo de dinâmica</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {DYNAMICS.map((d) => (
+                <label
+                  key={d.value}
+                  className={`flex items-center gap-2 rounded-md border px-3 py-2 transition-colors ${
+                    dynamicsType === d.value
+                      ? 'border-primary bg-primary/5 text-primary font-medium'
+                      : 'border-input hover:bg-accent'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="dynamics"
+                    value={d.value}
+                    checked={dynamicsType === d.value}
+                    onChange={(e) => setDynamicsType(e.target.value)}
+                    className="accent-primary"
+                  />
+                  <span className="text-sm">{d.label}</span>
+                </label>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* 3. Options grid (3 cols × 2 rows = Tkinter layout) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Opções</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div>
+                <Label htmlFor="functional">Functional</Label>
+                <Input
+                  id="functional"
+                  value={functional}
+                  onChange={(e) => setFunctional(e.target.value)}
+                  className="mt-1"
+                />
             </div>
             <div>
               <Label htmlFor="pseudo">Pseudo</Label>
@@ -420,61 +439,75 @@ export function MDWizard() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
 
-      {/* 4. Lattices */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Lattices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: 'a', value: latticeA, set: setLatticeA },
-              { label: 'b', value: latticeB, set: setLatticeB },
-              { label: 'c', value: latticeC, set: setLatticeC },
-            ].map((f) => (
-              <div key={f.label}>
-                <Label>{f.label}</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={f.value}
-                  onChange={(e) => f.set(parseFloat(e.target.value) || 0)}
-                  className="mt-1"
-                />
-              </div>
-            ))}
-            {[
-              { label: 'cos(a)', value: cosA, set: setCosA },
-              { label: 'cos(b)', value: cosB, set: setCosB },
-              { label: 'cos(c)', value: cosC, set: setCosC },
-            ].map((f) => (
-              <div key={f.label}>
-                <Label>{f.label}</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={f.value}
-                  onChange={(e) => f.set(parseFloat(e.target.value) || 0)}
-                  className="mt-1"
-                />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        {/* 4. Lattices */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Lattices</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {[
+                { label: 'a', value: latticeA, set: setLatticeA },
+                { label: 'b', value: latticeB, set: setLatticeB },
+                { label: 'c', value: latticeC, set: setLatticeC },
+              ].map((f) => (
+                <div key={f.label}>
+                  <Label>{f.label}</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={f.value}
+                    onChange={(e) => f.set(parseFloat(e.target.value) || 0)}
+                    className="mt-1"
+                  />
+                </div>
+              ))}
+              {[
+                { label: 'cos(a)', value: cosA, set: setCosA },
+                { label: 'cos(b)', value: cosB, set: setCosB },
+                { label: 'cos(c)', value: cosC, set: setCosC },
+              ].map((f) => (
+                <div key={f.label}>
+                  <Label>{f.label}</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={f.value}
+                    onChange={(e) => f.set(parseFloat(e.target.value) || 0)}
+                    className="mt-1"
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600" role="status" aria-live="assertive">
+          {error}
+        </p>
+      )}
 
-      <div className="flex justify-end">
-        <Button onClick={handleGenerate} disabled={loading || atoms.length === 0} size="lg">
+      <div className="flex flex-col gap-3 rounded-md border border-border/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-xs text-muted-foreground">
+          {filename ? (
+            <>
+              Arquivo: <span className="font-mono">{filename}</span> — {atoms.length} átomos
+            </>
+          ) : (
+            'Nenhum arquivo carregado'
+          )}
+        </div>
+        <Button onClick={handleGenerate} disabled={loading || atoms.length === 0} size="sm">
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando...
             </>
           ) : (
-            'Generate Input'
+            'Gerar input'
           )}
         </Button>
       </div>

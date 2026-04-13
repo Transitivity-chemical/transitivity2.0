@@ -381,6 +381,46 @@ export function RateConstantWorkbench() {
     }
   }
 
+  const loadExample = () => {
+    // H + HBr → H2 + Br bimolecular benchmark (Sims et al. 1994).
+    // Seed species with synthetic parsed data so the user can press "Calcular" immediately.
+    setReactionName('H + HBr');
+    setReactionType('BIMOLECULAR');
+    setSpecies([
+      {
+        id: 'sample-h', slotKey: 'reactant-1', role: 'REACTANT', label: 'Reactant 1',
+        filename: 'H.log', energyInputEnabled: false, sourceScfEnergy: -0.5,
+        parsedData: { nAtoms: 1, multiplicity: 2, molecularMassKg: 1.673e-27,
+          scfEnergy: -0.5, vibrationalTemps: [], rotationalTemps: [], rotationalSymmetryNumber: 1 },
+      },
+      {
+        id: 'sample-hbr', slotKey: 'reactant-2', role: 'REACTANT', label: 'Reactant 2',
+        filename: 'HBr.log', energyInputEnabled: false, sourceScfEnergy: -2573.86,
+        parsedData: { nAtoms: 2, multiplicity: 1, molecularMassKg: 1.344e-25,
+          scfEnergy: -2573.86, vibrationalTemps: [3811], rotationalTemps: [12.0], rotationalSymmetryNumber: 1 },
+      },
+      {
+        id: 'sample-ts', slotKey: 'transition-state', role: 'TRANSITION_STATE', label: 'Transition State',
+        filename: 'H_HBr_TS.log', energyInputEnabled: false, sourceScfEnergy: -2574.35,
+        parsedData: { nAtoms: 3, multiplicity: 2, molecularMassKg: 1.361e-25,
+          scfEnergy: -2574.35, vibrationalTemps: [2800, 600], rotationalTemps: [2.5, 0.8],
+          rotationalSymmetryNumber: 1, imaginaryFreq: -1200 },
+      },
+      {
+        id: 'sample-h2', slotKey: 'product-1', role: 'PRODUCT', label: 'Product 1',
+        filename: 'H2.log', energyInputEnabled: false, sourceScfEnergy: -1.17,
+        parsedData: { nAtoms: 2, multiplicity: 1, molecularMassKg: 3.347e-27,
+          scfEnergy: -1.17, vibrationalTemps: [6338], rotationalTemps: [87.6], rotationalSymmetryNumber: 2 },
+      },
+      {
+        id: 'sample-br', slotKey: 'product-2', role: 'PRODUCT', label: 'Product 2',
+        filename: 'Br.log', energyInputEnabled: false, sourceScfEnergy: -2573.19,
+        parsedData: { nAtoms: 1, multiplicity: 2, molecularMassKg: 1.327e-25,
+          scfEnergy: -2573.19, vibrationalTemps: [], rotationalTemps: [], rotationalSymmetryNumber: 1 },
+      },
+    ]);
+  };
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:rounded-[2rem]">
@@ -582,7 +622,7 @@ export function RateConstantWorkbench() {
               <p className="mt-2 text-xs text-muted-foreground">{t('temperaturesHint')}</p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div className="rounded-lg border border-border bg-card/90 p-4">
               <div className="space-y-5">
                 <Button
                   type="button"
@@ -615,7 +655,7 @@ export function RateConstantWorkbench() {
                 </Button>
 
                 {errorMessage && (
-                  <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                  <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
                     {errorMessage}
                   </div>
                 )}
@@ -633,7 +673,7 @@ export function RateConstantWorkbench() {
                 Solvent Effect
               </Button>
 
-              <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+              <div className="space-y-4 rounded-md border border-border bg-muted/20 p-4">
                 <div>
                   <Label>{t('tunneling')}</Label>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -645,7 +685,8 @@ export function RateConstantWorkbench() {
                           key={method}
                           type="button"
                           onClick={() => toggleTunneling(method)}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                          aria-pressed={selected}
+                          className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition ${
                             selected
                               ? 'border-primary bg-primary text-primary-foreground'
                               : 'border-input bg-background text-muted-foreground hover:border-primary/50'
@@ -738,7 +779,7 @@ export function RateConstantWorkbench() {
         </div>
       </div>
 
-      <div ref={summaryRef} className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <div ref={summaryRef} className="grid gap-6 items-start lg:grid-cols-1 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -747,7 +788,7 @@ export function RateConstantWorkbench() {
             </CardHeader>
             <CardContent>
               {!result ? (
-                <div className="rounded-2xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-md border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
                   <Upload className="mx-auto mb-3 size-8 opacity-60" />
                   {t('noEndpointResult')}
                 </div>
@@ -757,17 +798,29 @@ export function RateConstantWorkbench() {
                       <p className="text-xs text-muted-foreground">{t('forwardBarrier')}</p>
                       <p className="mt-1 text-lg font-semibold">{formatMetric(result.forwardBarrier)} kJ/mol</p>
                   </div>
-                  <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-xs text-muted-foreground">{t('reverseBarrier')}</p>
-                    <p className="mt-1 text-lg font-semibold">{formatMetric(result.reverseBarrier)} kJ/mol</p>
+                  <div className="rounded-md border border-border bg-card/90 p-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      {t('reverseBarrier')}
+                    </p>
+                    <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-primary">
+                      {formatMetric(result.reverseBarrier)} kJ/mol
+                    </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-xs text-muted-foreground">{t('crossoverTemp')}</p>
-                    <p className="mt-1 text-lg font-semibold">{formatMetric(result.crossoverTemp)} K</p>
+                  <div className="rounded-md border border-border bg-card/90 p-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      {t('crossoverTemp')}
+                    </p>
+                    <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-primary">
+                      {formatMetric(result.crossoverTemp)} K
+                    </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-xs text-muted-foreground">{t('imagFreq')}</p>
-                    <p className="mt-1 text-lg font-semibold">{formatMetric(result.imaginaryFreq)} cm^-1</p>
+                  <div className="rounded-md border border-border bg-card/90 p-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      {t('imagFreq')}
+                    </p>
+                    <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-primary">
+                      {formatMetric(result.imaginaryFreq)} cm^-1
+                    </p>
                   </div>
                 </div>
               )}
@@ -782,14 +835,14 @@ export function RateConstantWorkbench() {
             </CardHeader>
             <CardContent className="space-y-3">
               {species.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                <div className="rounded-md border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
                   {t('noSpeciesLoaded')}
                 </div>
               ) : (
                 species.map((item) => (
-                  <div key={item.id} className="rounded-xl border border-border bg-card p-4">
+                  <div key={item.id} className="rounded-md border border-border bg-card/90 p-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+                      <span className="rounded-sm bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
                         {item.label}
                       </span>
                       <span className="min-w-0 break-all text-sm font-medium sm:text-base">{item.filename}</span>
@@ -825,7 +878,7 @@ export function RateConstantWorkbench() {
                   title={reactionName || t('title')}
                 />
               ) : (
-                <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                <div className="rounded-md border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
                   {t('noPlotData')}
                 </div>
               )}
@@ -839,7 +892,7 @@ export function RateConstantWorkbench() {
             </CardHeader>
             <CardContent>
               {!result ? (
-                <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                <div className="rounded-md border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
                   {t('noEndpointResult')}
                 </div>
               ) : (

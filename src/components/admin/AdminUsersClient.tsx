@@ -13,7 +13,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, Sparkles, X, Users } from 'lucide-react';
+import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, X, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { DomainEditorModal } from './DomainEditorModal';
@@ -275,35 +275,35 @@ export function AdminUsersClient({ locale }: Props) {
       </div>
 
       {pendingRequests.length > 0 && (
-        <div className="mb-6 rounded-lg border border-purple-200 dark:border-purple-900 bg-purple-50/40 dark:bg-purple-950/20 p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-purple-600" />
-            <h2 className="text-sm font-semibold">Solicitações pendentes ({pendingRequests.length})</h2>
+        <div className="mb-6 rounded-md border border-border/70 bg-card/40 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold tracking-tight">Solicitações pendentes</h2>
+            <span className="text-xs text-muted-foreground">{pendingRequests.length}</span>
           </div>
           <ul className="space-y-2">
             {pendingRequests.map((r) => (
               <li
                 key={r.id}
-                className="flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-sm"
+                className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-background/80 px-3 py-2 text-sm"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium truncate">{r.user.fullName}</span>
                     <span className="text-xs text-muted-foreground">({r.user.email})</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Mudar de <strong>{r.currentPlan ?? '—'}</strong> para <strong>{r.targetPlan}</strong>
-                    <span className="ml-2">· {new Date(r.createdAt).toLocaleString(locale)}</span>
+                    <span className="ml-2 text-muted-foreground/80">{new Date(r.createdAt).toLocaleString(locale)}</span>
                   </p>
-                  {r.reason && <p className="text-xs italic text-muted-foreground mt-1">&ldquo;{r.reason}&rdquo;</p>}
+                  {r.reason && <p className="mt-1 text-xs italic text-muted-foreground">&ldquo;{r.reason}&rdquo;</p>}
                 </div>
-                <div className="flex gap-1 flex-shrink-0">
+                <div className="flex flex-shrink-0 gap-1">
                   <Button size="sm" variant="default" onClick={() => handleApproveRequest(r.id)}>
-                    <Check className="h-3.5 w-3.5 mr-1" />
+                    <Check className="mr-1 h-3.5 w-3.5" />
                     Aprovar
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => handleRejectRequest(r.id)}>
-                    <X className="h-3.5 w-3.5 mr-1" />
+                    <X className="mr-1 h-3.5 w-3.5" />
                     Rejeitar
                   </Button>
                 </div>
@@ -544,16 +544,14 @@ function TempPasswordModal({
               </Button>
             </div>
           </div>
-          <div className="rounded-md border p-3 text-sm">
+          <div className="rounded-md border border-border/70 p-3 text-sm">
             <p className={data.emailSent ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}>
               {data.emailSent
-                ? `✓ ${t('tempPasswordModal.emailSent')} (${data.emailProvider})`
-                : `⚠ ${t('tempPasswordModal.emailNotSent')} (${data.emailProvider})`}
+                ? `${t('tempPasswordModal.emailSent')} (${data.emailProvider})`
+                : `${t('tempPasswordModal.emailNotSent')} (${data.emailProvider})`}
             </p>
           </div>
-          <p className="text-xs text-amber-700 dark:text-amber-400">
-            ⚠️ {t('tempPasswordModal.warning')}
-          </p>
+          <p className="text-xs text-amber-700 dark:text-amber-400">{t('tempPasswordModal.warning')}</p>
         </div>
         <DialogFooter>
           <Button onClick={onClose}>{t('tempPasswordModal.close')}</Button>

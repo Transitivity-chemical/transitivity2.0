@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DataEntryTable, createEmptyRow, type DataPoint } from '@/components/chemistry/DataEntryTable';
 import { SimpleChart } from '@/components/chemistry/SimpleChart';
 import { THEORY_CONFIG, type FittingRunRequest, type FittingTheory } from '@/lib/fitting-api';
+import { SAMPLE_FITTING_DATA, SAMPLE_FITTING_META } from '@/lib/sample-data';
+import { toast } from 'sonner';
 
 type ValidationError = {
   rowId: string;
@@ -223,6 +225,16 @@ export function FittingWorkbench() {
     }
   }
 
+  const loadExample = () => {
+    const rows: DataPoint[] = SAMPLE_FITTING_DATA.map((p, i) => ({
+      id: `sample-${i}`,
+      temperature: String(p.temperature),
+      rateConstant: p.rateConstant.toExponential(3),
+    }));
+    setPoints(rows);
+    toast.success(`${SAMPLE_FITTING_META.title}: ${SAMPLE_FITTING_DATA.length} pontos carregados`);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -334,12 +346,12 @@ export function FittingWorkbench() {
             <Button onClick={handleRunFitting} disabled={status === 'loading'} className="w-full sm:w-auto">
               {status === 'loading' ? (
                 <>
-                  <RefreshCw className="animate-spin" />
+                  <RefreshCw className="mr-2 size-4 animate-spin" />
                   {tCommon('loading')}
                 </>
               ) : (
                 <>
-                  <FlaskConical />
+                  <FlaskConical className="mr-2 size-4" />
                   {t('runEndpointFit')}
                 </>
               )}

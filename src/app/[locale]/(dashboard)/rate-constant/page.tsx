@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { RateConstantWorkbench } from './RateConstantWorkbench';
+import { RateConstantTabsClient } from './RateConstantTabsClient';
 
 export default async function RateConstantPage({
   params,
@@ -25,7 +25,7 @@ export default async function RateConstantPage({
           <p className="max-w-3xl text-sm text-muted-foreground">{t('workspaceDesc')}</p>
         </div>
       </div>
-      <RateConstantWorkbench />
+      <RateConstantTabsClient />
     </div>
   );
 }

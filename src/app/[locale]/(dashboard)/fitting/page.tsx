@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { TrendingUp, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FittingWorkbench } from './FittingWorkbench';
+import { FittingTabsClient } from './FittingTabsClient';
 
 export default async function FittingPage({
   params,
@@ -32,7 +32,7 @@ export default async function FittingPage({
           </Link>
         </Button>
       </div>
-      <FittingWorkbench />
+      <FittingTabsClient />
     </div>
   );
 }

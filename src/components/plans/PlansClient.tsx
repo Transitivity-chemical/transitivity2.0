@@ -113,7 +113,7 @@ export function PlansClient({ locale, planConfigs, currentPlan, credits }: Props
             <div
               key={cfg.plan}
               className={cn(
-                'relative rounded-2xl border bg-card p-8 transition-all',
+                'relative rounded-lg border bg-card p-6 shadow-sm transition-all hover:shadow-md',
                 isFeatured && 'border-primary/40 shadow-lg shadow-primary/5',
                 isCurrent && 'ring-2 ring-primary',
               )}

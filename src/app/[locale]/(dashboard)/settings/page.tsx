@@ -6,10 +6,10 @@ import { SettingsClient } from './SettingsClient';
 export default async function SettingsPage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
   const session = await auth();
-  const { locale } = await params;
+  const { locale } = params;
   if (!session?.user?.id) redirect(`/${locale}/login`);
 
   const user = await prisma.user.findUnique({
@@ -79,7 +79,7 @@ export default async function SettingsPage({
     .slice(0, 30);
 
   return (
-    <div className="p-6">
+    <div className="px-6 pb-10 pt-6 sm:px-10">
       <SettingsClient
         user={JSON.parse(JSON.stringify(user))}
         usageRecords={JSON.parse(JSON.stringify(usageRecords))}

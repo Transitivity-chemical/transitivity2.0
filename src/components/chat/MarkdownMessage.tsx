@@ -20,13 +20,13 @@ const components: Components = {
     const isInline = !className;
     if (isInline) {
       return (
-        <code className="rounded bg-black/10 px-1 py-0.5 text-[0.85em] dark:bg-white/10" {...props}>
+        <code className="rounded bg-primary/10 px-1 py-0.5 font-mono text-[0.85em] dark:bg-white/10" {...props}>
           {children}
         </code>
       );
     }
     return (
-      <code className={`block overflow-x-auto rounded-lg bg-black/10 p-3 text-xs dark:bg-white/10 ${className ?? ''}`} {...props}>
+      <code className={`block overflow-x-auto rounded-md bg-primary/5 p-3 font-mono text-xs dark:bg-white/10 ${className ?? ''}`} {...props}>
         {children}
       </code>
     );
@@ -54,7 +54,7 @@ const components: Components = {
 
 export function MarkdownMessage({ content }: { content: string }) {
   return (
-    <div className="prose-chat break-words text-sm leading-relaxed">
+    <div className="prose-chat break-words text-[13px] leading-relaxed">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}

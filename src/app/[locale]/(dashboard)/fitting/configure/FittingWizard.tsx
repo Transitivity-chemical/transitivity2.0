@@ -141,7 +141,7 @@ export function FittingWizard() {
           <div key={s} className="flex items-center gap-2">
             <button
               onClick={() => s < step && setStep(s)}
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+              className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition-colors ${
                 s === step
                   ? 'bg-primary text-primary-foreground'
                   : s < step
