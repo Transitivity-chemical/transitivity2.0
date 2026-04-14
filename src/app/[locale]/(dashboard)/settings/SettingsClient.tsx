@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Loader2, Save, Globe } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface User {
@@ -50,10 +53,78 @@ export function SettingsClient({
 }) {
   const t = useTranslations('settings');
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as TabKey) || 'profile';
   const [tab, setTab] = useState<TabKey>(VALID_TABS.includes(initialTab) ? initialTab : 'profile');
   const [themePreference, setThemePreference] = useState<ThemeValue>('system');
+
+  // Profile edit state
+  const [fullName, setFullName] = useState(user.fullName);
+  const [savingName, setSavingName] = useState(false);
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [changingPw, setChangingPw] = useState(false);
+
+  async function saveName() {
+    if (fullName.trim().length < 2) {
+      toast.error('Nome muito curto');
+      return;
+    }
+    setSavingName(true);
+    try {
+      const res = await fetch('/api/v1/auth/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: fullName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      toast.success('Nome atualizado');
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro');
+    } finally {
+      setSavingName(false);
+    }
+  }
+
+  async function changePassword() {
+    if (newPw.length < 8) {
+      toast.error('Nova senha: mínimo 8 caracteres');
+      return;
+    }
+    if (newPw !== confirmPw) {
+      toast.error('As senhas não coincidem');
+      return;
+    }
+    setChangingPw(true);
+    try {
+      const res = await fetch('/api/v1/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      toast.success('Senha alterada');
+      setCurrentPw('');
+      setNewPw('');
+      setConfirmPw('');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro');
+    } finally {
+      setChangingPw(false);
+    }
+  }
+
+  function switchLocale(next: string) {
+    if (next === locale) return;
+    const rest = pathname?.replace(new RegExp(`^/${locale}`), '') || '/dashboard';
+    router.push(`/${next}${rest}`);
+  }
 
   // Sync tab to URL via shallow replace
   useEffect(() => {
@@ -205,6 +276,107 @@ export function SettingsClient({
                 </div>
               )}
             </dl>
+          </section>
+
+          {/* Update name */}
+          <section className="mt-4 rounded-lg border border-slate-200/70 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              {t('updateName')}
+            </h3>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="flex-1">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">{t('name')}</label>
+                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={120} />
+              </div>
+              <Button onClick={saveName} disabled={savingName || fullName.trim() === user.fullName}>
+                {savingName ? (
+                  <Loader2 className="mr-1.5 size-4 animate-spin" />
+                ) : (
+                  <Save className="mr-1.5 size-4" />
+                )}
+                {t('save')}
+              </Button>
+            </div>
+          </section>
+
+          {/* Change password */}
+          <section className="mt-4 rounded-lg border border-slate-200/70 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              {t('changePassword')}
+            </h3>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  {t('currentPassword')}
+                </label>
+                <Input
+                  type="password"
+                  value={currentPw}
+                  onChange={(e) => setCurrentPw(e.target.value)}
+                  autoComplete="current-password"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  {t('newPassword')}
+                </label>
+                <Input
+                  type="password"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                  autoComplete="new-password"
+                  minLength={8}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  {t('confirmPassword')}
+                </label>
+                <Input
+                  type="password"
+                  value={confirmPw}
+                  onChange={(e) => setConfirmPw(e.target.value)}
+                  autoComplete="new-password"
+                  minLength={8}
+                />
+              </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <Button
+                onClick={changePassword}
+                disabled={changingPw || !currentPw || !newPw || !confirmPw}
+              >
+                {changingPw ? (
+                  <Loader2 className="mr-1.5 size-4 animate-spin" />
+                ) : (
+                  <Save className="mr-1.5 size-4" />
+                )}
+                {t('save')}
+              </Button>
+            </div>
+          </section>
+
+          {/* Language selector */}
+          <section className="mt-4 rounded-lg border border-slate-200/70 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <Globe className="size-4" />
+              {t('language')}
+            </h3>
+            <div className="mt-3 flex gap-2">
+              {[
+                { value: 'pt-BR', label: 'Português (BR)' },
+                { value: 'en', label: 'English' },
+              ].map((opt) => (
+                <Button
+                  key={opt.value}
+                  variant={locale === opt.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => switchLocale(opt.value)}
+                >
+                  {opt.label}
+                </Button>
+              ))}
+            </div>
           </section>
         </TabsContent>
 

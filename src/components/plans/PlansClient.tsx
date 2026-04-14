@@ -79,7 +79,7 @@ export function PlansClient({ locale, planConfigs, currentPlan, credits }: Props
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {planConfigs.map((cfg) => {
           const targetRank = PLAN_RANK[cfg.plan];
           const isCurrent = currentPlan === cfg.plan;

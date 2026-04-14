@@ -181,3 +181,44 @@ html:focus-within {
 *::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* ─── Global text selection policy ──────────────────────────────────────
+   Chrome-like behavior: non-text UI (nav, sidebar, header, badges,
+   stat tiles, table headers, buttons) is non-selectable. Text content
+   (prose, form inputs, result values, chat) stays selectable. */
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* Elements where selection is expected */
+input,
+textarea,
+[contenteditable],
+[contenteditable="true"],
+pre,
+code,
+kbd,
+samp,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+dd,
+time,
+.select-auto,
+.user-select-text,
+td[data-selectable="true"],
+[data-slot="card-content"] p,
+[data-slot="card-content"] li,
+[data-slot="dialog-content"] p,
+[data-slot="dialog-content"] li {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}

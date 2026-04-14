@@ -624,7 +624,13 @@
     "languageLabel": "Idioma",
     "languageHint": "Use o seletor de idioma no cabeçalho.",
     "notificationsLabel": "Notificações",
-    "notificationsHint": "Em breve."
+    "notificationsHint": "Em breve.",
+    "save": "Salvar",
+    "updateName": "Atualizar nome",
+    "changePassword": "Alterar senha",
+    "currentPassword": "Senha atual",
+    "newPassword": "Nova senha",
+    "confirmPassword": "Confirmar nova senha"
   },
   "course": {
     "badge": "Curso de 4 Módulos",

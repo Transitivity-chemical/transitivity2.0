@@ -624,7 +624,13 @@
     "languageLabel": "Language",
     "languageHint": "Use the language switcher in the header.",
     "notificationsLabel": "Notifications",
-    "notificationsHint": "Coming soon."
+    "notificationsHint": "Coming soon.",
+    "save": "Save",
+    "updateName": "Update name",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password"
   },
   "course": {
     "badge": "4-Module Course",

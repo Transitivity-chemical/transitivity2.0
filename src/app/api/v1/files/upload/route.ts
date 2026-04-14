@@ -8,6 +8,7 @@ const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 
 const ALLOWED_EXTENSIONS = new Set([
   '.log', '.out', '.gjf', '.com', '.xyz', '.mol', '.txt', '.dat', '.csv',
+  '.pdf', '.json', '.inp', '.fchk', '.molden', '.cube', '.chk', '.zip',
 ]);
 
 const EXTENSION_TO_FILE_TYPE: Record<string, UploadFileType> = {
@@ -20,6 +21,14 @@ const EXTENSION_TO_FILE_TYPE: Record<string, UploadFileType> = {
   '.dat': 'RATE_DATA_DAT',
   '.csv': 'RATE_DATA_CSV',
   '.mol': 'OTHER',
+  '.pdf': 'OTHER',
+  '.json': 'OTHER',
+  '.inp': 'OTHER',
+  '.fchk': 'OTHER',
+  '.molden': 'OTHER',
+  '.cube': 'OTHER',
+  '.chk': 'OTHER',
+  '.zip': 'OTHER',
 };
 
 export async function POST(request: Request) {
