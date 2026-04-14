@@ -265,12 +265,12 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
                       child row via a tall gradient mask so the bottom child
                       doesn't get a dangling line.
                     */}
-                    <ul className="relative mt-0.5 pl-[22px]">
+                    <ul className="relative mt-1.5 mb-1 space-y-1 pl-[22px]">
                       {/* vertical trunk */}
                       <span
                         aria-hidden="true"
                         className="pointer-events-none absolute left-[22px] top-0 w-px bg-sidebar-accent"
-                        style={{ height: `calc(100% - 1rem)` }}
+                        style={{ height: `calc(100% - 1.1rem)` }}
                       />
                       {item.children!.map((child, idx) => {
                         const childActive = pathname === `/${locale}${child.href}`;
@@ -280,19 +280,19 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
                             {/* horizontal elbow */}
                             <span
                               aria-hidden="true"
-                              className="pointer-events-none absolute left-0 top-[17px] h-px w-3 bg-sidebar-accent"
+                              className="pointer-events-none absolute left-0 top-[18px] h-px w-3 bg-sidebar-accent"
                             />
                             {/* mask the trunk after the last child */}
                             {isLast && (
                               <span
                                 aria-hidden="true"
-                                className="pointer-events-none absolute -left-[1px] top-[17px] bottom-0 w-[2px] bg-sidebar"
+                                className="pointer-events-none absolute -left-[1px] top-[18px] bottom-0 w-[2px] bg-sidebar"
                               />
                             )}
                             <Link
                               href={`/${locale}${child.href}`}
                               className={cn(
-                                'relative ml-3 flex items-center gap-2 rounded-md py-1.5 pl-2 pr-3 text-[13px] transition-colors',
+                                'relative ml-3 flex items-center gap-2 rounded-md py-2 pl-2.5 pr-3 text-[13px] transition-colors',
                                 childActive
                                   ? 'bg-primary/10 font-medium text-primary'
                                   : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
