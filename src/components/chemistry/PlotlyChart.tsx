@@ -15,14 +15,20 @@ import dynamic from 'next/dynamic';
 import type { Data, Layout, Config } from 'plotly.js';
 import { getPlotlyLayout, getPlotlyConfig } from '@/lib/plotly-theme';
 
-const Plot = dynamic(() => import('react-plotly.js'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full w-full items-center justify-center rounded-md border bg-muted/20 text-sm text-muted-foreground">
-      Loading chart…
-    </div>
-  ),
-});
+const Plot = dynamic(
+  async () => {
+    const mod = await import('react-plotly.js');
+    return mod.default;
+  },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center rounded-md border bg-muted/20 text-sm text-muted-foreground">
+        Loading chart…
+      </div>
+    ),
+  },
+);
 
 export interface PlotlyChartProps {
   data: Data[];
