@@ -55,7 +55,7 @@ export const navItems: NavItem[] = [
     icon: FlaskConical,
     adminOnly: false,
     children: [
-      { key: 'rateConstantCtst', href: '/rate-constant', icon: FlaskConical, adminOnly: false },
+      { key: 'rateConstantCtst', href: '/rate-constant/ctst', icon: FlaskConical, adminOnly: false },
       { key: 'rateConstantMarcus', href: '/rate-constant/marcus', icon: FlaskConical, adminOnly: false },
     ],
   },
@@ -65,7 +65,7 @@ export const navItems: NavItem[] = [
     icon: Atom,
     adminOnly: false,
     children: [
-      { key: 'mdSingle', href: '/md', icon: Atom, adminOnly: false },
+      { key: 'mdSingle', href: '/md/single', icon: Atom, adminOnly: false },
       { key: 'mdMulti', href: '/md/multi', icon: Atom, adminOnly: false },
     ],
   },
@@ -75,7 +75,7 @@ export const navItems: NavItem[] = [
     icon: TrendingUp,
     adminOnly: false,
     children: [
-      { key: 'fittingArrhenius', href: '/fitting', icon: TrendingUp, adminOnly: false },
+      { key: 'fittingArrhenius', href: '/fitting/arrhenius', icon: TrendingUp, adminOnly: false },
       { key: 'fittingTransitivity', href: '/fitting/transitivity', icon: TrendingUp, adminOnly: false },
     ],
   },
@@ -257,21 +257,47 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
                   )}
                 >
                   <div className="min-h-0">
-                    <ul className="mt-1 space-y-0.5 border-l border-sidebar-accent pl-3">
-                      {item.children!.map((child) => {
+                    {/*
+                      File-explorer style tree. The vertical trunk drops from
+                      the parent icon center (16px from the row left edge ≈
+                      `left-[22px]`) and each child draws an L-elbow into its
+                      label. The trunk stops at the midpoint of the last
+                      child row via a tall gradient mask so the bottom child
+                      doesn't get a dangling line.
+                    */}
+                    <ul className="relative mt-0.5 pl-[22px]">
+                      {/* vertical trunk */}
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-[22px] top-0 w-px bg-sidebar-accent"
+                        style={{ height: `calc(100% - 1rem)` }}
+                      />
+                      {item.children!.map((child, idx) => {
                         const childActive = pathname === `/${locale}${child.href}`;
+                        const isLast = idx === item.children!.length - 1;
                         return (
-                          <li key={child.key}>
+                          <li key={child.key} className="relative">
+                            {/* horizontal elbow */}
+                            <span
+                              aria-hidden="true"
+                              className="pointer-events-none absolute left-0 top-[17px] h-px w-3 bg-sidebar-accent"
+                            />
+                            {/* mask the trunk after the last child */}
+                            {isLast && (
+                              <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute -left-[1px] top-[17px] bottom-0 w-[2px] bg-sidebar"
+                              />
+                            )}
                             <Link
                               href={`/${locale}${child.href}`}
                               className={cn(
-                                'flex items-center gap-2 rounded-md px-3 py-2 text-[13px] transition-colors',
+                                'relative ml-3 flex items-center gap-2 rounded-md py-1.5 pl-2 pr-3 text-[13px] transition-colors',
                                 childActive
                                   ? 'bg-primary/10 font-medium text-primary'
                                   : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                               )}
                             >
-                              <span className="size-1.5 rounded-full bg-current opacity-50" />
                               {t(child.key)}
                             </Link>
                           </li>

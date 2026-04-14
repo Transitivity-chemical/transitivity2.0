@@ -1,38 +1,56 @@
-import { getTranslations } from 'next-intl/server';
-import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { RateConstantWorkbench } from './RateConstantWorkbench';
-import { TitleWithHint } from '@/components/common/TitleWithHint';
-import { RateConstantPreview } from '@/components/chemistry/previews';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { FlaskConical, Atom, Sparkles } from 'lucide-react';
+import { SubTabHistoryList, type SubTabHistoryRow } from '@/components/chemistry/SubTabHistoryList';
 
-export default async function RateConstantPage({
+export default async function RateConstantHistoryPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const session = await auth();
   const { locale } = await params;
+  const session = await auth();
   if (!session?.user?.id) redirect(`/${locale}/login`);
 
-  const t = await getTranslations('rateConstant');
+  const reactions = await prisma.reaction.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 60,
+    select: { id: true, name: true, status: true, createdAt: true },
+  });
+
+  const rows: SubTabHistoryRow[] = reactions.map((r) => ({
+    id: `rc-${r.id}`,
+    label: r.name ?? 'Rate constant run',
+    status: r.status ?? '—',
+    createdAt: r.createdAt,
+    subType: /marcus/i.test(r.name ?? '') ? 'Marcus' : 'CTST',
+    href: `/${locale}/rate-constant/${r.id}`,
+  }));
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="self-start rounded-lg bg-primary/10 p-2.5 text-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-8">
+      <div className="flex items-center gap-3">
+        <div className="rounded-md bg-primary/10 p-2.5 text-primary">
+          <FlaskConical className="size-6" />
         </div>
-        <div className="min-w-0">
-          <TitleWithHint
-            title="Conventional TST"
-            preview={RateConstantPreview}
-            className="text-2xl sm:text-3xl"
-            hint="Transition State Theory with optional tunneling (Bell, Eckart, Wigner, d-TST) and solvent corrections (Smoluchowski, Collins-Kimball, Kramers)."
-          />
-          <p className="max-w-3xl text-sm text-muted-foreground">{t('workspaceDesc')}</p>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Constante de Velocidade</h1>
+          <p className="text-sm text-muted-foreground">
+            Histórico dos cálculos de Conventional TST e Marcus Theory.
+          </p>
         </div>
       </div>
-      <RateConstantWorkbench />
+
+      <SubTabHistoryList
+        locale={locale}
+        rows={rows}
+        subTabs={[
+          { label: 'Conventional TST', href: '/rate-constant/ctst', icon: Atom },
+          { label: 'Marcus Theory', href: '/rate-constant/marcus', icon: Sparkles },
+        ]}
+      />
     </div>
   );
 }

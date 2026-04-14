@@ -1,44 +1,56 @@
-import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
-import { TrendingUp, History } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { FittingWorkbench } from './FittingWorkbench';
-import { TitleWithHint } from '@/components/common/TitleWithHint';
-import { ArrheniusPreview } from '@/components/chemistry/previews';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { TrendingUp, LineChart, Waves } from 'lucide-react';
+import { SubTabHistoryList, type SubTabHistoryRow } from '@/components/chemistry/SubTabHistoryList';
 
-export default async function FittingPage({
+export default async function FittingHistoryPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const t = await getTranslations('fittingWizard');
-  const tNav = await getTranslations('nav');
   const { locale } = await params;
+  const session = await auth();
+  if (!session?.user?.id) redirect(`/${locale}/login`);
+
+  const jobs = await prisma.fittingJob.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 60,
+    select: { id: true, name: true, status: true, modelType: true, createdAt: true },
+  });
+
+  const rows: SubTabHistoryRow[] = jobs.map((j) => ({
+    id: `fit-${j.id}`,
+    label: j.name ?? j.modelType,
+    status: j.status ?? '—',
+    createdAt: j.createdAt,
+    subType: /transit/i.test(j.name ?? '') ? 'Transitivity' : 'Arrhenius',
+    href: `/${locale}/fitting/history`,
+  }));
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
-            <TrendingUp className="size-6" />
-          </div>
-          <div className="space-y-1">
-            <TitleWithHint
-              title="Arrhenius Plot"
-              preview={ArrheniusPreview}
-              hint="Linear plot of ln k vs 1/T. Slope gives −Ea/R, intercept gives ln A. GSA optimizer fits 5 theories: Arrhenius, Aquilanti-Mundim, NTS, VFT, ASCC."
-            />
-            <p className="max-w-2xl text-sm text-muted-foreground">{t('workspaceDesc')}</p>
-          </div>
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-8">
+      <div className="flex items-center gap-3">
+        <div className="rounded-md bg-primary/10 p-2.5 text-primary">
+          <TrendingUp className="size-6" />
         </div>
-        <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
-          <Link href={`/${locale}/fitting/history`}>
-            <History className="mr-1.5 size-4" />
-            Histórico
-          </Link>
-        </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Ajuste · Fitting</h1>
+          <p className="text-sm text-muted-foreground">
+            Histórico dos ajustes Arrhenius Plot e Transitivity Plot.
+          </p>
+        </div>
       </div>
-      <FittingWorkbench />
+
+      <SubTabHistoryList
+        locale={locale}
+        rows={rows}
+        subTabs={[
+          { label: 'Arrhenius Plot', href: '/fitting/arrhenius', icon: LineChart },
+          { label: 'Transitivity Plot', href: '/fitting/transitivity', icon: Waves },
+        ]}
+      />
     </div>
   );
 }

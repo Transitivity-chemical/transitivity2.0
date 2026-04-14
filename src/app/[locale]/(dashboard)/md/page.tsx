@@ -1,51 +1,56 @@
-import Link from 'next/link';
-import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
-import { Atom, History } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { MDWizard } from './new/MDWizard';
-import { TitleWithHint } from '@/components/common/TitleWithHint';
-import { MolecularDynamicsPreview } from '@/components/chemistry/previews';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { Atom, Layers } from 'lucide-react';
+import { SubTabHistoryList, type SubTabHistoryRow } from '@/components/chemistry/SubTabHistoryList';
 
-export default async function MdPage({
+export default async function MdHistoryPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect(`/${locale}/login`);
-  }
-  const tNav = await getTranslations('nav');
+  if (!session?.user?.id) redirect(`/${locale}/login`);
+
+  const sims = await prisma.mDSimulation.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 60,
+    select: { id: true, name: true, status: true, mdMethod: true, createdAt: true },
+  });
+
+  const rows: SubTabHistoryRow[] = sims.map((s) => ({
+    id: `md-${s.id}`,
+    label: s.name ?? s.mdMethod,
+    status: s.status ?? '—',
+    createdAt: s.createdAt,
+    subType: /multi/i.test(s.name ?? '') ? 'Multi' : 'Single',
+    href: `/${locale}/md/${s.id}`,
+  }));
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-8">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-md bg-primary/10 p-2.5 text-primary">
-            <Atom className="size-6" />
-          </div>
-          <div>
-            <TitleWithHint
-              title="Single Input"
-              preview={MolecularDynamicsPreview}
-              hint="Generate CPMD, BOMD, PIMD, SHMD or MTD input files from a single starting geometry. Controls functional, pseudo, temperature and lattice."
-            />
-            <p className="text-sm text-muted-foreground">
-              Gere inputs CPMD, BOMD, PIMD, SHMD ou MTD a partir de uma geometria.
-            </p>
-          </div>
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-8">
+      <div className="flex items-center gap-3">
+        <div className="rounded-md bg-primary/10 p-2.5 text-primary">
+          <Atom className="size-6" />
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/${locale}/md/list`}>
-            <History className="mr-1.5 size-4" />
-            {tNav('history')}
-          </Link>
-        </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dinâmica Molecular</h1>
+          <p className="text-sm text-muted-foreground">
+            Histórico dos cálculos de Single Input e Multiple Inputs.
+          </p>
+        </div>
       </div>
-      <MDWizard />
+
+      <SubTabHistoryList
+        locale={locale}
+        rows={rows}
+        subTabs={[
+          { label: 'Single Input', href: '/md/single', icon: Atom },
+          { label: 'Multiple Inputs', href: '/md/multi', icon: Layers },
+        ]}
+      />
     </div>
   );
 }
