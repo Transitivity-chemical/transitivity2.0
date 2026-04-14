@@ -27,30 +27,24 @@ export default async function DashboardPage({
 
   const userId = session.user.id;
 
-  const [reactionCount, fittingCount, mdCount] = await Promise.all([
+  // Fire every query in parallel — single network round-trip via pgbouncer.
+  const [
+    reactionCount,
+    fittingCount,
+    mdCount,
+    user,
+    activeFitting,
+    activeMD,
+    recentReactions,
+    recentFitting,
+    recentMD,
+  ] = await Promise.all([
     prisma.reaction.count({ where: { userId } }),
     prisma.fittingJob.count({ where: { userId } }),
     prisma.mDSimulation.count({ where: { userId } }),
-  ]);
-
-  const totalCalc = reactionCount + fittingCount + mdCount;
-
-  // Fetch user credits
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { credits: true },
-  });
-  const creditsUsed = Number(user?.credits ?? 0);
-
-  // Count active (running/pending) jobs
-  const [activeFitting, activeMD] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { credits: true } }),
     prisma.fittingJob.count({ where: { userId, status: { in: ['PENDING', 'RUNNING'] } } }),
     prisma.mDSimulation.count({ where: { userId, status: { in: ['PENDING', 'RUNNING'] } } }),
-  ]);
-  const activeJobs = activeFitting + activeMD;
-
-  // All calculations: latest 50 across all tables (FIX-2 of post-megaplan audit)
-  const [recentReactions, recentFitting, recentMD] = await Promise.all([
     prisma.reaction.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -70,6 +64,10 @@ export default async function DashboardPage({
       select: { id: true, name: true, mdMethod: true, status: true, createdAt: true },
     }),
   ]);
+
+  const totalCalc = reactionCount + fittingCount + mdCount;
+  const creditsUsed = Number(user?.credits ?? 0);
+  const activeJobs = activeFitting + activeMD;
 
   type ActivityItem = {
     id: string;
@@ -254,8 +252,8 @@ export default async function DashboardPage({
               </div>
             ) : (
               <div className="overflow-hidden rounded-lg border border-transparent px-2 pb-2 pt-2 sm:px-4">
-                <div className="rounded-lg border border-border/50 shadow-sm">
-                  <table className="w-full text-sm" aria-label={t('recentActivity')}>
+                <div className="overflow-x-auto rounded-lg border border-border/50 shadow-sm">
+                  <table className="w-full min-w-[640px] text-sm" aria-label={t('recentActivity')}>
                     <thead className="bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground/80">
                       <tr>
                         <th scope="col" className="px-4 py-3 font-medium">

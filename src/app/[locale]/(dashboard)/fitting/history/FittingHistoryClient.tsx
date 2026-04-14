@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Eye } from 'lucide-react';
+import { Trash2, Eye, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 
@@ -47,6 +47,14 @@ export function FittingHistoryClient({ locale, jobs: initialJobs }: { locale: st
 
   return (
     <div className="mx-auto max-w-5xl">
+      <div className="mb-4">
+        <Button asChild variant="ghost" size="sm">
+          <Link href={`/${locale}/fitting`}>
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Voltar · Back
+          </Link>
+        </Button>
+      </div>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{t('title')}</h1>

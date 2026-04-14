@@ -33,7 +33,7 @@
   },
   "landing": {
     "heroTitle": "Química computacional simplificada",
-    "heroSubtitle": "Plataforma SaaS de Química Computacional",
+    "heroSubtitle": "Cinéticas, dinâmica molecular e ajuste para pesquisa da UnB.",
     "heroDescription": "Transitivity 2.0 é a plataforma que combina teoria do estado de transição, ajuste cinético, dinâmica molecular e potenciais de aprendizado de máquina em um único ambiente.",
     "getStarted": "Comece Gratuitamente",
     "requestDemo": "Solicitar Demo",
@@ -105,11 +105,11 @@
     "footerCopyright": "Transitivity 2.0 — Universidade de Brasília"
   },
   "loginBranding": {
-    "subtitle": "Plataforma SaaS de Química Computacional",
+    "subtitle": "Ambiente de química computacional para equipes de pesquisa",
     "university": "Universidade de Brasília",
     "backHome": "Voltar ao início",
-    "accessPlatform": "Acesse a plataforma Transitivity",
-    "createResearch": "Crie sua conta de pesquisador",
+    "accessPlatform": "O Transitivity reúne fluxos de cinética, MD e ML em um hub enxuto.",
+    "createResearch": "Feito para laboratórios que precisam de clareza, conformidade e contexto compartilhado.",
     "minChars": "Mínimo de 8 caracteres"
   },
   "nav": {
@@ -118,6 +118,7 @@
     "fitting": "Ajuste",
     "md": "Dinâmica Molecular",
     "ml": "Predição ML",
+    "history": "Histórico",
     "assistant": "Assistente",
     "serverStatus": "Status do Servidor",
     "adminUsers": "Usuários",

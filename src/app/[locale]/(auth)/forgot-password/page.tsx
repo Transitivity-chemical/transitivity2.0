@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { GammaIconRound } from '@/components/brand/TransitivityLogo';
+
+import { TransitivityLogo } from '@/components/brand/TransitivityLogo';
+
+const inputClasses =
+  'w-full rounded-md border border-input bg-background px-4 py-2.5 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f1f]';
 
 export default function ForgotPasswordPage() {
   const locale = useLocale();
@@ -38,22 +42,22 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-6 py-12">
-      <div className="w-full max-w-md rounded-xl border bg-card p-8 shadow-sm">
+      <div className="w-full max-w-md rounded-lg border border-border/70 bg-card px-8 py-10 shadow-[0_30px_80px_-65px_rgba(15,23,42,0.65)]">
         <div className="text-center">
-          <GammaIconRound size={56} />
+          <TransitivityLogo size="md" color="#1e3a5f" className="justify-center" />
           <h1 className="mt-5 text-2xl font-semibold text-foreground">{t('title')}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t('description')}</p>
         </div>
 
         {submitted ? (
           <div className="mt-8 space-y-5">
-            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-4 text-sm">
+            <div className="rounded-md border border-primary/25 bg-primary/5 px-4 py-4 text-sm">
               <p className="font-medium text-foreground">{t('successTitle')}</p>
               <p className="mt-2 text-muted-foreground">{t('successDescription')}</p>
             </div>
             <Link
               href={`/${locale}/login`}
-              className="block w-full rounded-lg bg-[#1e3a5f] px-4 py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="block w-full rounded-md bg-[#1e3a5f] px-4 py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               {t('backToLogin')}
             </Link>
@@ -75,20 +79,20 @@ export default function ForgotPasswordPage() {
                   placeholder="you@university.edu"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className={inputClasses}
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-[#1e3a5f] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="w-full rounded-md bg-[#1e3a5f] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? t('submitting') : t('submit')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <Link href={`/${locale}/login`} className="text-sm text-gray-500 hover:text-gray-700">
+              <Link href={`/${locale}/login`} className="text-sm text-muted-foreground hover:text-foreground">
                 &larr; {t('backToLogin')}
               </Link>
             </div>

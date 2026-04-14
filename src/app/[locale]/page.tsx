@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowRight, Check, BookOpen, Menu } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { TransitivityLogo, GammaIcon } from '@/components/brand/TransitivityLogo';
+import { TransitivityLogo } from '@/components/brand/TransitivityLogo';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 /* ─── Fade-in ─────────────────────────────────────────────────────────── */
@@ -70,7 +70,7 @@ function HeroBackground() {
 
 function ArrheniusPlotMockup() {
   return (
-    <div className="overflow-hidden rounded-2xl bg-[#111113] border border-[#222]">
+    <div className="overflow-hidden rounded-lg bg-[#111113] border border-[#222] shadow-sm shadow-black/40">
       <div className="flex items-center gap-2 border-b border-[#1e1e1e] px-4 py-3">
         <div className="flex gap-1.5">
           <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -123,7 +123,7 @@ function ArrheniusPlotMockup() {
 
 function FittingCurveMockup() {
   return (
-    <div className="overflow-hidden rounded-2xl bg-[#111113] border border-[#222]">
+    <div className="overflow-hidden rounded-lg bg-[#111113] border border-[#222] shadow-sm shadow-black/40">
       <div className="flex items-center gap-2 border-b border-[#1e1e1e] px-4 py-3">
         <div className="flex gap-1.5">
           <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -167,7 +167,7 @@ function FittingCurveMockup() {
 
 function MolecularMockup() {
   return (
-    <div className="overflow-hidden rounded-2xl bg-[#111113] border border-[#222]">
+    <div className="overflow-hidden rounded-lg bg-[#111113] border border-[#222] shadow-sm shadow-black/40">
       <div className="flex items-center gap-2 border-b border-[#1e1e1e] px-4 py-3">
         <div className="flex gap-1.5">
           <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -185,9 +185,9 @@ function MolecularMockup() {
             <p className="text-[10px] text-[#50c878] font-mono mb-1">ANI-2x Result</p>
             <div className="h-px bg-[#222] mb-2" />
             <p className="text-[9px] text-[#888]">Energy</p>
-            <p className="text-xs text-[#4a9eff] font-mono">-307.4821 Ha</p>
+            <p className="text-[11px] text-[#4a9eff] font-mono">-307.4821 Ha</p>
             <p className="text-[9px] text-[#888] mt-1.5">Forces (max)</p>
-            <p className="text-xs text-[#50c878] font-mono">0.00032 Ha/Å</p>
+            <p className="text-[11px] text-[#50c878] font-mono">0.00032 Ha/Å</p>
           </div>
           <div className="rounded-md bg-[#161616] border border-[#222] px-3 py-2">
             <span className="text-[10px] text-[#50c878]">✓ Converged</span>
@@ -204,7 +204,7 @@ function MolecularMockup() {
 
 function PlatformOverviewMockup() {
   return (
-    <div className="overflow-hidden rounded-2xl bg-[#111113] border border-[#222]">
+    <div className="overflow-hidden rounded-lg bg-[#111113] border border-[#222] shadow-sm shadow-black/40">
       <div className="flex items-center gap-2 border-b border-[#1e1e1e] px-4 py-3">
         <div className="flex gap-1.5">
           <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -231,15 +231,15 @@ function PlatformOverviewMockup() {
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-md bg-[#161616] border border-[#222] p-2">
               <p className="text-[8px] text-[#666]">Calculations</p>
-              <p className="text-sm text-[#4a9eff] font-mono font-bold">247</p>
+              <p className="text-[12px] text-[#4a9eff] font-mono font-bold">247</p>
             </div>
             <div className="rounded-md bg-[#161616] border border-[#222] p-2">
               <p className="text-[8px] text-[#666]">Models Fit</p>
-              <p className="text-sm text-[#50c878] font-mono font-bold">18</p>
+              <p className="text-[12px] text-[#50c878] font-mono font-bold">18</p>
             </div>
             <div className="rounded-md bg-[#161616] border border-[#222] p-2">
               <p className="text-[8px] text-[#666]">ML Jobs</p>
-              <p className="text-sm text-[#ff6b6b] font-mono font-bold">5</p>
+              <p className="text-[12px] text-[#ff6b6b] font-mono font-bold">5</p>
             </div>
           </div>
           {/* Mini chart */}
@@ -247,19 +247,12 @@ function PlatformOverviewMockup() {
             <p className="text-[9px] text-[#666] mb-2">Recent Activity</p>
             <svg viewBox="0 0 200 50" className="w-full">
               <polyline points="0,40 20,35 40,38 60,25 80,30 100,15 120,20 140,10 160,18 180,8 200,12" fill="none" stroke="#1e3a5f" strokeWidth="1.5" />
-              <polyline points="0,40 20,35 40,38 60,25 80,30 100,15 120,20 140,10 160,18 180,8 200,12" fill="url(#areaGrad)" stroke="none" />
-              <defs>
-                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1e3a5f" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#1e3a5f" stopOpacity="0" />
-                </linearGradient>
-              </defs>
             </svg>
           </div>
           {/* Feature pills */}
           <div className="flex flex-wrap gap-1.5">
             {['TST', 'Bell', 'Eckart', 'GSA', 'ANI-2x', 'CPMD'].map(tag => (
-              <span key={tag} className="rounded-full bg-[#1e3a5f]/20 px-2 py-0.5 text-[8px] text-[#4a9eff] border border-[#1e3a5f]/30">{tag}</span>
+              <span key={tag} className="rounded-md bg-[#1e3a5f]/20 px-2 py-0.5 text-[8px] text-[#4a9eff] border border-[#1e3a5f]/30">{tag}</span>
             ))}
           </div>
         </div>
@@ -293,7 +286,7 @@ function TrustLogo({ item }: { item: TrustItem }) {
     <div className="flex items-center gap-2">
       <img src={item.src} alt={item.alt} style={{ height: item.height }} className="w-auto object-contain" />
       {item.label && (
-        <span className="text-sm font-medium tracking-tight text-[#6b7280]">{item.label}</span>
+        <span className="text-[12px] font-medium tracking-tight text-[#6b7280]">{item.label}</span>
       )}
     </div>
   );
@@ -381,7 +374,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white">
+    <div className="flex min-h-dvh flex-col bg-white text-[13px]">
       <style>{`
         .fade-in-hidden { opacity: 0; transform: translateY(24px); }
         .fade-in-visible {
@@ -430,22 +423,22 @@ export default function LandingPage() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="ml-auto rounded-lg border border-white/20 p-2 text-white transition-all hover:bg-white/10 sm:hidden"
+            className="ml-auto rounded-md border border-white/20 p-2 text-white transition-all hover:bg-white/10 sm:hidden"
             aria-label="Open navigation menu"
           >
             <Menu size={18} />
           </button>
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 sm:flex">
-            <a href="#about" className="header-nav-link text-sm transition-colors">{t('navAbout')}</a>
-            <a href="#features" className="header-nav-link text-sm transition-colors">{t('navFeatures')}</a>
-            <a href="#pricing" className="header-nav-link text-sm transition-colors">{t('navPricing')}</a>
-            <Link href={`/${locale}/course`} className="header-nav-link text-sm transition-colors">{tCourse('landingCta')}</Link>
+            <a href="#about" className="header-nav-link text-[12px] transition-colors">{t('navAbout')}</a>
+            <a href="#features" className="header-nav-link text-[12px] transition-colors">{t('navFeatures')}</a>
+            <a href="#pricing" className="header-nav-link text-[12px] transition-colors">{t('navPricing')}</a>
+            <Link href={`/${locale}/course`} className="header-nav-link text-[12px] transition-colors">{tCourse('landingCta')}</Link>
           </nav>
           <div className="ml-auto hidden items-center gap-3 sm:flex">
-            <Link href={`/${locale}/login`} className="header-cta rounded-lg border px-5 py-2 text-sm font-medium transition-all">
+            <Link href={`/${locale}/login`} className="header-cta rounded-md border px-5 py-2 text-[12px] font-medium transition-all">
               {t('navSignIn')}
             </Link>
-            <Link href={`/${locale}/register`} className="header-register rounded-lg bg-[#1e3a5f] px-5 py-2 text-sm font-semibold text-white transition-all hover:bg-[#2a4f7f]">
+            <Link href={`/${locale}/register`} className="header-register rounded-md bg-[#1e3a5f] px-5 py-2 text-[12px] font-semibold text-white transition-all hover:bg-[#2a4f7f]">
               {t('getStarted')}
             </Link>
           </div>
@@ -455,35 +448,35 @@ export default function LandingPage() {
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="right" className="w-[86vw] max-w-xs border-l p-0 sm:hidden">
           <SheetHeader className="border-b px-5 py-4 text-left">
-            <SheetTitle className="text-base">Transitivity 2.0</SheetTitle>
+            <SheetTitle className="text-[14px]">Transitivity 2.0</SheetTitle>
           </SheetHeader>
 
           <div className="space-y-3 px-5 py-5">
             <a
               href="#about"
               onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+              className="block rounded-md px-3 py-2 text-[12px] font-medium text-foreground hover:bg-accent"
             >
               {t('navAbout')}
             </a>
             <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+              className="block rounded-md px-3 py-2 text-[12px] font-medium text-foreground hover:bg-accent"
             >
               {t('navFeatures')}
             </a>
             <a
               href="#pricing"
               onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+              className="block rounded-md px-3 py-2 text-[12px] font-medium text-foreground hover:bg-accent"
             >
               {t('navPricing')}
             </a>
             <Link
               href={`/${locale}/course`}
               onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+              className="block rounded-md px-3 py-2 text-[12px] font-medium text-foreground hover:bg-accent"
             >
               {tCourse('landingCta')}
             </Link>
@@ -492,14 +485,14 @@ export default function LandingPage() {
               <Link
                 href={`/${locale}/login`}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block rounded-lg border px-4 py-3 text-center text-sm font-medium text-[#1e3a5f] transition-all hover:bg-accent"
+                className="block rounded-md border px-4 py-3 text-center text-[12px] font-medium text-[#1e3a5f] transition-all hover:bg-accent"
               >
                 {t('navSignIn')}
               </Link>
               <Link
                 href={`/${locale}/register`}
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-3 block rounded-lg bg-[#1e3a5f] px-4 py-3 text-center text-sm font-semibold text-white transition-all hover:bg-[#2a4f7f]"
+                className="mt-3 block rounded-md bg-[#1e3a5f] px-4 py-3 text-center text-[12px] font-semibold text-white transition-all hover:bg-[#2a4f7f]"
               >
                 {t('getStarted')}
               </Link>
@@ -513,9 +506,9 @@ export default function LandingPage() {
         <HeroBackground />
         <div className="relative z-10 mx-auto max-w-4xl pt-16 pb-24">
           <FadeIn>
-            <GammaIcon size={64} color="#ffffff" className="mx-auto mb-6" />
+            <TransitivityLogo size="xl" className="mx-auto mb-5 text-white/95" />
           </FadeIn>
-          <FadeIn delay={50}>
+          <FadeIn delay={80}>
             <h1
               className="font-semibold tracking-tight text-[#fafafa]"
               style={{ fontSize: 'clamp(2.5rem, 4vw + 1rem, 4.5rem)', lineHeight: '1.08', letterSpacing: '-0.025em' }}
@@ -523,19 +516,19 @@ export default function LandingPage() {
               {t('heroTitle')}
             </h1>
           </FadeIn>
-          <FadeIn delay={150}>
-            <p className="mt-4 text-lg italic text-[#a1a1a1]">{t('heroSubtitle')}</p>
+          <FadeIn delay={160}>
+            <p className="mt-4 text-[14px] font-medium text-[#d4dce9] tracking-tight">{t('heroSubtitle')}</p>
           </FadeIn>
-          <FadeIn delay={250}>
-            <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-[#c0c0c0]">{t('heroDescription')}</p>
+          <FadeIn delay={240}>
+            <p className="mx-auto mt-8 max-w-2xl text-[15px] leading-relaxed text-[#dfe6f3]">{t('heroDescription')}</p>
           </FadeIn>
           <FadeIn delay={350}>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href={`/${locale}/register`} className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#1e3a5f] px-8 py-4 text-sm font-semibold text-white transition-all hover:bg-[#2a4f7f]">
+              <Link href={`/${locale}/register`} className="group inline-flex items-center justify-center gap-2 rounded-md bg-[#1e3a5f] px-8 py-4 text-[12px] font-semibold text-white transition-all hover:bg-[#2a4f7f]">
                 {t('getStarted')}
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
-              <a href="#demo" className="inline-flex items-center justify-center rounded-xl border border-white/30 px-8 py-4 text-sm font-semibold text-white transition-all hover:border-[#1e3a5f] hover:bg-white/5">
+              <a href="#demo" className="inline-flex items-center justify-center rounded-md border border-white/30 px-8 py-4 text-[12px] font-semibold text-white transition-all hover:border-[#1e3a5f] hover:bg-white/5">
                 {t('requestDemo')}
               </a>
             </div>
@@ -547,7 +540,7 @@ export default function LandingPage() {
       {/* ═══ TRUST BAR ═══ */}
       <section className="border-b border-[#e5e7eb] bg-white px-6 py-12">
         <div className="mx-auto max-w-5xl text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#a1a1a1]">{t('trustLine')}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#a1a1a1]">{t('trustLine')}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-10 sm:gap-14">
             {TRUST_ITEMS.map((item) => (
               <TrustLogo key={item.alt} item={item} />
@@ -565,8 +558,8 @@ export default function LandingPage() {
                 <h2 className="font-semibold tracking-tight text-[#0a0a0a]" style={{ fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)', lineHeight: '1.15', letterSpacing: '-0.02em' }}>
                   {t('aboutTitle')}
                 </h2>
-                <p className="mt-6 text-base leading-relaxed text-[#6b7280] sm:text-lg">{t('aboutP1')}</p>
-                <p className="mt-4 text-base leading-relaxed text-[#6b7280]">{t('aboutP2')}</p>
+                <p className="mt-6 text-[13px] leading-[1.7] text-[#4b5563] sm:text-[14px]">{t('aboutP1')}</p>
+                <p className="mt-4 text-[13px] leading-[1.7] text-[#4b5563]">{t('aboutP2')}</p>
               </div>
             </FadeIn>
             <FadeIn delay={150}>
@@ -586,14 +579,14 @@ export default function LandingPage() {
                 <div className={`grid items-center gap-16 lg:grid-cols-2 ${feature.flip ? 'lg:[&>*:first-child]:order-2' : ''}`}>
                   <FadeIn>
                     <div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1e3a5f]">{feature.tag}</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#1e3a5f]">{feature.tag}</span>
                       <h3 className="mt-4 font-semibold tracking-tight text-[#0a0a0a]" style={{ fontSize: 'clamp(1.5rem, 2.5vw + 0.5rem, 2.25rem)', lineHeight: '1.2', letterSpacing: '-0.015em' }}>
                         {feature.title}
                       </h3>
-                      <p className="mt-4 text-base leading-relaxed text-[#6b7280]">{feature.desc}</p>
+                      <p className="mt-4 text-[13px] leading-[1.7] text-[#4b5563]">{feature.desc}</p>
                       <ul className="mt-8 space-y-3">
                         {feature.bullets.map((bullet) => (
-                          <li key={bullet} className="flex items-start gap-3 text-sm text-[#374151]">
+                          <li key={bullet} className="flex items-start gap-3 text-[12px] text-[#374151]">
                             <Check size={16} className="mt-0.5 shrink-0 text-[#6b7280]" />
                             {bullet}
                           </li>
@@ -617,7 +610,7 @@ export default function LandingPage() {
               <h2 className="font-semibold tracking-tight text-[#0a0a0a]" style={{ fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)', lineHeight: '1.15', letterSpacing: '-0.02em' }}>
                 {t('howTitle')}
               </h2>
-              <p className="mt-4 text-base text-[#6b7280]">{t('howSubtitle')}</p>
+              <p className="mt-4 text-[13px] text-[#4b5563]">{t('howSubtitle')}</p>
             </div>
           </FadeIn>
           <div className="relative mt-20">
@@ -626,11 +619,11 @@ export default function LandingPage() {
               {steps.map((step, idx) => (
                 <FadeIn key={step.number} delay={idx * 150}>
                   <div className="flex flex-col items-center text-center">
-                    <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-white border border-[#e5e7eb]">
+                    <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-lg bg-white border border-[#e5e7eb]">
                       <span className="font-semibold text-[#1e3a5f]" style={{ fontSize: '1.5rem' }}>{step.number}</span>
                     </div>
-                    <h3 className="mt-6 text-lg font-semibold text-[#0a0a0a]">{step.title}</h3>
-                    <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#6b7280]">{step.desc}</p>
+                    <h3 className="mt-6 text-[14px] font-semibold text-[#0a0a0a]">{step.title}</h3>
+                    <p className="mt-3 max-w-xs text-[12px] leading-relaxed text-[#4b5563]">{step.desc}</p>
                   </div>
                 </FadeIn>
               ))}
@@ -648,23 +641,23 @@ export default function LandingPage() {
             </h2>
           </FadeIn>
           <FadeIn delay={100}>
-            <p className="mt-3 text-base italic text-[#a1a1a1]">{t('demoSubtitle')}</p>
+            <p className="mt-3 text-[13px] text-[#c0c6d4]">{t('demoSubtitle')}</p>
           </FadeIn>
           <FadeIn delay={200}>
             <form className="mt-12 space-y-4 text-left" onSubmit={(e) => e.preventDefault()}>
               <div>
-                <label htmlFor="demo-name" className="mb-1.5 block text-sm font-medium text-[#a1a1a1]">{t('demoName')}</label>
-                <input id="demo-name" type="text" placeholder={t('demoNamePlaceholder')} className="w-full rounded-xl border border-[#333] bg-[#1a1a1a] px-4 py-3 text-sm text-white placeholder-[#555] outline-none transition-colors focus:border-[#1e3a5f]" />
+                <label htmlFor="demo-name" className="mb-1.5 block text-[12px] font-medium text-[#a1a1a1]">{t('demoName')}</label>
+                <input id="demo-name" type="text" placeholder={t('demoNamePlaceholder')} className="w-full rounded-md border border-[#333] bg-[#1a1a1a] px-4 py-3 text-[12px] text-white placeholder-[#555] outline-none transition-colors focus:border-[#1e3a5f]" />
               </div>
               <div>
-                <label htmlFor="demo-email" className="mb-1.5 block text-sm font-medium text-[#a1a1a1]">{t('demoEmail')}</label>
-                <input id="demo-email" type="email" placeholder={t('demoEmailPlaceholder')} className="w-full rounded-xl border border-[#333] bg-[#1a1a1a] px-4 py-3 text-sm text-white placeholder-[#555] outline-none transition-colors focus:border-[#1e3a5f]" />
+                <label htmlFor="demo-email" className="mb-1.5 block text-[12px] font-medium text-[#a1a1a1]">{t('demoEmail')}</label>
+                <input id="demo-email" type="email" placeholder={t('demoEmailPlaceholder')} className="w-full rounded-md border border-[#333] bg-[#1a1a1a] px-4 py-3 text-[12px] text-white placeholder-[#555] outline-none transition-colors focus:border-[#1e3a5f]" />
               </div>
               <div>
-                <label htmlFor="demo-inst" className="mb-1.5 block text-sm font-medium text-[#a1a1a1]">{t('demoInstitution')}</label>
-                <input id="demo-inst" type="text" placeholder={t('demoInstitutionPlaceholder')} className="w-full rounded-xl border border-[#333] bg-[#1a1a1a] px-4 py-3 text-sm text-white placeholder-[#555] outline-none transition-colors focus:border-[#1e3a5f]" />
+                <label htmlFor="demo-inst" className="mb-1.5 block text-[12px] font-medium text-[#a1a1a1]">{t('demoInstitution')}</label>
+                <input id="demo-inst" type="text" placeholder={t('demoInstitutionPlaceholder')} className="w-full rounded-md border border-[#333] bg-[#1a1a1a] px-4 py-3 text-[12px] text-white placeholder-[#555] outline-none transition-colors focus:border-[#1e3a5f]" />
               </div>
-              <button type="submit" className="mt-4 w-full rounded-xl bg-[#1e3a5f] px-8 py-4 text-sm font-semibold text-white transition-colors hover:bg-[#2a4f7f]">
+              <button type="submit" className="mt-4 w-full rounded-md bg-[#1e3a5f] px-8 py-4 text-[12px] font-semibold text-white transition-colors hover:bg-[#2a4f7f]">
                 {t('demoSubmit')}
               </button>
             </form>
@@ -680,32 +673,32 @@ export default function LandingPage() {
               <h2 className="font-semibold tracking-tight text-[#0a0a0a]" style={{ fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)', lineHeight: '1.15', letterSpacing: '-0.02em' }}>
                 {t('pricingTitle')}
               </h2>
-              <p className="mt-4 text-base text-[#6b7280]">{t('pricingSubtitle')}</p>
-            </div>
-          </FadeIn>
-          <div className="mt-16 grid items-start gap-6 sm:grid-cols-3">
-            {plans.map((plan, idx) => (
-              <FadeIn key={plan.name} delay={idx * 100}>
-                <div className={`relative flex flex-col rounded-2xl border p-8 ${plan.highlighted ? 'border-t-[3px] border-t-[#1e3a5f] border-x-[#e5e7eb] border-b-[#e5e7eb] bg-white' : 'border-[#e5e7eb] bg-white'}`}>
-                  <div>
-                    <h3 className="text-base font-semibold text-[#0a0a0a]">{plan.name}</h3>
-                    <p className="mt-1 text-xs text-[#a1a1a1]">{plan.desc}</p>
+              <p className="mt-4 text-[13px] text-[#4b5563]">{t('pricingSubtitle')}</p>
+          </div>
+        </FadeIn>
+        <div className="mt-16 grid items-start gap-6 sm:grid-cols-3">
+          {plans.map((plan, idx) => (
+            <FadeIn key={plan.name} delay={idx * 100}>
+              <div className={`relative flex flex-col rounded-lg border p-8 shadow-sm shadow-black/5 ${plan.highlighted ? 'border-t-[3px] border-t-[#1e3a5f] border-x-[#e5e7eb] border-b-[#e5e7eb] bg-white' : 'border-[#e5e7eb] bg-white'}`}>
+                <div>
+                  <h3 className="text-[14px] font-semibold text-[#0a0a0a]">{plan.name}</h3>
+                    <p className="mt-1 text-[11px] text-[#a1a1a1]">{plan.desc}</p>
                     <div className="mt-6 flex items-end gap-1">
                       <span className="font-semibold leading-none text-[#0a0a0a]" style={{ fontSize: '2.25rem', letterSpacing: '-0.025em' }}>{plan.price}</span>
-                      <span className="mb-1 text-xs text-[#a1a1a1]">/{plan.period}</span>
+                      <span className="mb-1 text-[11px] text-[#a1a1a1]">/{plan.period}</span>
                     </div>
                   </div>
                   <div className="my-6 h-px bg-[#e5e7eb]" />
                   <ul className="flex-1 space-y-3">
                     {plan.features.map((feat) => (
-                      <li key={feat} className="flex items-start gap-2.5 text-sm">
+                      <li key={feat} className="flex items-start gap-2.5 text-[12px]">
                         <Check size={15} className="mt-0.5 shrink-0 text-[#a1a1a1]" />
                         <span className="text-[#374151]">{feat}</span>
                       </li>
                     ))}
                   </ul>
                   <div className="mt-8">
-                    <Link href={`/${locale}/register`} className={`block w-full rounded-xl py-3 text-center text-sm font-medium transition-colors ${plan.highlighted ? 'bg-[#1e3a5f] text-white hover:bg-[#2a4f7f]' : 'border border-[#e5e7eb] text-[#6b7280] hover:border-[#1e3a5f] hover:text-[#1e3a5f]'}`}>
+                    <Link href={`/${locale}/register`} className={`block w-full rounded-md py-3 text-center text-[12px] font-medium transition-colors ${plan.highlighted ? 'bg-[#1e3a5f] text-white hover:bg-[#2a4f7f]' : 'border border-[#e5e7eb] text-[#6b7280] hover:border-[#1e3a5f] hover:text-[#1e3a5f]'}`}>
                       {t('planGetStarted')}
                     </Link>
                   </div>
@@ -720,15 +713,15 @@ export default function LandingPage() {
       <section className="bg-[#fafafa] px-6 py-24 lg:px-12 lg:py-28">
         <div className="mx-auto max-w-4xl">
           <FadeIn>
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-8 sm:p-12 flex flex-col items-center text-center lg:flex-row lg:text-left lg:items-start lg:gap-12">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#2a4f7f]">
+            <div className="rounded-lg border border-[#e5e7eb] bg-white p-8 sm:p-12 flex flex-col items-center text-center lg:flex-row lg:text-left lg:items-start lg:gap-12 shadow-sm shadow-black/5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-[#1e3a5f]">
                 <BookOpen size={28} className="text-white" />
               </div>
               <div className="mt-6 lg:mt-0 flex-1">
                 <h3 className="text-xl font-semibold tracking-tight text-[#0a0a0a] sm:text-2xl">{tCourse('landingCta')}</h3>
-                <p className="mt-3 text-base leading-relaxed text-[#6b7280]">{tCourse('landingCtaDesc')}</p>
+                <p className="mt-3 text-[13px] leading-[1.7] text-[#4b5563]">{tCourse('landingCtaDesc')}</p>
                 <div className="mt-6">
-                  <Link href={`/${locale}/course`} className="group inline-flex items-center gap-2 rounded-xl bg-[#1e3a5f] px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-[#2a4f7f]">
+                  <Link href={`/${locale}/course`} className="group inline-flex items-center gap-2 rounded-md bg-[#1e3a5f] px-6 py-3 text-[12px] font-semibold text-white transition-all hover:bg-[#2a4f7f]">
                     {tCourse('ctaExplore')}
                     <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                   </Link>
@@ -745,29 +738,29 @@ export default function LandingPage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <TransitivityLogo size="sm" color="#0a0a0a" />
-              <ul className="mt-4 space-y-2 text-sm text-gray-600">
+              <ul className="mt-4 space-y-2 text-[12px] text-gray-600">
                 <li><Link href={`/${locale}/login`} className="hover:text-gray-900 transition-colors">{t('navSignIn')}</Link></li>
                 <li><Link href={`/${locale}/register`} className="hover:text-gray-900 transition-colors">{tc('appName')}</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">{t('footerFeatures')}</h3>
-              <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <h3 className="text-[12px] font-semibold text-gray-900">{t('footerFeatures')}</h3>
+              <ul className="mt-3 space-y-2 text-[12px] text-gray-600">
                 <li>{t('featRateTag')}</li>
                 <li>{t('featFitTag')}</li>
                 <li>{t('featMlTag')}</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">{t('footerResearch')}</h3>
-              <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <h3 className="text-[12px] font-semibold text-gray-900">{t('footerResearch')}</h3>
+              <ul className="mt-3 space-y-2 text-[12px] text-gray-600">
                 <li><a href="https://www.unb.br" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">{t('footerUnB')}</a></li>
                 <li><Link href={`/${locale}/course`} className="hover:text-gray-900 transition-colors">{tCourse('landingCta')}</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">{t('footerContact')}</h3>
-              <ul className="mt-3 space-y-2 text-sm text-gray-600">
+              <h3 className="text-[12px] font-semibold text-gray-900">{t('footerContact')}</h3>
+              <ul className="mt-3 space-y-2 text-[12px] text-gray-600">
                 <li>transitivity@unb.br</li>
                 <li>Campus Darcy Ribeiro</li>
                 <li>Brasilia — DF</li>
@@ -775,8 +768,8 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-10 border-t border-gray-100 pt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-            <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} {t('footerCopyright')}</p>
-            <div className="flex gap-4 text-xs text-gray-400">
+            <p className="text-[11px] text-gray-400">&copy; {new Date().getFullYear()} {t('footerCopyright')}</p>
+            <div className="flex gap-4 text-[11px] text-gray-400">
               <span>Terms</span>
               <span>Privacy</span>
             </div>

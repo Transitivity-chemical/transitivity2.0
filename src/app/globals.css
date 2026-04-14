@@ -147,3 +147,37 @@ button:active:not(:disabled),
 a:active {
   transform: scale(0.98);
 }
+
+/* ─── Minimal scrollbar — hide track, subtle thumb on hover ────────── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+html:hover,
+html:focus-within {
+  scrollbar-color: color-mix(in oklch, var(--foreground) 25%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+*:hover::-webkit-scrollbar-thumb,
+*:focus-within::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--foreground) 35%, transparent);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}

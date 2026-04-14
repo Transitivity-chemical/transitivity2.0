@@ -237,6 +237,12 @@ export function FittingWorkbench() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={loadExample}>
+          <FlaskConical className="mr-1.5 h-4 w-4" />
+          Carregar exemplo · OH + HBr
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>{t('endpointData')}</CardTitle>

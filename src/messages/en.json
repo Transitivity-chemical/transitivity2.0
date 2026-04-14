@@ -33,7 +33,7 @@
   },
   "landing": {
     "heroTitle": "Computational chemistry simplified",
-    "heroSubtitle": "Computational Chemistry SaaS Platform",
+    "heroSubtitle": "Rate constants, molecular dynamics, kinetic fitting for UnB research.",
     "heroDescription": "Transitivity 2.0 is the platform that combines transition state theory, kinetic fitting, molecular dynamics, and machine learning potentials in a single environment.",
     "getStarted": "Get Started Free",
     "requestDemo": "Request Demo",
@@ -105,11 +105,11 @@
     "footerCopyright": "Transitivity 2.0 — University of Brasilia"
   },
   "loginBranding": {
-    "subtitle": "Computational Chemistry SaaS",
+    "subtitle": "Computational chemistry workspace for research teams",
     "university": "University of Brasilia",
     "backHome": "Back to home",
-    "accessPlatform": "Access the Transitivity platform",
-    "createResearch": "Create your research account",
+    "accessPlatform": "Transitivity keeps kinetics, MD, and ML workflows in one focused hub.",
+    "createResearch": "Built for labs that need clarity, compliance, and shared context.",
     "minChars": "Minimum 8 characters"
   },
   "nav": {
@@ -118,6 +118,7 @@
     "fitting": "Fitting",
     "md": "Molecular Dynamics",
     "ml": "ML Predict",
+    "history": "History",
     "assistant": "Assistant",
     "serverStatus": "Server Status",
     "adminUsers": "Users",

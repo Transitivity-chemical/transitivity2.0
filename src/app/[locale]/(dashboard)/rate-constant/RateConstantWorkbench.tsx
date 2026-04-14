@@ -425,9 +425,15 @@ export function RateConstantWorkbench() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-background shadow-sm sm:rounded-[2rem]">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={loadExample}>
+          <FlaskConical className="mr-1.5 h-4 w-4" />
+          Carregar exemplo · H + HBr
+        </Button>
+      </div>
+      <div className="overflow-hidden rounded-lg border border-border/70 bg-background shadow-sm">
         <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          <div className="mb-6 grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_220px_220px] lg:items-end">
+          <div className="mb-6 grid gap-4 rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_220px_220px] lg:items-end">
             <div className="min-w-0">
               <Label htmlFor="reaction-name">{t('reactionName')}</Label>
               <Input
