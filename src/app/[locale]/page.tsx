@@ -506,7 +506,7 @@ export default function LandingPage() {
         <HeroBackground />
         <div className="relative z-10 mx-auto max-w-4xl pt-16 pb-24">
           <FadeIn>
-            <TransitivityLogo size="xl" className="mx-auto mb-5 text-white/95" />
+            <TransitivityLogo size="xl" color="#ffffff" className="mx-auto mb-5" />
           </FadeIn>
           <FadeIn delay={80}>
             <h1
