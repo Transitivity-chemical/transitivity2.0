@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Loader2, Download, FlaskConical } from 'lucide-react';
 import { toast } from 'sonner';
 import { SAMPLE_MD_GEOMETRY } from '@/lib/sample-data';
+import { FilePicker, type BucketFile } from '@/components/files/FilePicker';
 
 /**
  * FIX-6 of post-megaplan audit:
@@ -132,6 +133,7 @@ export function MDWizard() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   // Route returns the persisted MDSimulation with `generatedFiles` array
   const [result, setResult] = useState<{
     id: string;
@@ -139,30 +141,36 @@ export function MDWizard() {
     generatedFiles: Array<{ id: string; filename: string; content: string; fileType: string }>;
   } | null>(null);
 
-  const handleFile = async (file: File) => {
-    setError(null);
-    try {
-      const text = await file.text();
-      const ext = file.name.toLowerCase().split('.').pop() ?? '';
-      let parsed: Atom[] = [];
-      if (ext === 'xyz') parsed = parseXyz(text);
-      else if (ext === 'gjf' || ext === 'com') parsed = parseGjf(text);
-      else if (ext === 'log' || ext === 'out') parsed = parseGaussianLog(text);
-      else parsed = parseXyz(text); // best effort
+  const parseText = (text: string, fname: string) => {
+    const ext = fname.toLowerCase().split('.').pop() ?? '';
+    let parsed: Atom[] = [];
+    if (ext === 'xyz') parsed = parseXyz(text);
+    else if (ext === 'gjf' || ext === 'com') parsed = parseGjf(text);
+    else if (ext === 'log' || ext === 'out') parsed = parseGaussianLog(text);
+    else parsed = parseXyz(text);
 
-      if (parsed.length === 0) {
-        setError(`Não foi possível extrair átomos de ${file.name}`);
-        return;
-      }
-      if (parsed.length > MAX_ATOMS) {
-        setError(`Limite de ${MAX_ATOMS} átomos excedido (${parsed.length}).`);
-        return;
-      }
-      setAtoms(parsed);
-      setFilename(file.name);
-      if (!name) setName(file.name.replace(/\.[^.]+$/, ''));
+    if (parsed.length === 0) {
+      setError(`Não foi possível extrair átomos de ${fname}`);
+      return;
+    }
+    if (parsed.length > MAX_ATOMS) {
+      setError(`Limite de ${MAX_ATOMS} átomos excedido (${parsed.length}).`);
+      return;
+    }
+    setAtoms(parsed);
+    setFilename(fname);
+    if (!name) setName(fname.replace(/\.[^.]+$/, ''));
+    setError(null);
+  };
+
+  const handleBucketFile = async (file: BucketFile) => {
+    try {
+      const res = await fetch(`/api/v1/files/${file.id}/download`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      parseText(text, file.originalName);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao ler arquivo.');
+      setError(err instanceof Error ? err.message : 'Falha ao baixar do bucket');
     }
   };
 
@@ -276,18 +284,14 @@ export function MDWizard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <label className="flex-1 cursor-pointer">
-                <input
-                  type="file"
-                  accept=".xyz,.gjf,.com,.out,.log"
-                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                  className="hidden"
-                />
-                <span className="flex items-center gap-2 rounded-md border-2 border-dashed border-input px-4 py-3 text-sm font-medium transition-colors hover:border-primary hover:bg-accent">
-                  <Upload className="size-4" />
-                  {filename || 'Selecionar arquivo (.xyz, .gjf, .out, .log)'}
-                </span>
-              </label>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(true)}
+                className="flex flex-1 items-center gap-2 rounded-md border-2 border-dashed border-input px-4 py-3 text-sm font-medium transition-colors hover:border-primary hover:bg-accent"
+              >
+                <Upload className="size-4" />
+                {filename || 'Escolher arquivo · Pick from gallery (.xyz, .gjf, .out, .log)'}
+              </button>
               {atoms.length > 0 && (
                 <span className="whitespace-nowrap text-xs text-muted-foreground">
                   {atoms.length} átomos
@@ -540,6 +544,15 @@ export function MDWizard() {
           </CardContent>
         </Card>
       )}
+
+      <FilePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={handleBucketFile}
+        accept={['.xyz', '.gjf', '.com', '.out', '.log']}
+        title="Escolher geometria"
+        description="Escolha um arquivo já enviado ou clique em Enviar para adicionar um novo."
+      />
     </div>
   );
 }

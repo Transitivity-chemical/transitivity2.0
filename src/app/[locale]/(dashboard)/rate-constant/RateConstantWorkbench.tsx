@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { FlaskConical, Loader2, Trash2, Upload } from 'lucide-react';
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { TunnelingPreview } from '@/components/chemistry/previews';
+import { FilePicker, type BucketFile } from '@/components/files/FilePicker';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -143,6 +144,7 @@ export function RateConstantWorkbench() {
   const [result, setResult] = useState<RateConstantResponse | null>(null);
 
   const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+  const [pickerSlot, setPickerSlot] = useState<SpeciesSlot | null>(null);
   const summaryRef = useRef<HTMLDivElement | null>(null);
   const speciesRef = useRef<HTMLDivElement | null>(null);
   const solventRef = useRef<HTMLDivElement | null>(null);
@@ -251,6 +253,32 @@ export function RateConstantWorkbench() {
     }
 
     return parseBody as ParsedSpeciesData;
+  }
+
+  async function handleSlotBucketFile(slot: SpeciesSlot, bucketFile: BucketFile) {
+    setStatus('parsing');
+    setErrorMessage('');
+    try {
+      const parsed = await parseUploadedFile(bucketFile.id);
+      setSpecies((current) => {
+        const nextSpecies = current.filter((item) => item.slotKey !== slot.key);
+        nextSpecies.push({
+          id: `${bucketFile.id}-${slot.key}`,
+          slotKey: slot.key,
+          role: slot.role,
+          label: slot.title,
+          filename: bucketFile.originalName,
+          energyInputEnabled: true,
+          sourceScfEnergy: parsed.scfEnergy ?? null,
+          parsedData: parsed,
+        });
+        return nextSpecies;
+      });
+      setStatus(result ? 'success' : 'idle');
+    } catch (error) {
+      setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : tCommon('error'));
+    }
   }
 
   async function handleSlotUpload(slot: SpeciesSlot, file: File) {
@@ -484,24 +512,9 @@ export function RateConstantWorkbench() {
                       {slot.title}
                     </div>
                     <div className="flex h-full flex-col gap-3 p-4">
-                      <input
-                        ref={(node) => {
-                          fileInputsRef.current[slot.key] = node;
-                        }}
-                        type="file"
-                        accept=".log,.out,.gjf,.com,.xyz,.mol,.txt,.dat,.csv"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file) {
-                            void handleSlotUpload(slot, file);
-                          }
-                          event.currentTarget.value = '';
-                        }}
-                      />
                       <button
                         type="button"
-                        onClick={() => fileInputsRef.current[slot.key]?.click()}
+                        onClick={() => setPickerSlot(slot)}
                         className="w-full rounded-lg border border-input bg-background px-5 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-muted/60"
                       >
                         Open File
@@ -942,6 +955,19 @@ export function RateConstantWorkbench() {
           </Card>
         </div>
       </div>
+
+      <FilePicker
+        open={pickerSlot !== null}
+        onOpenChange={(o) => !o && setPickerSlot(null)}
+        onSelect={(f) => {
+          const slot = pickerSlot;
+          setPickerSlot(null);
+          if (slot) void handleSlotBucketFile(slot, f);
+        }}
+        accept={['.log', '.out', '.gjf', '.com', '.xyz', '.mol']}
+        title={pickerSlot ? `${pickerSlot.title}: escolher arquivo` : 'Escolher arquivo'}
+        description="Escolha um arquivo já enviado ou clique em Enviar para adicionar um novo."
+      />
     </div>
   );
 }

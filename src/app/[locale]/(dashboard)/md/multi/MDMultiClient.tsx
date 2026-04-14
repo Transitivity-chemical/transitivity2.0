@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Download, Upload, FileText, X, Layers, FlaskConical } from 'lucide-react';
+import { FilePicker, type BucketFile } from '@/components/files/FilePicker';
 
 /**
  * Phase 14B of megaplan: Multiple Inputs MD wizard.
@@ -86,27 +87,43 @@ export function MDMultiClient() {
     xyzTrajectory: string | null;
     totalConfigs: number;
   } | null>(null);
+  const [pickerFor, setPickerFor] = useState<1 | 2 | null>(null);
 
   const totalInputs = useMemo(
     () => Math.max(1, bondSteps) * Math.max(1, angleSteps) * Math.max(1, dihedralSteps) * Math.max(1, tempSteps),
     [bondSteps, angleSteps, dihedralSteps, tempSteps],
   );
 
-  const handleFile = async (which: 1 | 2, file: File) => {
-    const text = await file.text();
-    const atoms = file.name.endsWith('.xyz') ? parseXyz(text) : parseGjf(text);
+  const acceptAtoms = (text: string, fname: string, which: 1 | 2) => {
+    const atoms = fname.endsWith('.xyz') ? parseXyz(text) : parseGjf(text);
     if (atoms.length === 0) {
-      setError(`Não foi possível ler ${file.name}. Use .gjf ou .xyz`);
+      setError(`Não foi possível ler ${fname}. Use .gjf ou .xyz`);
       return;
     }
     if (which === 1) {
       setMol1(atoms);
-      setMol1Name(file.name);
+      setMol1Name(fname);
     } else {
       setMol2(atoms);
-      setMol2Name(file.name);
+      setMol2Name(fname);
     }
     setError(null);
+  };
+
+  const handleFile = async (which: 1 | 2, file: File) => {
+    const text = await file.text();
+    acceptAtoms(text, file.name, which);
+  };
+
+  const handleBucketFile = async (which: 1 | 2, file: BucketFile) => {
+    try {
+      const res = await fetch(`/api/v1/files/${file.id}/download`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      acceptAtoms(text, file.originalName, which);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao baixar');
+    }
   };
 
   const handleSubmit = async () => {
@@ -203,6 +220,7 @@ export function MDMultiClient() {
               filename={mol1Name}
               count={mol1.length}
               onFile={(f) => handleFile(1, f)}
+              onOpenPicker={() => setPickerFor(1)}
               onClear={() => { setMol1([]); setMol1Name(''); }}
             />
             <FileDropZone
@@ -210,6 +228,7 @@ export function MDMultiClient() {
               filename={mol2Name}
               count={mol2.length}
               onFile={(f) => handleFile(2, f)}
+              onOpenPicker={() => setPickerFor(2)}
               onClear={() => { setMol2([]); setMol2Name(''); }}
             />
           </div>
@@ -337,6 +356,19 @@ export function MDMultiClient() {
           </CardContent>
         </Card>
       )}
+
+      <FilePicker
+        open={pickerFor !== null}
+        onOpenChange={(o) => !o && setPickerFor(null)}
+        onSelect={(f) => {
+          const which = pickerFor;
+          setPickerFor(null);
+          if (which !== null) handleBucketFile(which, f);
+        }}
+        accept={['.gjf', '.xyz', '.com']}
+        title={pickerFor === 1 ? 'Molécula 1' : 'Molécula 2'}
+        description="Escolha um arquivo já enviado ou clique em Enviar para adicionar um novo."
+      />
     </div>
   );
 }
@@ -346,12 +378,14 @@ function FileDropZone({
   filename,
   count,
   onFile,
+  onOpenPicker,
   onClear,
 }: {
   label: string;
   filename: string;
   count: number;
   onFile: (file: File) => void;
+  onOpenPicker?: () => void;
   onClear: () => void;
 }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -378,7 +412,9 @@ function FileDropZone({
           </button>
         </div>
       ) : (
-        <label
+        <button
+          type="button"
+          onClick={onOpenPicker}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={(e) => {
@@ -387,22 +423,16 @@ function FileDropZone({
             const f = e.dataTransfer.files[0];
             if (f) onFile(f);
           }}
-          className={`flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-8 cursor-pointer transition-colors ${
+          className={`flex w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-8 transition-colors ${
             isDragging
               ? 'border-primary bg-primary/5'
               : 'border-input hover:border-primary hover:bg-accent/30'
           }`}
         >
-          <input
-            type="file"
-            accept=".gjf,.xyz,.com"
-            onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
-            className="hidden"
-          />
           <Upload className="size-6 text-muted-foreground" />
-          <p className="text-sm font-medium">Selecione ou arraste um arquivo</p>
+          <p className="text-sm font-medium">Escolher da galeria · Pick from gallery</p>
           <p className="text-xs text-muted-foreground">.gjf, .xyz</p>
-        </label>
+        </button>
       )}
     </div>
   );
