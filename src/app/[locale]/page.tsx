@@ -277,9 +277,8 @@ const TRUST_ITEMS: TrustItem[] = [
   { src: '/images/gaussian-logo.png', alt: 'Gaussian', height: 40 },
   { src: '/images/mlatom-logo.png', alt: 'MLatom', height: 32, label: 'MLatom' },
   { src: '/images/scipy-logo.svg', alt: 'SciPy', height: 36, label: 'SciPy' },
-  { src: '/images/unb-logo.png', alt: 'UnB', height: 32 },
   { src: '/images/ueg-logo.png', alt: 'UEG', height: 48 },
-  { src: '/images/deep-dive-logo.png', alt: 'Deep Dive', height: 72 },
+  { src: '/images/deep-dive-logo.png', alt: 'Deep Dive', height: 88 },
 ];
 
 function TrustLogo({ item }: { item: TrustItem }) {
