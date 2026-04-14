@@ -8,14 +8,14 @@
  *            docs/tabs-rebuild-impeccable-plan.md Phase 1.2
  */
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Upload, X, FileText, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { TransitionStatePreview } from '@/components/chemistry/previews';
+import { FilePicker, type BucketFile } from '@/components/files/FilePicker';
 
 export interface ParsedSpecies {
   filename: string;
@@ -57,21 +57,26 @@ export function SpeciesPanel({
   required = false,
   className,
 }: SpeciesPanelProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [parsing, setParsing] = useState(false);
   const [overrideEnabled, setOverrideEnabled] = useState(energyOverride !== null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  const handleFile = async (file: File) => {
+  const parseBucketFile = async (file: BucketFile) => {
     setParsing(true);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/v1/files/parse', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const res = await fetch('/api/v1/files/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileUploadId: file.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
       const json = await res.json();
       const data = json.data ?? json;
-      onChange({ filename: file.name, ...data });
-      toast.success(`${label}: ${file.name} carregado`);
+      onChange({ filename: file.originalName, ...data });
+      toast.success(`${label}: ${file.originalName} carregado`);
     } catch (e) {
       toast.error(`${label}: falha ao analisar`, { description: String(e) });
     } finally {
@@ -81,7 +86,6 @@ export function SpeciesPanel({
 
   const clearFile = () => {
     onChange(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const isTS = /transition state/i.test(label);
@@ -132,29 +136,35 @@ export function SpeciesPanel({
           )}
         </div>
       ) : (
-        <label
+        <button
+          type="button"
+          disabled={parsing}
+          onClick={() => setPickerOpen(true)}
           className={cn(
-            'flex flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-input cursor-pointer py-3 text-center transition-colors',
+            'flex w-full flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-input cursor-pointer py-3 text-center transition-colors',
             'hover:border-primary hover:bg-accent/30',
             parsing && 'pointer-events-none opacity-50',
           )}
         >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".log,.out,.gjf,.com,.xyz"
-            className="hidden"
-            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-            disabled={parsing}
-          />
           {parsing ? (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           ) : (
             <Upload className="h-4 w-4 text-muted-foreground" />
           )}
-          <span className="text-[10px] text-muted-foreground">Selecionar .log/.out · Select .log/.out</span>
-        </label>
+          <span className="text-[10px] text-muted-foreground">
+            Escolher da galeria · Pick from gallery
+          </span>
+        </button>
       )}
+
+      <FilePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={(f) => parseBucketFile(f)}
+        accept={['.log', '.out', '.gjf', '.com', '.xyz']}
+        title={`${label}: escolher arquivo`}
+        description="Escolha um arquivo já enviado ou clique em Enviar para adicionar um novo."
+      />
 
       {allowEnergyOverride && (
         <div className="space-y-1 pt-1">
