@@ -278,7 +278,7 @@ const TRUST_ITEMS: TrustItem[] = [
   { src: '/images/mlatom-logo.png', alt: 'MLatom', height: 32, label: 'MLatom' },
   { src: '/images/scipy-logo.svg', alt: 'SciPy', height: 36, label: 'SciPy' },
   { src: '/images/ueg-logo.png', alt: 'UEG', height: 48 },
-  { src: '/images/deep-dive-logo.png', alt: 'Deep Dive', height: 88 },
+  { src: '/images/deep-dive-logo.png', alt: 'Deep Dive', height: 104 },
 ];
 
 function TrustLogo({ item }: { item: TrustItem }) {
