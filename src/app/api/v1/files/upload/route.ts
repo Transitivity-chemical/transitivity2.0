@@ -1,3 +1,6 @@
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 import path from 'path';
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';

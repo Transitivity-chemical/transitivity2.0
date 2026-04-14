@@ -1,3 +1,6 @@
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 import { prisma } from '@/lib/prisma';
 import { proxyToFastAPI } from '@/lib/fastapi-proxy';
 import { mdGenerateSchema } from '@/lib/validators/md';

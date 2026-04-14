@@ -1,3 +1,6 @@
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 import { Prisma, type FittingJob, type FittingModelType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { runRemoteFit, type FittingMultiRequest } from '@/lib/fitting-api';

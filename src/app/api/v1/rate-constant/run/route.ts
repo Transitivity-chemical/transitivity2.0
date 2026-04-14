@@ -1,3 +1,6 @@
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 import { auth } from '@/lib/auth';
 import { proxyToFastAPI } from '@/lib/fastapi-proxy';
 import { prisma } from '@/lib/prisma';

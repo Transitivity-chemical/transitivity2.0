@@ -1,3 +1,6 @@
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 import { fetchRemoteTransitivityFit, type TransitivityFitRequest } from '@/lib/fitting-api';
 import {
   asyncWrapper,

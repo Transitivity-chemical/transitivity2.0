@@ -1,3 +1,6 @@
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 import { NextRequest } from 'next/server';
 import OpenAI from 'openai';
 import { AI_MODEL_CONFIGS, getModelById } from '@/lib/ai-models';
