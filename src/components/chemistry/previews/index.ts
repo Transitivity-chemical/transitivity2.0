@@ -7,3 +7,6 @@ export { SGFilterPreview } from './SGFilterPreview';
 export { TransitionStatePreview } from './TransitionStatePreview';
 export { TunnelingPreview } from './TunnelingPreview';
 export { GsaPreview } from './GsaPreview';
+export { ArrheniusPreview } from './ArrheniusPreview';
+export { MolecularDynamicsPreview } from './MolecularDynamicsPreview';
+export { RateConstantPreview } from './RateConstantPreview';

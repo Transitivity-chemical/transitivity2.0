@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { FlaskConical } from 'lucide-react';
 import { MarcusTheoryTab } from '../MarcusTheoryTab';
+import { TitleWithHint } from '@/components/common/TitleWithHint';
+import { MarcusLambdaPreview } from '@/components/chemistry/previews';
 
 export default async function MarcusPage({
   params,
@@ -19,7 +21,11 @@ export default async function MarcusPage({
           <FlaskConical className="size-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Marcus Theory</h1>
+          <TitleWithHint
+            title="Marcus Theory"
+            preview={MarcusLambdaPreview}
+            hint="Electron-transfer rate: ΔG‡ = (λ+ΔG°)²/(4λ). Uses vertical products at the reactant Franck-Condon geometry to compute λ."
+          />
           <p className="text-sm text-muted-foreground">
             Electron-transfer rate constant via Marcus expression.
           </p>

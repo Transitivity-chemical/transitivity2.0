@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { TrendingUp, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FittingWorkbench } from './FittingWorkbench';
+import { TitleWithHint } from '@/components/common/TitleWithHint';
+import { ArrheniusPreview } from '@/components/chemistry/previews';
 
 export default async function FittingPage({
   params,
@@ -21,7 +23,11 @@ export default async function FittingPage({
             <TrendingUp className="size-6" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">Arrhenius Plot</h1>
+            <TitleWithHint
+              title="Arrhenius Plot"
+              preview={ArrheniusPreview}
+              hint="Linear plot of ln k vs 1/T. Slope gives −Ea/R, intercept gives ln A. GSA optimizer fits 5 theories: Arrhenius, Aquilanti-Mundim, NTS, VFT, ASCC."
+            />
             <p className="max-w-2xl text-sm text-muted-foreground">{t('workspaceDesc')}</p>
           </div>
         </div>

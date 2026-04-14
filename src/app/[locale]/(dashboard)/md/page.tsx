@@ -5,6 +5,8 @@ import { getTranslations } from 'next-intl/server';
 import { Atom, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MDWizard } from './new/MDWizard';
+import { TitleWithHint } from '@/components/common/TitleWithHint';
+import { MolecularDynamicsPreview } from '@/components/chemistry/previews';
 
 export default async function MdPage({
   params,
@@ -26,7 +28,11 @@ export default async function MdPage({
             <Atom className="size-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Single Input</h1>
+            <TitleWithHint
+              title="Single Input"
+              preview={MolecularDynamicsPreview}
+              hint="Generate CPMD, BOMD, PIMD, SHMD or MTD input files from a single starting geometry. Controls functional, pseudo, temperature and lattice."
+            />
             <p className="text-sm text-muted-foreground">
               Gere inputs CPMD, BOMD, PIMD, SHMD ou MTD a partir de uma geometria.
             </p>

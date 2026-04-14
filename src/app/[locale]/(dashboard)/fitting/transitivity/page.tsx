@@ -5,6 +5,8 @@ import { TrendingUp, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth';
 import { TransitivityPlotTab } from '../TransitivityPlotTab';
+import { TitleWithHint } from '@/components/common/TitleWithHint';
+import { SGFilterPreview } from '@/components/chemistry/previews';
 
 export default async function FittingTransitivityPage({
   params,
@@ -26,7 +28,11 @@ export default async function FittingTransitivityPage({
             <TrendingUp className="size-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Transitivity Plot</h1>
+            <TitleWithHint
+              title="Transitivity Plot"
+              preview={SGFilterPreview}
+              hint="3-theory fit (Arrhenius, Aquilanti-Mundim, VFT) with optional Savitzky-Golay smoothing. Good for noisy low-T kinetic data."
+            />
             <p className="text-sm text-muted-foreground">{t('workspaceDesc')}</p>
           </div>
         </div>
