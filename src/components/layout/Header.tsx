@@ -139,7 +139,11 @@ export function Header({ role: initialRole }: HeaderProps) {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={() => signOut()}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    signOut({ callbackUrl: `/${locale}`, redirect: true })
+                  }
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   {t('signOut')}
                 </DropdownMenuItem>
@@ -207,7 +211,7 @@ export function Header({ role: initialRole }: HeaderProps) {
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    signOut();
+                    signOut({ callbackUrl: `/${locale}`, redirect: true });
                   }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium hover:bg-accent"
                 >

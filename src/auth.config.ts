@@ -34,6 +34,23 @@ export const authConfig = {
       }
       return token;
     },
+    // Sanitize redirect URLs — reject stale localhost callbacks left in cookies.
+    async redirect({ url, baseUrl }) {
+      try {
+        const target = new URL(url, baseUrl);
+        const base = new URL(baseUrl);
+        // Block localhost / 127.0.0.1 anywhere in prod
+        if (/localhost|127\.0\.0\.1/i.test(target.hostname) && base.hostname !== 'localhost') {
+          return baseUrl;
+        }
+        // Allow same-origin absolute URLs and relative paths
+        if (target.origin === base.origin) return target.toString();
+        // Otherwise bounce to landing
+        return baseUrl;
+      } catch {
+        return baseUrl;
+      }
+    },
     async session({ session, token }) {
       if (session.user) {
         const t = token as {
