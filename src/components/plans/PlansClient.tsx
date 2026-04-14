@@ -63,10 +63,10 @@ export function PlansClient({ locale, planConfigs, currentPlan, credits }: Props
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
+    <div className="mx-auto w-full max-w-5xl">
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('title')}</h1>
+        <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
           {t('subtitle')}
         </p>
         {currentPlan && (

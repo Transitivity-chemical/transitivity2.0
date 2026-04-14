@@ -35,7 +35,7 @@ export function PlansModal({ open, onClose, locale, currentPlan, credits }: Prop
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[95vw] max-w-5xl overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-h-[90vh] !w-[min(96vw,1100px)] !max-w-[min(96vw,1100px)] overflow-y-auto p-4 sm:p-6">
         {loading ? (
           <div className="p-12 text-center text-muted-foreground">Carregando...</div>
         ) : (

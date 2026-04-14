@@ -13,7 +13,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, X, Users } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Search, RefreshCw, KeyRound, Send, UserX, Globe, Copy, Check, X, Users, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { DomainEditorModal } from './DomainEditorModal';
@@ -394,6 +395,11 @@ export function AdminUsersClient({ locale }: Props) {
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex gap-1 items-center">
+                    <Button asChild size="sm" variant="ghost" title="Ver detalhes">
+                      <Link href={`/${locale}/admin/users/${u.id}`}>
+                        <Eye className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
                     {u.pendingApproval && (
                       <Button
                         size="sm"

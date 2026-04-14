@@ -7,6 +7,7 @@ import { useState } from 'react';
 import {
   Activity,
   Atom,
+  BarChart3,
   Bell,
   ChevronLeft,
   ChevronRight,
@@ -39,6 +40,7 @@ export const navItems = [
   { key: 'plans', href: '/plans', icon: CreditCard, adminOnly: false },
   { key: 'settings', href: '/settings', icon: SettingsIcon, adminOnly: false },
   { key: 'adminUsers', href: '/admin/users', icon: UsersRound, adminOnly: true },
+  { key: 'adminAnalytics', href: '/admin/analytics', icon: BarChart3, adminOnly: true },
 ] as const;
 
 type Tier = 'FREE' | 'PRO' | 'ENTERPRISE';
