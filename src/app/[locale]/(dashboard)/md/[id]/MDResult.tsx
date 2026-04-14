@@ -273,7 +273,7 @@ export function MDResult({ simulation, locale }: Props) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border bg-card px-3 py-2.5">
+    <div className="rounded-lg border bg-card px-3 py-2.5 shadow-sm">
       <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className="text-sm font-semibold tabular-nums truncate">{value}</p>
     </div>

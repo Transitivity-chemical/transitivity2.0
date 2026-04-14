@@ -191,7 +191,7 @@ export function MoleculeViewer({
     <svg
       width={width}
       height={height}
-      className={`cursor-grab select-none rounded-md border bg-card active:cursor-grabbing ${className || ''}`}
+      className={`cursor-grab select-none rounded-md border bg-card shadow-sm active:cursor-grabbing ${className || ''}`}
       tabIndex={0}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
