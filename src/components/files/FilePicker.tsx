@@ -127,14 +127,25 @@ export function FilePicker({
     }
   };
 
-  const visible = files.filter((f) => {
-    if (filter && !f.originalName.toLowerCase().includes(filter.toLowerCase())) return false;
-    if (accept && accept.length > 0) {
-      const ext = f.originalName.slice(f.originalName.lastIndexOf('.')).toLowerCase();
-      if (!accept.includes(ext)) return false;
-    }
-    return true;
-  });
+  // Soft filter: show ALL files regardless of extension; users can still
+  // pick anything. Matching extensions sort first so recommended files
+  // surface at the top. Non-matching files are dimmed but selectable.
+  const matchesAccept = (name: string): boolean => {
+    if (!accept || accept.length === 0) return true;
+    const ext = name.slice(name.lastIndexOf('.')).toLowerCase();
+    return accept.includes(ext);
+  };
+
+  const visible = files
+    .filter((f) => {
+      if (filter && !f.originalName.toLowerCase().includes(filter.toLowerCase())) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aOk = matchesAccept(a.originalName) ? 0 : 1;
+      const bOk = matchesAccept(b.originalName) ? 0 : 1;
+      return aOk - bOk;
+    });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,12 +201,15 @@ export function FilePicker({
             </div>
           ) : (
             <ul className="divide-y">
-              {visible.map((f) => (
+              {visible.map((f) => {
+                const recommended = matchesAccept(f.originalName);
+                return (
                 <li key={f.id}>
                   <button
                     type="button"
                     className={cn(
                       'group flex w-full items-center gap-3 px-5 py-3 text-left text-sm transition hover:bg-accent/40',
+                      !recommended && 'opacity-60',
                     )}
                     onClick={() => {
                       onSelect(f);
@@ -216,7 +230,8 @@ export function FilePicker({
                     <Check className="size-4 text-primary opacity-0 transition group-hover:opacity-100" />
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </div>
