@@ -333,14 +333,6 @@ export default function LandingPage() {
       mockup: <FittingCurveMockup />,
       flip: true,
     },
-    {
-      tag: t('featMlTag'),
-      title: t('featMlTitle'),
-      desc: t('featMlDesc'),
-      bullets: [t('featMlB1'), t('featMlB2'), t('featMlB3'), t('featMlB4')],
-      mockup: <MolecularMockup />,
-      flip: false,
-    },
   ];
 
   const steps = [
@@ -354,15 +346,15 @@ export default function LandingPage() {
       name: t('planFree'), price: t('planFreePrice'), period: t('planFreePeriod'),
       desc: t('planFreeDesc'), highlighted: false,
       features: locale === 'pt-BR'
-        ? ['Até 50 cálculos/mês', 'Todos os métodos de tunelamento', 'Ajuste GSA (3 modelos)', 'Predições ML básicas', 'Exportação CSV']
-        : ['Up to 50 calculations/month', 'All TST tunneling methods', 'GSA fitting (3 models)', 'Basic ML predictions', 'CSV export'],
+        ? ['Até 50 cálculos/mês', 'Todos os métodos de tunelamento', 'Ajuste GSA (3 modelos)', 'Exportação CSV']
+        : ['Up to 50 calculations/month', 'All TST tunneling methods', 'GSA fitting (3 models)', 'CSV export'],
     },
     {
       name: t('planPro'), price: t('planProPrice'), period: t('planProPeriod'),
       desc: t('planProDesc'), highlighted: true,
       features: locale === 'pt-BR'
-        ? ['Cálculos ilimitados', 'Todos os 6 modelos de ajuste', 'Todos os potenciais ML + otimização', 'Fila de computação prioritária', 'Assistente IA de Química', 'Processamento em lote']
-        : ['Unlimited calculations', 'All 6 fitting models', 'All ML potentials + optimization', 'Priority compute queue', 'AI Chemistry Assistant', 'Batch processing'],
+        ? ['Cálculos ilimitados', 'Todos os 6 modelos de ajuste', 'Fila de computação prioritária', 'Assistente IA de Química', 'Processamento em lote']
+        : ['Unlimited calculations', 'All 6 fitting models', 'Priority compute queue', 'AI Chemistry Assistant', 'Batch processing'],
     },
     {
       name: t('planEnterprise'), price: t('planEnterprisePrice'), period: t('planEnterprisePeriod'),
@@ -748,27 +740,23 @@ export default function LandingPage() {
               <ul className="mt-3 space-y-2 text-[12px] text-gray-600">
                 <li>{t('featRateTag')}</li>
                 <li>{t('featFitTag')}</li>
-                <li>{t('featMlTag')}</li>
               </ul>
             </div>
             <div>
               <h3 className="text-[12px] font-semibold text-gray-900">{t('footerResearch')}</h3>
               <ul className="mt-3 space-y-2 text-[12px] text-gray-600">
-                <li><a href="https://www.unb.br" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">{t('footerUnB')}</a></li>
                 <li><Link href={`/${locale}/course`} className="hover:text-gray-900 transition-colors">{tCourse('landingCta')}</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-[12px] font-semibold text-gray-900">{t('footerContact')}</h3>
               <ul className="mt-3 space-y-2 text-[12px] text-gray-600">
-                <li>transitivity@unb.br</li>
-                <li>Campus Darcy Ribeiro</li>
-                <li>Brasilia — DF</li>
+                <li>transitivity@deepdive.com</li>
               </ul>
             </div>
           </div>
           <div className="mt-10 border-t border-gray-100 pt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-            <p className="text-[11px] text-gray-400">&copy; {new Date().getFullYear()} {t('footerCopyright')}</p>
+            <p className="text-[11px] text-gray-400">&copy; {new Date().getFullYear()} Transitivity 2.0</p>
             <div className="flex gap-4 text-[11px] text-gray-400">
               <span>Terms</span>
               <span>Privacy</span>

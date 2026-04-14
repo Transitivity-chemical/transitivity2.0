@@ -1,4 +1,5 @@
 'use client';
+import { formatDateTime } from '@/lib/format-date';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -193,7 +194,7 @@ export function NotificationsClient({ locale, initial }: Props) {
                             {n.title}
                           </p>
                           <time className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(n.createdAt).toLocaleString(locale)}
+                            {formatDateTime(n.createdAt, locale)}
                           </time>
                         </div>
                         <p className="text-sm text-muted-foreground mt-0.5">{n.message}</p>

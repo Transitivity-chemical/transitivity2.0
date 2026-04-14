@@ -1,6 +1,8 @@
 import { auth } from '@/lib/auth';
 import { proxyToFastAPI } from '@/lib/fastapi-proxy';
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import type { ReactionType, PESEnergyType, CalcStatus } from '@prisma/client';
 
 type SpeciesPayload = {
   scfEnergy?: number | null;
@@ -79,6 +81,21 @@ export async function POST(request: NextRequest) {
         radiusB: body.radiusB,
       }),
     });
+
+    // Persist a Reaction row so the run appears in history.
+    try {
+      await prisma.reaction.create({
+        data: {
+          userId: session.user.id,
+          name: (body as { reactionName?: string }).reactionName?.trim() || 'Rate constant run',
+          reactionType: (body.reactionType || 'BIMOLECULAR') as ReactionType,
+          energyType: (body.energyType || 'En') as PESEnergyType,
+          status: 'COMPLETED' as CalcStatus,
+        },
+      });
+    } catch (e) {
+      console.warn('Failed to persist Reaction history row:', e);
+    }
 
     return NextResponse.json({ result });
   } catch (error) {

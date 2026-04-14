@@ -1,3 +1,4 @@
+import { formatDateTime } from '@/lib/format-date';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getTranslations } from 'next-intl/server';
@@ -299,7 +300,7 @@ export default async function DashboardPage({
                             </span>
                           </td>
                           <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap tabular-nums">
-                            {item.createdAt.toLocaleString(locale)}
+                            {formatDateTime(item.createdAt, locale)}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <Link href={item.href} className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground transition hover:text-primary">
@@ -338,7 +339,7 @@ export default async function DashboardPage({
                 <p className="text-[22px] font-semibold leading-snug tracking-tight">{latestItem.label}</p>
                 <div className="text-[12px] leading-5 text-muted-foreground">
                   <p>{formatStatus(latestItem.status)}</p>
-                  <p className="mt-1">{latestItem.createdAt.toLocaleString(locale)}</p>
+                  <p className="mt-1">{formatDateTime(latestItem.createdAt, locale)}</p>
                 </div>
                 <Link
                   href={latestItem.href}

@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth';
 import { proxyToFastAPI } from '@/lib/fastapi-proxy';
+import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -17,6 +18,21 @@ export async function POST(request: NextRequest) {
       '/api/v1/rate-constant/marcus',
       { method: 'POST', body: JSON.stringify(body) },
     );
+
+    try {
+      await prisma.reaction.create({
+        data: {
+          userId: session.user.id,
+          name: 'Marcus theory run',
+          reactionType: 'BIMOLECULAR',
+          energyType: 'En',
+          status: 'COMPLETED',
+        },
+      });
+    } catch (e) {
+      console.warn('Failed to persist Marcus history row:', e);
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Marcus compute failed';

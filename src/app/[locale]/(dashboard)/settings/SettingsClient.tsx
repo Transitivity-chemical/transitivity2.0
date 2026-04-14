@@ -64,32 +64,18 @@ export function SettingsClient({
     }
   }, [tab, router, searchParams]);
 
+  // Read current theme from localStorage / DOM to reflect it in the UI.
+  // DO NOT re-apply it to the DOM — the Header owns the theme class and has
+  // already set it before this component mounts, so touching it here causes
+  // a flash from light → dark when landing on /settings.
   useEffect(() => {
     const stored = localStorage.getItem('theme');
     if (stored === 'light' || stored === 'dark') {
       setThemePreference(stored);
-      document.documentElement.classList.toggle('dark', stored === 'dark');
-      return;
+    } else {
+      setThemePreference('system');
     }
-    setThemePreference('system');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.classList.toggle('dark', prefersDark);
   }, []);
-
-  useEffect(() => {
-    if (themePreference !== 'system') return;
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const update = () => {
-      document.documentElement.classList.toggle('dark', media.matches);
-    };
-    update();
-    if (typeof media.addEventListener === 'function') {
-      media.addEventListener('change', update);
-      return () => media.removeEventListener('change', update);
-    }
-    media.addListener(update);
-    return () => media.removeListener(update);
-  }, [themePreference]);
 
   const applyThemePreference = (value: ThemeValue) => {
     setThemePreference(value);

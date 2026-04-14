@@ -1,4 +1,5 @@
 'use client';
+import { formatDateTime } from '@/lib/format-date';
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -159,7 +160,7 @@ export function MDResult({ simulation, locale }: Props) {
               {simulation.name || `${simulation.mdMethod} Simulation`}
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">
-              Criado em {new Date(simulation.createdAt).toLocaleString(locale)}
+              Criado em {formatDateTime(simulation.createdAt, locale)}
             </p>
           </div>
           <div className="flex gap-2 flex-shrink-0">

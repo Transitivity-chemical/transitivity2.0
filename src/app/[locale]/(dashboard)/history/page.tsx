@@ -1,3 +1,4 @@
+import { formatDateTime } from '@/lib/format-date';
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -107,7 +108,7 @@ export default async function HistoryPage({
                       </div>
                       <Badge variant="outline" className="text-[10px]">{row.status}</Badge>
                       <span className="hidden w-32 text-right text-xs tabular-nums text-muted-foreground sm:inline">
-                        {row.createdAt.toLocaleString(locale)}
+                        {formatDateTime(row.createdAt, locale)}
                       </span>
                     </Link>
                   </li>

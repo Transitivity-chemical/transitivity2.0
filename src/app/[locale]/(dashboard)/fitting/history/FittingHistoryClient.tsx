@@ -1,4 +1,5 @@
 'use client';
+import { formatDateTime } from '@/lib/format-date';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -92,7 +93,7 @@ export function FittingHistoryClient({ locale, jobs: initialJobs }: { locale: st
                       </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(job.createdAt).toLocaleString(locale)}
+                      {formatDateTime(job.createdAt, locale)}
                       {job.result?.chiSquare !== null && job.result?.chiSquare !== undefined && (
                         <span className="ml-2">χ² = {job.result.chiSquare.toFixed(4)}</span>
                       )}
