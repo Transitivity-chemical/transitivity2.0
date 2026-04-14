@@ -9,14 +9,13 @@
  */
 
 import { useMemo, useState } from 'react';
-import type { Data } from 'plotly.js';
 import { toast } from 'sonner';
 import { FlaskConical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SAMPLE_FITTING_DATA, SAMPLE_FITTING_META } from '@/lib/sample-data';
-import { PlotlyChart } from '@/components/chemistry/PlotlyChart';
+import { SimpleChart } from '@/components/chemistry/SimpleChart';
 import { GsaParamsFieldset, DEFAULT_GSA_PARAMS, type GsaParams } from '@/components/chemistry/GsaParamsFieldset';
 import { InitialParamsFieldset, type InitialParamValue } from '@/components/chemistry/InitialParamsFieldset';
 import { TemperatureRateColumns, type TKPair } from '@/components/chemistry/TemperatureRateColumns';
@@ -88,23 +87,21 @@ export function TransitivityPlotTab() {
     }
   };
 
-  const chartData: Data[] = result
+  const chartSeries = result
     ? [
         {
+          label: 'Experimental',
           x: result.tempK,
           y: result.lnK,
-          mode: 'markers',
-          type: 'scatter',
-          name: 'Experimental',
-          marker: { size: 7 },
+          type: 'scatter' as const,
+          color: '#1e3a5f',
         },
         {
+          label: 'Fit',
           x: result.tempK,
           y: result.lnFit,
-          mode: 'lines',
-          type: 'scatter',
-          name: 'Fit',
-          line: { width: 2 },
+          type: 'line' as const,
+          color: '#d97706',
         },
       ]
     : [];
@@ -217,14 +214,12 @@ export function TransitivityPlotTab() {
           canSave={result !== null}
         />
         {result && (
-          <div className="h-80 rounded-lg border border-border bg-card shadow-sm">
-            <PlotlyChart
-              data={chartData}
-              layout={{
-                xaxis: { title: { text: 'Temperature (K) · Temperatura (K)' } },
-                yaxis: { title: { text: 'ln k · ln da constante' } },
-              }}
-              ariaLabel="Transitivity fit chart · Curva ajustada de transitividade"
+          <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
+            <SimpleChart
+              series={chartSeries}
+              xLabel="Temperature (K)"
+              yLabel="ln k"
+              height={320}
             />
           </div>
         )}

@@ -1,49 +1,28 @@
 'use client';
 
-import type { Data } from 'plotly.js';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlotlyChart } from '@/components/chemistry/PlotlyChart';
 
 interface Props {
   days: { date: string; rc: number; md: number; fit: number }[];
   planStats: { plan: string; count: number }[];
 }
 
+const PLAN_COLORS = ['#1e3a5f', '#60a5fa', '#f59e0b', '#34d399'];
+
 export function AnalyticsCharts({ days, planStats }: Props) {
-  const timeline: Data[] = [
-    {
-      x: days.map((d) => d.date),
-      y: days.map((d) => d.rc),
-      type: 'bar',
-      name: 'Rate constant',
-      marker: { color: '#1e3a5f' },
-    },
-    {
-      x: days.map((d) => d.date),
-      y: days.map((d) => d.md),
-      type: 'bar',
-      name: 'MD',
-      marker: { color: '#60a5fa' },
-    },
-    {
-      x: days.map((d) => d.date),
-      y: days.map((d) => d.fit),
-      type: 'bar',
-      name: 'Fitting',
-      marker: { color: '#34d399' },
-    },
-  ];
-
-  const distribution: Data[] = [
-    {
-      values: planStats.map((p) => p.count),
-      labels: planStats.map((p) => p.plan),
-      type: 'pie',
-      hole: 0.55,
-      marker: { colors: ['#1e3a5f', '#60a5fa', '#f59e0b', '#34d399'] },
-    },
-  ];
-
   return (
     <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
       <Card className="shadow-sm">
@@ -52,16 +31,25 @@ export function AnalyticsCharts({ days, planStats }: Props) {
         </CardHeader>
         <CardContent>
           <div className="h-64">
-            <PlotlyChart
-              data={timeline}
-              layout={{
-                barmode: 'stack',
-                margin: { l: 40, r: 10, t: 10, b: 40 },
-                showlegend: true,
-                legend: { orientation: 'h', y: -0.2 },
-              }}
-              ariaLabel="Calculation timeline"
-            />
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={days} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--popover)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 6,
+                    fontSize: 12,
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="rc" name="Rate Constant" stackId="a" fill="#1e3a5f" />
+                <Bar dataKey="md" name="MD" stackId="a" fill="#60a5fa" />
+                <Bar dataKey="fit" name="Fitting" stackId="a" fill="#34d399" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
@@ -72,11 +60,31 @@ export function AnalyticsCharts({ days, planStats }: Props) {
         </CardHeader>
         <CardContent>
           <div className="h-64">
-            <PlotlyChart
-              data={distribution}
-              layout={{ margin: { l: 10, r: 10, t: 10, b: 10 }, showlegend: true }}
-              ariaLabel="Plan distribution"
-            />
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={planStats}
+                  dataKey="count"
+                  nameKey="plan"
+                  innerRadius={50}
+                  outerRadius={85}
+                  paddingAngle={2}
+                >
+                  {planStats.map((_, i) => (
+                    <Cell key={i} fill={PLAN_COLORS[i % PLAN_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--popover)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 6,
+                    fontSize: 12,
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
