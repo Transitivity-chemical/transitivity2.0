@@ -145,14 +145,8 @@ export default function LoginPage() {
             backgroundSize: '260px 260px, 320px 320px, 90px 90px, 90px 90px',
           }}
         />
-        <div className="relative z-10 max-w-md space-y-8">
+        <div className="relative z-10 max-w-md">
           <TransitivityLogo size="xl" color="#ffffff" className="justify-start" />
-          <div className="space-y-4">
-            <p className="text-[11px] uppercase tracking-[0.45em] text-white/65">{tb('subtitle')}</p>
-            <p className="text-2xl font-semibold text-white">{tb('accessPlatform')}</p>
-            <p className="text-sm leading-relaxed text-white/80">{tb('createResearch')}</p>
-            <p className="text-sm text-white/60">{tb('university')}</p>
-          </div>
         </div>
 
         <Link
@@ -167,14 +161,11 @@ export default function LoginPage() {
       <div className="flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-16">
         <div className="mb-10 text-center lg:hidden">
           <TransitivityLogo size="md" color="#1e3a5f" className="justify-center" />
-          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground">{tb('subtitle')}</p>
         </div>
 
         <div className="w-full max-w-md rounded-lg border border-border/70 bg-card px-8 py-10 shadow-[0_30px_80px_-65px_rgba(15,23,42,0.65)]">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground">{tb('subtitle')}</p>
+          <div>
             <h1 className="text-2xl font-semibold text-foreground">{t('signIn')}</h1>
-            <p className="text-sm text-muted-foreground">{tb('accessPlatform')}</p>
           </div>
 
           {successMessage && <p className="mt-4 text-sm text-emerald-700">{successMessage}</p>}
