@@ -98,13 +98,13 @@ export default function WikiPage() {
           </div>
         </div>
         <dl className="grid min-w-[240px] grid-cols-2 gap-4 text-xs text-muted-foreground">
-          <div className="rounded-lg border border-border/70 px-4 py-3">
+          <div className="rounded-lg border border-border/70 bg-card/80 px-4 py-3 shadow-sm">
             <dt className="text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/80">
               Coleções
             </dt>
             <dd className="font-mono text-xl font-semibold tabular-nums text-foreground">{totalSections}</dd>
           </div>
-          <div className="rounded-lg border border-border/70 px-4 py-3">
+          <div className="rounded-lg border border-border/70 bg-card/80 px-4 py-3 shadow-sm">
             <dt className="text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/80">
               Artigos indexados
             </dt>
@@ -173,7 +173,7 @@ export default function WikiPage() {
                       <button
                         type="button"
                         onClick={() => setReader({ url: link.url, title: link.label })}
-                        className="flex w-full min-w-0 items-center gap-2 rounded-lg border border-border/70 bg-background px-3 py-2 text-left text-[12px] font-medium transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none"
+                        className="flex w-full min-w-0 items-center gap-2 rounded-md border border-border/70 bg-background px-3 py-2 text-left text-[12px] font-medium transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none"
                         aria-label={`Abrir ${link.label}`}
                       >
                         <FileText className="size-3.5 text-muted-foreground" aria-hidden />

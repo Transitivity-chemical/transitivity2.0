@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
+import { TransitionStatePreview } from '@/components/chemistry/previews';
 
 export interface ParsedSpecies {
   filename: string;
@@ -82,12 +84,21 @@ export function SpeciesPanel({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const isTS = /transition state/i.test(label);
+
   return (
-    <div className={cn('rounded-md border bg-card p-3 space-y-2', className)}>
+    <div className={cn('rounded-md border bg-card p-3 space-y-2 shadow-sm', className)}>
       <div className="flex items-center justify-between">
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
           {required && <span className="ml-1 text-red-500" aria-label="Obrigatório · Required">*</span>}
+          {isTS && (
+            <HoverPreviewPopover
+              preview={TransitionStatePreview}
+              title="Transition state"
+              description="Saddle point on the reaction coordinate. Exactly one imaginary frequency; ΔG‡ sets the TST rate constant."
+            />
+          )}
         </div>
         {value && (
           <button

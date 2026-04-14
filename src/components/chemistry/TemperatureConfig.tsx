@@ -46,7 +46,7 @@ export function TemperatureConfig({ value, onChange, className }: TemperatureCon
   };
 
   return (
-    <div className={cn('rounded-md border bg-card p-3 space-y-2', className)}>
+    <div className={cn('rounded-lg border bg-card p-3 shadow-sm space-y-2', className)}>
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Set Temperature · Definir temperatura

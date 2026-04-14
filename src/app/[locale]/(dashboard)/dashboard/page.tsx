@@ -144,10 +144,10 @@ export default async function DashboardPage({
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 px-5 pb-16 pt-8 lg:px-10">
-      <section className="rounded-lg border border-border/60 bg-background/60 p-6 shadow-[0_30px_80px_-60px_rgba(15,23,42,0.7)]">
+      <section className="rounded-xl border border-border/70 bg-card/80 p-6 shadow-sm lg:p-7">
         <div className="flex flex-wrap items-start gap-6">
           <div className="min-w-[240px] flex-1">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-muted-foreground/70">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground/70">
               {t('quickStart')}
             </p>
             <h1 className="mt-3 text-[32px] font-semibold leading-tight tracking-tight">
@@ -157,8 +157,8 @@ export default async function DashboardPage({
               {t('dropFile')}
             </p>
           </div>
-          <div className="rounded-lg border border-border/50 px-5 py-4 text-right">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground/70">
+          <div className="rounded-lg border border-border/60 bg-card/70 px-5 py-4 text-right shadow-sm">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground/70">
               {t('recentActivity')}
             </p>
             <p className="mt-2 text-[26px] font-semibold font-mono tabular-nums">
@@ -218,7 +218,7 @@ export default async function DashboardPage({
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.9fr)]">
-        <div className="rounded-lg border border-border/60 bg-card/70">
+        <div className="rounded-lg border border-border/70 bg-card/80 shadow-sm">
           <CardHeader className="flex flex-col gap-1 border-b border-border/50 px-6 py-6">
             <p className="text-[11px] uppercase tracking-[0.4em] text-muted-foreground/70">{t('recentActivity')}</p>
             <CardTitle className="text-2xl font-semibold tracking-tight">
@@ -231,7 +231,7 @@ export default async function DashboardPage({
           <CardContent className="p-0">
             {allActivity.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-                <div className="inline-flex size-11 items-center justify-center rounded-md border border-dashed border-border/60 text-muted-foreground/70">
+                <div className="inline-flex size-11 items-center justify-center rounded-lg border border-dashed border-border/60 bg-background/70 text-muted-foreground/70 shadow-sm">
                   <Activity className="size-6" />
                 </div>
                 <div>
@@ -254,7 +254,7 @@ export default async function DashboardPage({
               </div>
             ) : (
               <div className="overflow-hidden rounded-lg border border-transparent px-2 pb-2 pt-2 sm:px-4">
-                <div className="rounded-lg border border-border/50">
+                <div className="rounded-lg border border-border/50 shadow-sm">
                   <table className="w-full text-sm" aria-label={t('recentActivity')}>
                     <thead className="bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground/80">
                       <tr>
@@ -319,7 +319,7 @@ export default async function DashboardPage({
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-lg border border-border/60 bg-card/70 p-5">
+          <div className="rounded-lg border border-border/70 bg-card/80 p-5 shadow-sm">
             <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70">
               {t('usage')}
             </p>
@@ -330,7 +330,7 @@ export default async function DashboardPage({
             </div>
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-card/70 p-5">
+          <div className="rounded-lg border border-border/70 bg-card/80 p-5 shadow-sm">
             <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground/70">{t('recentActivity')}</p>
             {latestItem ? (
               <div className="mt-4 space-y-3">
@@ -370,7 +370,7 @@ function QuickLaunchCard({
   return (
     <Link
       href={href}
-      className="group flex items-center justify-between rounded-lg border border-border/60 bg-card/80 px-4 py-3 transition hover:-translate-y-0.5 hover:border-foreground/60"
+      className="group flex items-center justify-between rounded-lg border border-border/70 bg-card/80 px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-foreground/60"
     >
       <div className="flex min-w-0 items-center gap-3">
         <span className="inline-flex size-10 items-center justify-center rounded-md bg-foreground/[0.08] text-foreground/80 transition group-hover:bg-foreground/[0.15] group-hover:text-foreground">
@@ -394,7 +394,7 @@ function QueueRow({
   locale,
 }: QuickLink & { locale: string }) {
   return (
-    <div className="flex min-w-0 items-center justify-between rounded-lg border border-border/60 px-4 py-3">
+    <div className="flex min-w-0 items-center justify-between rounded-lg border border-border/70 px-4 py-3 shadow-sm">
       <div className="flex min-w-0 items-center gap-3">
         <span className="inline-flex size-9 items-center justify-center rounded-md bg-foreground/[0.06] text-foreground/70">
           <Icon className="size-4" />
@@ -430,7 +430,7 @@ function StatCard({
         ? 'bg-emerald-500/15 text-emerald-300'
         : 'bg-primary/15 text-primary';
   return (
-    <div className="rounded-lg border border-border/60 bg-background/80 p-4 shadow-[0_25px_45px_-40px_rgba(15,23,42,0.8)]">
+    <div className="rounded-lg border border-border/70 bg-card/80 p-4 shadow-sm">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-muted-foreground/70">{label}</p>

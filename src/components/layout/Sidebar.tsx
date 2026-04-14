@@ -5,18 +5,18 @@ import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useState } from 'react';
 import {
-  LayoutDashboard,
-  Calculator,
-  TrendingUp,
+  Activity,
   Atom,
+  Bell,
   ChevronLeft,
   ChevronRight,
   Coins,
-  MessageCircle,
-  BookOpen,
-  Users,
-  Settings as SettingsIcon,
   CreditCard,
+  FlaskConical,
+  Settings2 as SettingsIcon,
+  TrendingUp,
+  BookOpen,
+  UsersRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,15 +25,15 @@ import { isAdminRole } from '@/lib/access';
 import { PlansModal } from '@/components/plans/PlansModal';
 
 export const navItems = [
-  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
-  { key: 'rateConstant', href: '/rate-constant', icon: Calculator, adminOnly: false },
+  { key: 'dashboard', href: '/dashboard', icon: Activity, adminOnly: false },
+  { key: 'rateConstant', href: '/rate-constant', icon: FlaskConical, adminOnly: false },
   { key: 'md', href: '/md', icon: Atom, adminOnly: false },
   { key: 'fitting', href: '/fitting', icon: TrendingUp, adminOnly: false },
-  { key: 'assistant', href: '/assistant', icon: MessageCircle, adminOnly: false },
+  { key: 'assistant', href: '/assistant', icon: Bell, adminOnly: false },
   { key: 'wiki', href: '/wiki', icon: BookOpen, adminOnly: false },
   { key: 'plans', href: '/plans', icon: CreditCard, adminOnly: false },
   { key: 'settings', href: '/settings', icon: SettingsIcon, adminOnly: false },
-  { key: 'adminUsers', href: '/admin/users', icon: Users, adminOnly: true },
+  { key: 'adminUsers', href: '/admin/users', icon: UsersRound, adminOnly: true },
 ] as const;
 
 type Tier = 'FREE' | 'PRO' | 'ENTERPRISE';

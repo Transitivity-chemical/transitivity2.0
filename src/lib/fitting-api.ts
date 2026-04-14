@@ -89,6 +89,10 @@ export const TRANSITIVITY_THEORY_CONFIG: Record<TransitivityFittingTheory, Theor
   VFT: { labels: ['Ea', 'd'], initialParams: [0.1, 0.1], lock: [false, false] },
 };
 
+/**
+ * Server-side call: directly hits pitomba. Used from Next.js API routes.
+ * Do not call from browser code — use `runTransitivityFitViaProxy` instead.
+ */
 export async function fetchRemoteTransitivityFit(payload: TransitivityFitRequest) {
   const response = await fetch(TRANSITIVITY_FITTING_ENDPOINT, {
     method: 'POST',
@@ -110,6 +114,25 @@ export async function fetchRemoteTransitivityFit(payload: TransitivityFitRequest
     throw new Error(body.detail || body.error || `HTTP ${response.status}`);
   }
   return (await response.json()) as RemoteFitResponse;
+}
+
+/**
+ * Client-side call: hits the Next.js proxy `/api/v1/fitting/run-transitivity`,
+ * which then hits pitomba. Same shape as `fetchRemoteTransitivityFit`.
+ */
+export async function runTransitivityFitViaProxy(payload: TransitivityFitRequest): Promise<RemoteFitResponse> {
+  const res = await fetch('/api/v1/fitting/run-transitivity', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(body.error || body.detail || `HTTP ${res.status}`);
+  }
+  const body = await res.json();
+  // api-utils `successResponse` wraps the payload as { success: true, data }
+  return (body?.data ?? body) as RemoteFitResponse;
 }
 
 export const THEORY_CONFIG: Record<FittingTheory, TheoryConfig> = {

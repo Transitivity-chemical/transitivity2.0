@@ -69,81 +69,83 @@ export function Header({ role: initialRole }: HeaderProps) {
 
   return (
     <>
-      <header className="flex h-14 items-center justify-between border-b bg-background px-3 sm:px-4">
-        <div className="flex items-center gap-2 min-w-0">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="rounded-md p-2 hover:bg-accent md:hidden"
-            aria-label="Open navigation menu"
-          >
-            <Menu size={18} />
-          </button>
+      <header className="border-b bg-background">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="rounded-md p-2 hover:bg-accent md:hidden"
+              aria-label="Open navigation menu"
+            >
+              <Menu size={18} />
+            </button>
 
-          <Link
-            href={`/${locale}/dashboard`}
-            className="flex items-center gap-2 text-sm font-semibold text-foreground md:hidden"
-          >
-            <GammaIcon size={22} />
-            <span className="truncate">Transitivity</span>
-          </Link>
-        </div>
+            <Link
+              href={`/${locale}/dashboard`}
+              className="flex items-center gap-2 text-sm font-semibold text-foreground md:hidden"
+            >
+              <GammaIcon size={22} />
+              <span className="truncate">Transitivity</span>
+            </Link>
+          </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <NotificationBell />
-          <LanguageSwitcher />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <NotificationBell />
+            <LanguageSwitcher />
 
-          <button
-            onClick={toggleTheme}
-            className="rounded-md p-2 hover:bg-accent"
-            aria-label="Toggle theme"
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+            <button
+              onClick={toggleTheme}
+              className="rounded-md p-2 hover:bg-accent"
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 rounded-md p-1 hover:bg-accent">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5">
-                {session?.user?.name && (
-                  <p className="text-sm font-medium">{session.user.name}</p>
-                )}
-                {session?.user?.email && (
-                  <p className="text-xs text-muted-foreground">{session.user.email}</p>
-                )}
-              </div>
-              <DropdownMenuSeparator />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 rounded-md p-1 hover:bg-accent">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5">
+                  {session?.user?.name && (
+                    <p className="text-sm font-medium">{session.user.name}</p>
+                  )}
+                  {session?.user?.email && (
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  )}
+                </div>
+                <DropdownMenuSeparator />
 
-              <DropdownMenuItem asChild>
-                <Link href={`/${locale}/settings`} className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  {t('profile') ?? 'Profile'}
-                </Link>
-              </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/${locale}/settings`} className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    {t('profile') ?? 'Profile'}
+                  </Link>
+                </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link href={`/${locale}/settings`} className="flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t('settings') ?? 'Settings'}
-                </Link>
-              </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/${locale}/settings`} className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t('settings') ?? 'Settings'}
+                  </Link>
+                </DropdownMenuItem>
 
-              <DropdownMenuSeparator />
+                <DropdownMenuSeparator />
 
-              <DropdownMenuItem onClick={() => signOut()}>
-                <LogOut className="mr-2 h-4 w-4" />
-                {t('signOut')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t('signOut')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
 

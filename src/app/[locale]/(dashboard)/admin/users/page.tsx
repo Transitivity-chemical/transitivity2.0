@@ -127,7 +127,7 @@ export default async function AdminUsersPage({
 
             <div className="mt-4 space-y-3">
               {planRequestsPreview.length === 0 && (
-                <p className="rounded-md border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground dark:border-slate-800">
+                <p className="rounded-lg border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground shadow-sm dark:border-slate-800">
                   {copy.planQueueEmpty}
                 </p>
               )}
@@ -168,7 +168,7 @@ export default async function AdminUsersPage({
 
             <div className="mt-4 space-y-3">
               {pendingApprovalsFeed.length === 0 && (
-                <p className="rounded-md border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground dark:border-slate-800">
+                <p className="rounded-lg border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground shadow-sm dark:border-slate-800">
                   {copy.approvalsEmpty}
                 </p>
               )}

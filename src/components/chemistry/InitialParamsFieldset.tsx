@@ -28,7 +28,7 @@ export interface InitialParamsFieldsetProps {
 
 export function InitialParamsFieldset({ params, values, onChange, className }: InitialParamsFieldsetProps) {
   return (
-    <fieldset className={cn('rounded-md border bg-card p-3', className)}>
+    <fieldset className={cn('rounded-lg border bg-card p-3 shadow-sm', className)}>
       <legend className="px-1 -ml-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Initial Parameters · Parâmetros Iniciais
       </legend>

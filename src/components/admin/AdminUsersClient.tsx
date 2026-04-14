@@ -88,7 +88,7 @@ export function AdminUsersClient({ locale }: Props) {
     if (roleFilter) params.set('role', roleFilter);
     if (statusFilter) params.set('status', statusFilter);
     params.set('page', String(page));
-    const res = await fetch(`/api/v1/admin/users?${params.toString()}`);
+    const res = await fetch(`/api/v1/admin/users?${params.toString()}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       setUsers(data.users || []);
@@ -103,7 +103,7 @@ export function AdminUsersClient({ locale }: Props) {
 
   // Load pending plan requests
   const loadRequests = useCallback(async () => {
-    const res = await fetch('/api/v1/admin/plan-requests?status=PENDING');
+    const res = await fetch('/api/v1/admin/plan-requests?status=PENDING', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       setPendingRequests(data.requests || []);
@@ -275,7 +275,7 @@ export function AdminUsersClient({ locale }: Props) {
       </div>
 
       {pendingRequests.length > 0 && (
-        <div className="mb-6 rounded-md border border-border/70 bg-card/40 p-4">
+        <div className="mb-6 rounded-lg border border-border/70 bg-card/40 p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold tracking-tight">Solicitações pendentes</h2>
             <span className="text-xs text-muted-foreground">{pendingRequests.length}</span>
@@ -284,7 +284,7 @@ export function AdminUsersClient({ locale }: Props) {
             {pendingRequests.map((r) => (
               <li
                 key={r.id}
-                className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-background/80 px-3 py-2 text-sm"
+                className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-background/80 px-3 py-2 text-sm shadow-sm"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -348,7 +348,7 @@ export function AdminUsersClient({ locale }: Props) {
         </Button>
       </div>
 
-      <div className="rounded-lg border overflow-hidden">
+      <div className="rounded-lg border border-border/70 bg-card/30 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left">
             <tr>
@@ -544,7 +544,7 @@ function TempPasswordModal({
               </Button>
             </div>
           </div>
-          <div className="rounded-md border border-border/70 p-3 text-sm">
+          <div className="rounded-lg border border-border/70 p-3 text-sm shadow-sm">
             <p className={data.emailSent ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}>
               {data.emailSent
                 ? `${t('tempPasswordModal.emailSent')} (${data.emailProvider})`

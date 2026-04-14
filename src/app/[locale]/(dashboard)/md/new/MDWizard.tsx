@@ -491,7 +491,7 @@ export function MDWizard() {
         </p>
       )}
 
-      <div className="flex flex-col gap-3 rounded-md border border-border/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-lg border border-border/70 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs text-muted-foreground">
           {filename ? (
             <>

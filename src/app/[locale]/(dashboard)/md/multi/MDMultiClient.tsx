@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Download, Upload, FileText, X, Layers } from 'lucide-react';
+import { Loader2, Download, Upload, FileText, X, Layers, FlaskConical } from 'lucide-react';
 
 /**
  * Phase 14B of megaplan: Multiple Inputs MD wizard.
@@ -143,6 +143,24 @@ export function MDMultiClient() {
     }
   };
 
+  const loadExample = () => {
+    // H2 diatomic as both endpoints — smallest meaningful interpolation.
+    const h2: Atom[] = [
+      { element: 'H', x: 0, y: 0, z: 0 },
+      { element: 'H', x: 0, y: 0, z: 0.74 },
+    ];
+    setMol1(h2);
+    setMol2(h2);
+    setMol1Name('H2_start.xyz');
+    setMol2Name('H2_end.xyz');
+    setBondMin(0.6);
+    setBondMax(1.0);
+    setBondSteps(5);
+    setTempMin(300);
+    setTempMax(500);
+    setTempSteps(3);
+  };
+
   const downloadFile = (filename: string, content: string) => {
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -155,16 +173,22 @@ export function MDMultiClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-primary/10 p-2 text-primary">
-          <Layers className="size-5" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2 text-primary">
+            <Layers className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Múltiplos Inputs</h2>
+            <p className="text-xs text-muted-foreground">
+              Gere um conjunto de inputs CPMD interpolando entre duas estruturas moleculares.
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-semibold">Múltiplos Inputs</h2>
-          <p className="text-xs text-muted-foreground">
-            Gere um conjunto de inputs CPMD interpolando entre duas estruturas moleculares.
-          </p>
-        </div>
+        <Button variant="outline" size="sm" onClick={loadExample}>
+          <FlaskConical className="mr-1.5 h-4 w-4" />
+          Carregar exemplo
+        </Button>
       </div>
 
       <Card>
@@ -257,7 +281,7 @@ export function MDMultiClient() {
       </Card>
 
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
           {error}
         </div>
       )}
@@ -295,7 +319,7 @@ export function MDMultiClient() {
                 Trajetória completa (xyz_file.xyz)
               </Button>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto rounded-md border p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto rounded-lg border border-border/70 p-2 shadow-sm">
               {result.files.map((f) => (
                 <button
                   key={f.filename}

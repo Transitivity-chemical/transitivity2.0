@@ -26,7 +26,7 @@ import {
   getTransitivityParams,
   type TransitivityTheory,
 } from '@/lib/fitting-theory-config';
-import { fetchRemoteTransitivityFit, type RemoteFitResponse } from '@/lib/fitting-api';
+import { runTransitivityFitViaProxy, type RemoteFitResponse } from '@/lib/fitting-api';
 import { downloadFit } from '@/lib/fitting-save';
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { SGFilterPreview } from '@/components/chemistry/previews/SGFilterPreview';
@@ -64,7 +64,7 @@ export function TransitivityPlotTab() {
     try {
       const initial = params.map((p) => visibleValues[p.key].value);
       const lock = params.map((p) => visibleValues[p.key].locked);
-      const data = await fetchRemoteTransitivityFit({
+      const data = await runTransitivityFitViaProxy({
         temperatures: pairs.map((p) => p.T),
         rate_constants: pairs.map((p) => p.k),
         theory,
@@ -217,7 +217,7 @@ export function TransitivityPlotTab() {
           canSave={result !== null}
         />
         {result && (
-          <div className="h-80 rounded-md border bg-card">
+          <div className="h-80 rounded-lg border border-border bg-card shadow-sm">
             <PlotlyChart
               data={chartData}
               layout={{

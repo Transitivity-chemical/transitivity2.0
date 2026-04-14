@@ -92,9 +92,11 @@ export function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
 
+  const lastFetchedAtRef = useRef(0);
+
   const fetchUnread = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/notifications?limit=1');
+      const res = await fetch('/api/v1/notifications?limit=1', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       setUnreadCount(data.unreadCount || 0);
@@ -103,19 +105,25 @@ export function NotificationBell() {
     }
   }, []);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
+  const fetchAll = useCallback(async (force = false) => {
+    // 15s stale-while-revalidate cache — don't show loading spinner if we
+    // already have data that is fresh enough.
+    const now = Date.now();
+    const stale = now - lastFetchedAtRef.current > 15_000;
+    if (!force && !stale && notifications.length > 0) return;
+    if (notifications.length === 0) setLoading(true);
     try {
-      const res = await fetch('/api/v1/notifications?limit=20');
+      const res = await fetch('/api/v1/notifications?limit=20', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications || []);
         setUnreadCount(data.unreadCount || 0);
+        lastFetchedAtRef.current = Date.now();
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [notifications.length]);
 
   // Initial + poll every 30s
   useEffect(() => {
@@ -124,7 +132,7 @@ export function NotificationBell() {
     return () => clearInterval(id);
   }, [fetchUnread]);
 
-  // Load full list when dropdown opens
+  // Load full list when dropdown opens — uses stale-while-revalidate
   useEffect(() => {
     if (open) fetchAll();
   }, [open, fetchAll]);

@@ -275,7 +275,7 @@ export function FittingWorkbench() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {theoryConfig.labels.map((label, index) => (
-                <div key={label} className="rounded-xl border border-border bg-card p-3">
+                <div key={label} className="rounded-xl border border-border bg-card shadow-sm p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <span className="text-sm font-medium">{label}</span>
                     <Button
@@ -360,19 +360,19 @@ export function FittingWorkbench() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="rounded-xl border border-border bg-card shadow-sm p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t('pointsLoaded')}
               </p>
               <p className="mt-2 text-2xl font-semibold">{filledPointCount}</p>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="rounded-xl border border-border bg-card shadow-sm p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t('theoryField')}
               </p>
               <p className="mt-2 text-sm font-semibold">{theory}</p>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="rounded-xl border border-border bg-card shadow-sm p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t('notesParameters')}
               </p>
@@ -397,26 +397,26 @@ export function FittingWorkbench() {
         </CardHeader>
         <CardContent className="space-y-6">
           {!result ? (
-            <div className="rounded-xl border border-dashed border-border bg-muted/30 px-5 py-12 text-center">
+            <div className="rounded-xl border border-dashed border-border bg-muted/30 shadow-sm px-5 py-12 text-center">
               <Orbit className="mx-auto mb-3 size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t('noEndpointResult')}</p>
             </div>
           ) : (
             <>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-border bg-card p-4">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t('theoryField')}
                   </p>
                   <p className="mt-2 text-sm font-semibold">{result.theory}</p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-4">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Chi-square
                   </p>
                   <p className="mt-2 text-sm font-semibold">{formatScientific(result.chi_square)}</p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-4">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t('pointsLoaded')}
                   </p>
@@ -426,14 +426,14 @@ export function FittingWorkbench() {
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {Object.entries(result.parameters).map(([name, value]) => (
-                  <div key={name} className="rounded-xl border border-border bg-card p-4">
+                  <div key={name} className="rounded-xl border border-border bg-card shadow-sm p-4">
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{name}</p>
                     <p className="mt-2 font-mono text-sm font-semibold">{formatScientific(value)}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-xl border border-border bg-card p-3">
+              <div className="rounded-xl border border-border bg-card shadow-sm p-3">
                 <SimpleChart
                   series={arrheniusSeries}
                   xLabel="1000/T (K^-1)"
@@ -442,7 +442,7 @@ export function FittingWorkbench() {
                 />
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-border">
+              <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
                 <table className="w-full min-w-[760px] text-sm">
                   <thead>
                     <tr className="border-b bg-muted/40">

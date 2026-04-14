@@ -2,6 +2,8 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { FlaskConical, Loader2, Trash2, Upload } from 'lucide-react';
+import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
+import { TunnelingPreview } from '@/components/chemistry/previews';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -423,7 +425,7 @@ export function RateConstantWorkbench() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:rounded-[2rem]">
+      <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-background shadow-sm sm:rounded-[2rem]">
         <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="mb-6 grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_220px_220px] lg:items-end">
             <div className="min-w-0">
@@ -622,7 +624,7 @@ export function RateConstantWorkbench() {
               <p className="mt-2 text-xs text-muted-foreground">{t('temperaturesHint')}</p>
             </div>
 
-            <div className="rounded-lg border border-border bg-card/90 p-4">
+            <div className="rounded-lg border border-border bg-card/90 p-4 shadow-sm">
               <div className="space-y-5">
                 <Button
                   type="button"
@@ -655,7 +657,7 @@ export function RateConstantWorkbench() {
                 </Button>
 
                 {errorMessage && (
-                  <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive shadow-sm">
                     {errorMessage}
                   </div>
                 )}
@@ -673,9 +675,16 @@ export function RateConstantWorkbench() {
                 Solvent Effect
               </Button>
 
-              <div className="space-y-4 rounded-md border border-border bg-muted/20 p-4">
+            <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 shadow-sm">
                 <div>
-                  <Label>{t('tunneling')}</Label>
+                  <Label className="flex items-center gap-1">
+                    {t('tunneling')}
+                    <HoverPreviewPopover
+                      preview={TunnelingPreview}
+                      title="Quantum tunneling"
+                      description="Particles pass through the activation barrier instead of going over it. Bell, Eckart and Wigner correct the TST rate for this effect."
+                    />
+                  </Label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {TUNNELING_OPTIONS.map((method) => {
                       const selected = tunnelingMethods.includes(method);
@@ -788,7 +797,7 @@ export function RateConstantWorkbench() {
             </CardHeader>
             <CardContent>
               {!result ? (
-                <div className="rounded-md border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border shadow-sm px-4 py-10 text-center text-sm text-muted-foreground">
                   <Upload className="mx-auto mb-3 size-8 opacity-60" />
                   {t('noEndpointResult')}
                 </div>
@@ -798,7 +807,7 @@ export function RateConstantWorkbench() {
                       <p className="text-xs text-muted-foreground">{t('forwardBarrier')}</p>
                       <p className="mt-1 text-lg font-semibold">{formatMetric(result.forwardBarrier)} kJ/mol</p>
                   </div>
-                  <div className="rounded-md border border-border bg-card/90 p-4">
+                  <div className="rounded-lg border border-border bg-card/90 shadow-sm p-4">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                       {t('reverseBarrier')}
                     </p>
@@ -806,7 +815,7 @@ export function RateConstantWorkbench() {
                       {formatMetric(result.reverseBarrier)} kJ/mol
                     </p>
                   </div>
-                  <div className="rounded-md border border-border bg-card/90 p-4">
+                  <div className="rounded-lg border border-border bg-card/90 shadow-sm p-4">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                       {t('crossoverTemp')}
                     </p>
@@ -814,7 +823,7 @@ export function RateConstantWorkbench() {
                       {formatMetric(result.crossoverTemp)} K
                     </p>
                   </div>
-                  <div className="rounded-md border border-border bg-card/90 p-4">
+                  <div className="rounded-lg border border-border bg-card/90 shadow-sm p-4">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                       {t('imagFreq')}
                     </p>
@@ -835,12 +844,12 @@ export function RateConstantWorkbench() {
             </CardHeader>
             <CardContent className="space-y-3">
               {species.length === 0 ? (
-                <div className="rounded-md border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border shadow-sm px-4 py-8 text-sm text-muted-foreground">
                   {t('noSpeciesLoaded')}
                 </div>
               ) : (
                 species.map((item) => (
-                  <div key={item.id} className="rounded-md border border-border bg-card/90 p-4">
+                  <div key={item.id} className="rounded-lg border border-border bg-card/90 shadow-sm p-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-sm bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
                         {item.label}
@@ -878,7 +887,7 @@ export function RateConstantWorkbench() {
                   title={reactionName || t('title')}
                 />
               ) : (
-                <div className="rounded-md border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border shadow-sm px-4 py-8 text-sm text-muted-foreground">
                   {t('noPlotData')}
                 </div>
               )}
@@ -892,7 +901,7 @@ export function RateConstantWorkbench() {
             </CardHeader>
             <CardContent>
               {!result ? (
-                <div className="rounded-md border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border shadow-sm px-4 py-8 text-sm text-muted-foreground">
                   {t('noEndpointResult')}
                 </div>
               ) : (

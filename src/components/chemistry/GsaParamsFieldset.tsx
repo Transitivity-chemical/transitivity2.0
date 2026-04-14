@@ -12,6 +12,8 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
+import { GsaPreview } from '@/components/chemistry/previews';
 
 export interface GsaParams {
   qA: number;
@@ -63,7 +65,7 @@ export function GsaParamsFieldset({
   };
 
   return (
-    <fieldset className={cn('rounded-md border bg-card p-3', className)}>
+    <fieldset className={cn('rounded-lg border bg-card p-3 shadow-sm', className)}>
       <legend className="px-1 -ml-1">
         {collapsible ? (
           <button
@@ -79,6 +81,12 @@ export function GsaParamsFieldset({
             GSA Parameters · Parâmetros GSA
           </span>
         )}
+        <HoverPreviewPopover
+          preview={GsaPreview}
+          title="Generalized Simulated Annealing"
+          description="Metaheuristic global optimizer that cools a visiting distribution (qV, qT) while accepting uphill moves (qA) until NStopMax steps."
+          className="ml-1 align-middle"
+        />
       </legend>
 
       {!collapsed && (

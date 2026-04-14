@@ -182,7 +182,7 @@ export default async function PlansPage({
 
               <div className="mt-4 space-y-3">
                 {latestRequests.length === 0 && (
-                  <p className="rounded-md border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground dark:border-slate-800">
+                  <p className="rounded-lg border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground shadow-sm dark:border-slate-800">
                     {copy.timelineEmpty}
                   </p>
                 )}
