@@ -1,13 +1,10 @@
-import { randomUUID } from 'crypto';
-import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { UploadFileType } from '@prisma/client';
+import { storeAndPersist } from '@/lib/bucket-client';
 
-const UPLOAD_DIR = '/tmp/transitivity-uploads';
-const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 
 const ALLOWED_EXTENSIONS = new Set([
   '.log', '.out', '.gjf', '.com', '.xyz', '.mol', '.txt', '.dat', '.csv',
@@ -34,21 +31,18 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    const resourceType = (formData.get('resourceType') as string | null) || null;
+    const resourceId = (formData.get('resourceId') as string | null) || null;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
-
     if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: `File too large. Maximum size is 50MB.` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'File too large. Maximum size is 50MB.' }, { status: 400 });
     }
 
     const originalName = file.name;
     const ext = path.extname(originalName).toLowerCase();
-
     if (!ALLOWED_EXTENSIONS.has(ext)) {
       return NextResponse.json(
         { error: `File type not allowed. Allowed extensions: ${[...ALLOWED_EXTENSIONS].join(', ')}` },
@@ -56,39 +50,35 @@ export async function POST(request: Request) {
       );
     }
 
-    const uuid = randomUUID();
-    const filename = `${uuid}${ext}`;
-    const storagePath = path.join(UPLOAD_DIR, filename);
-
-    await mkdir(UPLOAD_DIR, { recursive: true });
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(storagePath, buffer);
-
     const fileType = EXTENSION_TO_FILE_TYPE[ext] ?? 'OTHER';
 
-    const upload = await prisma.fileUpload.create({
-      data: {
-        userId: session.user.id,
-        filename,
-        originalName,
-        mimeType: file.type || 'application/octet-stream',
-        sizeBytes: file.size,
-        storagePath,
-        fileType,
-      },
-      select: {
-        id: true,
-        filename: true,
-        originalName: true,
-        sizeBytes: true,
-        fileType: true,
-      },
+    const upload = await storeAndPersist({
+      userId: session.user.id,
+      filename: originalName, // keep original filename — bucket generates its own UUID prefix
+      originalName,
+      data: buffer,
+      mimeType: file.type || 'application/octet-stream',
+      fileType,
+      role: 'INPUT',
+      resourceType,
+      resourceId,
     });
 
-    return NextResponse.json(upload, { status: 201 });
+    return NextResponse.json(
+      {
+        id: upload.id,
+        filename: upload.filename,
+        originalName: upload.originalName,
+        sizeBytes: upload.sizeBytes,
+        fileType: upload.fileType,
+        sha256: upload.sha256,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

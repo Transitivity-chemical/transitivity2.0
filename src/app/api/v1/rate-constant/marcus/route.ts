@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { proxyToFastAPI } from '@/lib/fastapi-proxy';
 import { prisma } from '@/lib/prisma';
+import { storeAndPersist } from '@/lib/bucket-client';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     );
 
     try {
-      await prisma.reaction.create({
+      const reaction = await prisma.reaction.create({
         data: {
           userId: session.user.id,
           name: 'Marcus theory run',
@@ -29,6 +30,29 @@ export async function POST(request: NextRequest) {
           status: 'COMPLETED',
         },
       });
+      const fileIds = (body as { fileIds?: string[] }).fileIds ?? [];
+      if (fileIds.length > 0) {
+        await prisma.fileUpload.updateMany({
+          where: { id: { in: fileIds }, userId: session.user.id },
+          data: { resourceType: 'MARCUS', resourceId: reaction.id, resourceRole: 'INPUT' },
+        });
+      }
+
+      try {
+        await storeAndPersist({
+          userId: session.user.id,
+          filename: `marcus-${reaction.id}.json`,
+          originalName: `marcus-${reaction.id}.json`,
+          data: Buffer.from(JSON.stringify(result, null, 2), 'utf8'),
+          mimeType: 'application/json',
+          fileType: 'OTHER',
+          role: 'OUTPUT',
+          resourceType: 'MARCUS',
+          resourceId: reaction.id,
+        });
+      } catch (storeErr) {
+        console.warn('Failed to persist Marcus output:', storeErr);
+      }
     } catch (e) {
       console.warn('Failed to persist Marcus history row:', e);
     }

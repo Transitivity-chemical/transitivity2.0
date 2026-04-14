@@ -220,6 +220,10 @@ model FileUpload {
   storagePath  String
   fileType     UploadFileType
   checksum     String?
+  sha256       String?
+  resourceRole UploadRole     @default(INPUT)
+  resourceType String?        // 'REACTION' | 'MD' | 'FITTING' | 'MARCUS'
+  resourceId   String?
   expiresAt    DateTime?
   createdAt    DateTime       @default(now())
 
@@ -227,6 +231,7 @@ model FileUpload {
   species Species[]
 
   @@index([userId])
+  @@index([resourceType, resourceId])
   @@map("file_uploads")
 }
 
@@ -811,6 +816,11 @@ enum UploadFileType {
   RATE_DATA_CSV
   CPMD_INPUT
   OTHER
+}
+
+enum UploadRole {
+  INPUT
+  OUTPUT
 }
 
 enum QCEngine {

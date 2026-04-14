@@ -119,6 +119,7 @@
     "md": "Molecular Dynamics",
     "ml": "ML Predict",
     "history": "History",
+    "files": "Files",
     "assistant": "Assistant",
     "serverStatus": "Server Status",
     "adminUsers": "Users",

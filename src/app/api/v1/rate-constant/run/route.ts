@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { proxyToFastAPI } from '@/lib/fastapi-proxy';
 import { prisma } from '@/lib/prisma';
+import { storeAndPersist } from '@/lib/bucket-client';
 import { NextRequest, NextResponse } from 'next/server';
 import type { ReactionType, PESEnergyType, CalcStatus } from '@prisma/client';
 
@@ -82,9 +83,9 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    // Persist a Reaction row so the run appears in history.
+    // Persist a Reaction row so the run appears in history + link any uploaded files.
     try {
-      await prisma.reaction.create({
+      const reaction = await prisma.reaction.create({
         data: {
           userId: session.user.id,
           name: (body as { reactionName?: string }).reactionName?.trim() || 'Rate constant run',
@@ -93,6 +94,34 @@ export async function POST(request: NextRequest) {
           status: 'COMPLETED' as CalcStatus,
         },
       });
+
+      // Link any file upload ids the client sent — stamp them as INPUT files
+      // for this reaction so admin + user can download them later.
+      const fileIds = (body as { fileIds?: string[] }).fileIds ?? [];
+      if (fileIds.length > 0) {
+        await prisma.fileUpload.updateMany({
+          where: { id: { in: fileIds }, userId: session.user.id },
+          data: { resourceType: 'REACTION', resourceId: reaction.id, resourceRole: 'INPUT' },
+        });
+      }
+
+      // Persist the compute result as an OUTPUT file in the bucket for audit + rerun.
+      try {
+        const resultJson = JSON.stringify(result, null, 2);
+        await storeAndPersist({
+          userId: session.user.id,
+          filename: `rate-constant-${reaction.id}.json`,
+          originalName: `rate-constant-${reaction.id}.json`,
+          data: Buffer.from(resultJson, 'utf8'),
+          mimeType: 'application/json',
+          fileType: 'OTHER',
+          role: 'OUTPUT',
+          resourceType: 'REACTION',
+          resourceId: reaction.id,
+        });
+      } catch (storeErr) {
+        console.warn('Failed to persist output to bucket:', storeErr);
+      }
     } catch (e) {
       console.warn('Failed to persist Reaction history row:', e);
     }
