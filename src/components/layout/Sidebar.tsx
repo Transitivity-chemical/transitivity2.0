@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   Atom,
   BarChart3,
   Bell,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -28,11 +29,56 @@ import { TransitivityLogo, GammaIcon } from '@/components/brand/TransitivityLogo
 import { isAdminRole } from '@/lib/access';
 import { PlansModal } from '@/components/plans/PlansModal';
 
-export const navItems = [
+type NavLeaf = {
+  key: string;
+  href: string;
+  icon: typeof Activity;
+  adminOnly: boolean;
+  children?: undefined;
+};
+
+type NavBranch = {
+  key: string;
+  href: string;
+  icon: typeof Activity;
+  adminOnly: boolean;
+  children: NavLeaf[];
+};
+
+type NavItem = NavLeaf | NavBranch;
+
+export const navItems: NavItem[] = [
   { key: 'dashboard', href: '/dashboard', icon: Activity, adminOnly: false },
-  { key: 'rateConstant', href: '/rate-constant', icon: FlaskConical, adminOnly: false },
-  { key: 'md', href: '/md', icon: Atom, adminOnly: false },
-  { key: 'fitting', href: '/fitting', icon: TrendingUp, adminOnly: false },
+  {
+    key: 'rateConstant',
+    href: '/rate-constant',
+    icon: FlaskConical,
+    adminOnly: false,
+    children: [
+      { key: 'rateConstantCtst', href: '/rate-constant', icon: FlaskConical, adminOnly: false },
+      { key: 'rateConstantMarcus', href: '/rate-constant/marcus', icon: FlaskConical, adminOnly: false },
+    ],
+  },
+  {
+    key: 'md',
+    href: '/md',
+    icon: Atom,
+    adminOnly: false,
+    children: [
+      { key: 'mdSingle', href: '/md', icon: Atom, adminOnly: false },
+      { key: 'mdMulti', href: '/md/multi', icon: Atom, adminOnly: false },
+    ],
+  },
+  {
+    key: 'fitting',
+    href: '/fitting',
+    icon: TrendingUp,
+    adminOnly: false,
+    children: [
+      { key: 'fittingArrhenius', href: '/fitting', icon: TrendingUp, adminOnly: false },
+      { key: 'fittingTransitivity', href: '/fitting/transitivity', icon: TrendingUp, adminOnly: false },
+    ],
+  },
   { key: 'history', href: '/history', icon: Clock, adminOnly: false },
   { key: 'files', href: '/files', icon: Folder, adminOnly: false },
   { key: 'assistant', href: '/assistant', icon: Sparkles, adminOnly: false },
@@ -41,7 +87,7 @@ export const navItems = [
   { key: 'settings', href: '/settings', icon: SettingsIcon, adminOnly: false },
   { key: 'adminUsers', href: '/admin/users', icon: UsersRound, adminOnly: true },
   { key: 'adminAnalytics', href: '/admin/analytics', icon: BarChart3, adminOnly: true },
-] as const;
+];
 
 type Tier = 'FREE' | 'PRO' | 'ENTERPRISE';
 
@@ -73,6 +119,40 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
   const progressPercent = maxCredits ? Math.min((credits / maxCredits) * 100, 100) : 0;
   const visibleNavItems = navItems.filter((item) => !item.adminOnly || isAdminRole(role));
 
+  // Tracks which branch nav items are currently expanded. Persisted to
+  // localStorage so the state survives route changes + refreshes.
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('sidebar-expanded');
+      if (raw) setExpanded(JSON.parse(raw));
+    } catch {
+      /* noop */
+    }
+  }, []);
+  const toggleExpanded = (key: string) => {
+    setExpanded((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem('sidebar-expanded', JSON.stringify(next));
+      } catch {
+        /* noop */
+      }
+      return next;
+    });
+  };
+
+  // Auto-expand any branch whose current route matches one of its children.
+  const autoExpanded = useMemo(() => {
+    const map: Record<string, boolean> = { ...expanded };
+    for (const item of visibleNavItems) {
+      if (!item.children) continue;
+      const active = item.children.some((c) => pathname.includes(`/${locale}${c.href}`));
+      if (active) map[item.key] = true;
+    }
+    return map;
+  }, [expanded, visibleNavItems, pathname, locale]);
+
   return (
     <aside
       className={cn(
@@ -98,38 +178,111 @@ export function Sidebar({ credits = 0, tier = 'FREE', role, plan }: SidebarProps
         </button>
       </div>
 
-      <nav className="flex-1 space-y-2 p-2">
+      <nav className="flex-1 space-y-1 overflow-y-auto p-2">
         {visibleNavItems.map((item) => {
-          const isActive = pathname.includes(item.href);
           const Icon = item.icon;
           const label = t(item.key);
-
-          const link = (
-            <Link
-              key={item.key}
-              href={`/${locale}${item.href}`}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-              )}
-            >
-              <Icon size={20} />
-              {!collapsed && <span>{label}</span>}
-            </Link>
-          );
+          const isBranch = !!item.children;
+          const isExactActive = pathname === `/${locale}${item.href}`;
+          const hasActiveChild = isBranch && item.children!.some((c) => pathname.includes(`/${locale}${c.href}`));
+          const isActive = isExactActive || (!isBranch && pathname.includes(`/${locale}${item.href}`));
+          const open = autoExpanded[item.key] ?? false;
 
           if (collapsed) {
+            // Collapsed mode: no tree, just icon links (parent only)
             return (
               <Tooltip key={item.key}>
-                <TooltipTrigger asChild>{link}</TooltipTrigger>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={`/${locale}${item.href}`}
+                    className={cn(
+                      'flex items-center justify-center rounded-md p-2.5 transition-colors',
+                      isActive || hasActiveChild
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                    )}
+                  >
+                    <Icon size={20} />
+                  </Link>
+                </TooltipTrigger>
                 <TooltipContent side="right">{label}</TooltipContent>
               </Tooltip>
             );
           }
 
-          return link;
+          // Expanded mode
+          return (
+            <div key={item.key}>
+              <div
+                className={cn(
+                  'group flex items-center rounded-md text-sm font-medium transition-colors',
+                  (isActive || hasActiveChild) && !isBranch && 'bg-primary text-primary-foreground',
+                  !isActive && !isBranch && 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                  hasActiveChild && isBranch && 'text-foreground',
+                  !hasActiveChild && isBranch && 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                )}
+              >
+                <Link
+                  href={`/${locale}${item.href}`}
+                  className="flex flex-1 items-center gap-3 px-3 py-2.5"
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </Link>
+                {isBranch && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleExpanded(item.key);
+                    }}
+                    className="mr-2 rounded p-1 hover:bg-background/20"
+                    aria-label={open ? 'Collapse' : 'Expand'}
+                    aria-expanded={open}
+                  >
+                    <ChevronDown
+                      size={14}
+                      className={cn('transition-transform duration-200 motion-reduce:transition-none', open ? 'rotate-0' : '-rotate-90')}
+                    />
+                  </button>
+                )}
+              </div>
+
+              {isBranch && (
+                <div
+                  className={cn(
+                    'grid overflow-hidden transition-all duration-200 motion-reduce:transition-none',
+                    open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+                  )}
+                >
+                  <div className="min-h-0">
+                    <ul className="mt-1 space-y-0.5 border-l border-sidebar-accent pl-3">
+                      {item.children!.map((child) => {
+                        const childActive = pathname === `/${locale}${child.href}`;
+                        return (
+                          <li key={child.key}>
+                            <Link
+                              href={`/${locale}${child.href}`}
+                              className={cn(
+                                'flex items-center gap-2 rounded-md px-3 py-2 text-[13px] transition-colors',
+                                childActive
+                                  ? 'bg-primary/10 font-medium text-primary'
+                                  : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                              )}
+                            >
+                              <span className="size-1.5 rounded-full bg-current opacity-50" />
+                              {t(child.key)}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
         })}
       </nav>
 

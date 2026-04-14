@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { TrendingUp, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FittingTabsClient } from './FittingTabsClient';
+import { FittingWorkbench } from './FittingWorkbench';
 
 export default async function FittingPage({
   params,
@@ -21,7 +21,7 @@ export default async function FittingPage({
             <TrendingUp className="size-6" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">{tNav('fitting')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Arrhenius Plot</h1>
             <p className="max-w-2xl text-sm text-muted-foreground">{t('workspaceDesc')}</p>
           </div>
         </div>
@@ -32,7 +32,7 @@ export default async function FittingPage({
           </Link>
         </Button>
       </div>
-      <FittingTabsClient />
+      <FittingWorkbench />
     </div>
   );
 }

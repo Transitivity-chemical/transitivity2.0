@@ -499,19 +499,19 @@ export function RateConstantWorkbench() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {SPECIES_SLOTS.map((slot) => {
                 const slotSpecies = getSpeciesForSlot(slot.key);
 
                 return (
                   <div
                     key={slot.key}
-                    className="rounded-2xl border border-border bg-card shadow-sm transition hover:border-primary/20"
+                    className="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition hover:border-primary/20"
                   >
                     <div className="border-b border-border px-4 py-3 text-sm font-semibold text-foreground">
                       {slot.title}
                     </div>
-                    <div className="flex h-full flex-col gap-3 p-4">
+                    <div className="flex flex-1 flex-col gap-3 p-4">
                       <button
                         type="button"
                         onClick={() => setPickerSlot(slot)}
@@ -571,7 +571,7 @@ export function RateConstantWorkbench() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeSpecies(slot.key)}
-                          className="w-full justify-center text-muted-foreground hover:text-foreground"
+                          className="mt-auto w-full justify-center text-muted-foreground hover:text-foreground"
                         >
                           <Trash2 className="mr-1 size-4" />
                           {t('removeSpecies')}
