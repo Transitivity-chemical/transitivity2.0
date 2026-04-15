@@ -50,7 +50,13 @@ export function PlotlyChart({ data, layout, config, className, style, ariaLabel 
   const mode = isDark ? 'dark' : 'light';
   const mergedLayout = getPlotlyLayout(mode, layout);
   const mergedConfig = getPlotlyConfig(config);
-  const computedLabel = ariaLabel ?? (layout?.title as Layout['title'])?.text ?? 'Painel químico · Chemistry chart';
+  const titleText = (() => {
+    const t = layout?.title;
+    if (!t) return undefined;
+    if (typeof t === 'string') return t;
+    return (t as { text?: string }).text;
+  })();
+  const computedLabel = ariaLabel ?? titleText ?? 'Painel químico · Chemistry chart';
 
   return (
     <div
