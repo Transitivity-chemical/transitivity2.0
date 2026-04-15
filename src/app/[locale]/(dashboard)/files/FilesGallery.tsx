@@ -108,16 +108,20 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
             <Folder className="size-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Arquivos · Files</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {locale === 'pt-BR' ? 'Arquivos' : 'Files'}
+            </h1>
             <p className="text-sm text-muted-foreground">
-              Sua galeria de arquivos enviados e gerados pelos cálculos.
+              {locale === 'pt-BR'
+                ? 'Sua galeria de arquivos enviados e gerados pelos cálculos.'
+                : 'Your gallery of uploaded and generated calculation files.'}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
             {uploading ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : <Upload className="mr-1.5 size-4" />}
-            Enviar arquivo · Upload
+            {locale === 'pt-BR' ? 'Enviar arquivo' : 'Upload'}
           </Button>
         </div>
       </div>

@@ -76,9 +76,13 @@ export default async function HistoryPage({
           <Clock className="size-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Histórico · History</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {locale === 'pt-BR' ? 'Histórico' : 'History'}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Todas as suas simulações, ajustes e cálculos em uma só lista.
+            {locale === 'pt-BR'
+              ? 'Todas as suas simulações, ajustes e cálculos em uma só lista.'
+              : 'All your simulations, fits and calculations in one list.'}
           </p>
         </div>
       </div>

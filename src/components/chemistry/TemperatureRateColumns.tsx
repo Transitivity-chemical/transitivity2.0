@@ -8,7 +8,7 @@
  *            docs/tabs-rebuild-impeccable-plan.md Phase 1.7
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface TKPair {
@@ -31,10 +31,14 @@ export function TemperatureRateColumns({
   rateLabel = 'Rate Constant · Constante de taxa',
   height = 'h-64',
 }: TemperatureRateColumnsProps) {
-  const [tText, setTText] = useState('');
-  const [kText, setKText] = useState('');
+  const [tText, setTText] = useState(() => value.map((p) => p.T).join('\n'));
+  const [kText, setKText] = useState(() => value.map((p) => p.k).join('\n'));
+  const lastEmittedRef = useRef<string>('');
 
   useEffect(() => {
+    const serialized = value.map((p) => `${p.T},${p.k}`).join('|');
+    if (serialized === lastEmittedRef.current) return;
+    lastEmittedRef.current = serialized;
     setTText(value.map((p) => p.T).join('\n'));
     setKText(value.map((p) => p.k).join('\n'));
   }, [value]);
@@ -45,6 +49,7 @@ export function TemperatureRateColumns({
     const len = Math.min(Ts.length, ks.length);
     const pairs: TKPair[] = [];
     for (let i = 0; i < len; i++) pairs.push({ T: Ts[i], k: ks[i] });
+    lastEmittedRef.current = pairs.map((p) => `${p.T},${p.k}`).join('|');
     onChange(pairs);
   };
 

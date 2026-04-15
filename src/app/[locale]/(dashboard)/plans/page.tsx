@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { PlansClient } from '@/components/plans/PlansClient';
+import { isAdminRole } from '@/lib/access';
 import type { Plan, PlanRequestStatus } from '@prisma/client';
 
 const PLAN_ORDER: Plan[] = ['STUDENT', 'PROFESSIONAL', 'ENTERPRISE'];
@@ -25,26 +26,52 @@ export default async function PlansPage({
     redirect(`/${locale}/login`);
   }
 
-  const [planConfigsRaw, currentUser, planRequestsCount, domainCount, latestRequests, distributionCounts] = await Promise.all([
+  const [planConfigsRaw, currentUser] = await Promise.all([
     prisma.planConfig.findMany({ orderBy: { plan: 'asc' } }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true, credits: true } }),
-    prisma.planChangeRequest.count({ where: { status: 'PENDING' } }),
-    prisma.institutionalDomain.count(),
-    prisma.planChangeRequest.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: {
-        id: true,
-        targetPlan: true,
-        currentPlan: true,
-        status: true,
-        createdAt: true,
-        reason: true,
-        user: { select: { fullName: true, institution: true } },
-      },
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true, credits: true, role: true },
     }),
-    Promise.all(PLAN_ORDER.map((plan) => prisma.user.count({ where: { plan } }))),
   ]);
+  const isAdmin = isAdminRole(currentUser?.role);
+
+  const planRequestsCount = isAdmin
+    ? await prisma.planChangeRequest.count({ where: { status: 'PENDING' } })
+    : 0;
+  const domainCount = isAdmin ? await prisma.institutionalDomain.count() : 0;
+  const latestRequests = isAdmin
+    ? await prisma.planChangeRequest.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          targetPlan: true,
+          currentPlan: true,
+          status: true,
+          createdAt: true,
+          reason: true,
+          user: { select: { fullName: true, institution: true } },
+        },
+      })
+    : [];
+  const distributionCounts = isAdmin
+    ? await Promise.all(PLAN_ORDER.map((plan) => prisma.user.count({ where: { plan } })))
+    : PLAN_ORDER.map(() => 0);
+  const myRequests = !isAdmin
+    ? await prisma.planChangeRequest.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          targetPlan: true,
+          currentPlan: true,
+          status: true,
+          createdAt: true,
+          reason: true,
+        },
+      })
+    : [];
 
   const planConfigs = planConfigsRaw.map((p) => ({
     plan: p.plan,
@@ -77,20 +104,24 @@ export default async function PlansPage({
       label: copy.stats.availableCredits,
       value: `${numberFormatter.format(credits)} ${copy.creditsLabel}`,
     },
-    {
-      label: copy.stats.pendingRequests,
-      value: numberFormatter.format(planRequestsCount),
-    },
-    {
-      label: copy.stats.verifiedDomains,
-      value: numberFormatter.format(domainCount),
-    },
+    ...(isAdmin
+      ? [
+          {
+            label: copy.stats.pendingRequests,
+            value: numberFormatter.format(planRequestsCount),
+          },
+          {
+            label: copy.stats.verifiedDomains,
+            value: numberFormatter.format(domainCount),
+          },
+        ]
+      : []),
   ];
 
   return (
     <div className="px-6 pb-10 pt-6 sm:px-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm px-6 py-6 text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+        <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm px-6 py-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">{copy.heroTitle}</h1>
@@ -105,24 +136,24 @@ export default async function PlansPage({
             {highlightStats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-lg border border-slate-200/70 bg-white/80 shadow-sm px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+                className="rounded-lg border border-border bg-muted/30 shadow-sm px-4 py-3"
               >
-                <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+                <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                   {stat.label}
                 </dt>
-                <dd className="mt-1 font-mono text-2xl font-semibold text-slate-900 dark:text-white">{stat.value}</dd>
+                <dd className="mt-1 font-mono text-2xl font-semibold text-foreground">{stat.value}</dd>
               </div>
             ))}
           </dl>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-          <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+        <div className={isAdmin ? 'grid gap-6 lg:grid-cols-[2fr,1fr]' : 'grid gap-6'}>
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
             <div className="mb-4">
-              <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{copy.tableTitle}</h3>
+              <h3 className="text-xl font-semibold tracking-tight">{copy.tableTitle}</h3>
               <p className="text-sm text-muted-foreground">{copy.tableSubtitle}</p>
             </div>
-            <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-2 dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-lg border border-border bg-muted/20 shadow-sm p-2">
               <PlansClient
                 locale={locale}
                 planConfigs={planConfigs}
@@ -132,93 +163,127 @@ export default async function PlansPage({
             </div>
           </section>
 
-          <aside className="flex flex-col gap-6">
-            <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h4 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{copy.distributionTitle}</h4>
-                  <p className="text-xs text-muted-foreground">{copy.distributionSubtitle(totalSeats)}</p>
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {copy.distributionBadge(numberFormatter.format(totalSeats))}
-                </p>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {planDistribution.map(({ plan, count }) => {
-                  const share = totalSeats === 0 ? 0 : Math.round((count / totalSeats) * 100);
-                  return (
-                    <div
-                      key={plan}
-                      className="rounded-lg border border-slate-200/70 bg-white/80 shadow-sm p-3 dark:border-slate-800 dark:bg-slate-900"
-                    >
-                      <div className="flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white">
-                        <span>{planLabel(plan, locale)}</span>
-                        <span>{share}%</span>
-                      </div>
-                      <div className="mt-2 h-2 rounded-sm bg-slate-900/10 dark:bg-white/10">
-                        <span
-                          className="block h-full rounded-sm"
-                          style={{
-                            width: `${share}%`,
-                            backgroundColor: PLAN_COLORS[plan],
-                          }}
-                        />
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {numberFormatter.format(count)} {copy.peopleSuffix}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
-              <div>
-                <h4 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{copy.timelineTitle}</h4>
-                <p className="text-xs text-muted-foreground">{copy.timelineSubtitle}</p>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {latestRequests.length === 0 && (
-                  <p className="rounded-lg border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground shadow-sm dark:border-slate-800">
-                    {copy.timelineEmpty}
+          {isAdmin && (
+            <aside className="flex flex-col gap-6">
+              <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 className="text-lg font-semibold tracking-tight">{copy.distributionTitle}</h4>
+                    <p className="text-xs text-muted-foreground">{copy.distributionSubtitle(totalSeats)}</p>
+                  </div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {copy.distributionBadge(numberFormatter.format(totalSeats))}
                   </p>
-                )}
+                </div>
 
-                {latestRequests.map((req) => (
-                  <div
-                    key={req.id}
-                    className="rounded-lg border border-slate-200/70 bg-white/80 shadow-sm px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{req.user.fullName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {planLabel(req.currentPlan, locale)} → {planLabel(req.targetPlan, locale)}
+                <div className="mt-4 space-y-3">
+                  {planDistribution.map(({ plan, count }) => {
+                    const share = totalSeats === 0 ? 0 : Math.round((count / totalSeats) * 100);
+                    return (
+                      <div
+                        key={plan}
+                        className="rounded-lg border border-border bg-muted/30 shadow-sm p-3"
+                      >
+                        <div className="flex items-center justify-between text-sm font-semibold">
+                          <span>{planLabel(plan, locale)}</span>
+                          <span>{share}%</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-sm bg-foreground/10">
+                          <span
+                            className="block h-full rounded-sm"
+                            style={{
+                              width: `${share}%`,
+                              backgroundColor: PLAN_COLORS[plan],
+                            }}
+                          />
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {numberFormatter.format(count)} {copy.peopleSuffix}
                         </p>
                       </div>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${STATUS_BADGES[req.status]}`}
-                      >
-                        {copy.statusLabel[req.status]}
-                      </span>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
+                <div>
+                  <h4 className="text-lg font-semibold tracking-tight">{copy.timelineTitle}</h4>
+                  <p className="text-xs text-muted-foreground">{copy.timelineSubtitle}</p>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {latestRequests.length === 0 && (
+                    <p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground shadow-sm">
+                      {copy.timelineEmpty}
+                    </p>
+                  )}
+
+                  {latestRequests.map((req) => (
+                    <div
+                      key={req.id}
+                      className="rounded-lg border border-border bg-muted/30 shadow-sm px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold">{req.user.fullName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {planLabel(req.currentPlan, locale)} → {planLabel(req.targetPlan, locale)}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${STATUS_BADGES[req.status]}`}
+                        >
+                          {copy.statusLabel[req.status]}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{req.user.institution ?? copy.noInstitution}</span>
+                        <span>{formatRelativeTime(req.createdAt, locale)}</span>
+                      </div>
+                      {req.reason && (
+                        <p className="mt-2 text-[11px] italic text-muted-foreground">&ldquo;{req.reason}&rdquo;</p>
+                      )}
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{req.user.institution ?? copy.noInstitution}</span>
-                      <span>{formatRelativeTime(req.createdAt, locale)}</span>
-                    </div>
-                    {req.reason && (
-                      <p className="mt-2 text-[11px] italic text-muted-foreground">&ldquo;{req.reason}&rdquo;</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 text-xs text-muted-foreground">{copy.timelineFootnote}</p>
-            </section>
-          </aside>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs text-muted-foreground">{copy.timelineFootnote}</p>
+              </section>
+            </aside>
+          )}
         </div>
+
+        {!isAdmin && myRequests.length > 0 && (
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
+            <h4 className="text-lg font-semibold tracking-tight">{copy.myRequestsTitle}</h4>
+            <p className="text-xs text-muted-foreground">{copy.myRequestsSubtitle}</p>
+            <div className="mt-4 space-y-3">
+              {myRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="rounded-lg border border-border bg-muted/30 shadow-sm px-4 py-3"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold">
+                      {planLabel(req.currentPlan, locale)} → {planLabel(req.targetPlan, locale)}
+                    </p>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${STATUS_BADGES[req.status]}`}
+                    >
+                      {copy.statusLabel[req.status]}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {formatRelativeTime(req.createdAt, locale)}
+                  </div>
+                  {req.reason && (
+                    <p className="mt-2 text-[11px] italic text-muted-foreground">&ldquo;{req.reason}&rdquo;</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
@@ -293,6 +358,8 @@ function getPlansCopy(locale: string) {
       timelineSubtitle: 'Solicitações enviadas pela equipe.',
       timelineEmpty: 'Nenhuma solicitação recente.',
       timelineFootnote: 'Logs sincronizados com /api/v1/plans/request-upgrade.',
+      myRequestsTitle: 'Minhas solicitações',
+      myRequestsSubtitle: 'Histórico das suas solicitações de mudança de plano.',
       statusLabel: {
         PENDING: 'Pendente',
         APPROVED: 'Aprovado',
@@ -323,6 +390,8 @@ function getPlansCopy(locale: string) {
     timelineSubtitle: 'Latest upgrade / downgrade intents.',
     timelineEmpty: 'No recent requests.',
     timelineFootnote: 'Mirrors /api/v1/plans/request-upgrade in real time.',
+    myRequestsTitle: 'My requests',
+    myRequestsSubtitle: 'History of your plan-change requests.',
     statusLabel: {
       PENDING: 'Pending',
       APPROVED: 'Approved',

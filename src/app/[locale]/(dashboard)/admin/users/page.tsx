@@ -89,7 +89,7 @@ export default async function AdminUsersPage({
   return (
     <div className="px-6 pb-10 pt-6 sm:px-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm px-6 py-6 text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+        <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm px-6 py-6 text-foreground">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">{copy.heroTitle}</h1>
@@ -102,22 +102,22 @@ export default async function AdminUsersPage({
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-lg border border-slate-200/70 bg-white/80 shadow-sm px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+                className="rounded-lg border border-border bg-muted/30 shadow-sm px-4 py-3"
               >
-                <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+                <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                   {stat.label}
                 </dt>
-                <dd className="mt-1 font-mono text-2xl font-semibold text-slate-900 dark:text-white">{stat.value}</dd>
+                <dd className="mt-1 font-mono text-2xl font-semibold text-foreground">{stat.value}</dd>
               </div>
             ))}
           </dl>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{copy.planQueueTitle}</h2>
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">{copy.planQueueTitle}</h2>
                 <p className="text-sm text-muted-foreground">{copy.planQueueSubtitle}</p>
               </div>
               <p className="text-xs font-medium text-muted-foreground">
@@ -127,7 +127,7 @@ export default async function AdminUsersPage({
 
             <div className="mt-4 space-y-3">
               {planRequestsPreview.length === 0 && (
-                <p className="rounded-lg border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground shadow-sm dark:border-slate-800">
+                <p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground shadow-sm">
                   {copy.planQueueEmpty}
                 </p>
               )}
@@ -135,9 +135,9 @@ export default async function AdminUsersPage({
               {planRequestsPreview.map((req) => (
                 <div
                   key={req.id}
-                  className="rounded-lg border border-slate-200/70 bg-white/80 shadow-sm px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-lg border border-border bg-muted/30 shadow-sm px-4 py-3"
                 >
-                  <div className="flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white">
+                  <div className="flex items-center justify-between text-sm font-semibold text-foreground">
                     <span>{req.user.fullName}</span>
                     <span className="text-xs text-muted-foreground">{formatRelativeTime(req.createdAt, locale)}</span>
                   </div>
@@ -148,7 +148,7 @@ export default async function AdminUsersPage({
                     <p className="text-[11px] text-muted-foreground">{req.user.institution}</p>
                   )}
                   {req.reason && (
-                    <p className="mt-2 rounded-md bg-slate-900/5 px-3 py-2 text-[11px] italic text-muted-foreground dark:bg-white/10">
+                    <p className="mt-2 rounded-md bg-foreground/10 px-3 py-2 text-[11px] italic text-muted-foreground">
                       &ldquo;{req.reason}&rdquo;
                     </p>
                   )}
@@ -158,17 +158,17 @@ export default async function AdminUsersPage({
             <p className="mt-4 text-xs text-muted-foreground">{copy.planQueueFootnote}</p>
           </section>
 
-          <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{copy.approvalsTitle}</h2>
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">{copy.approvalsTitle}</h2>
                 <p className="text-sm text-muted-foreground">{copy.approvalsSubtitle}</p>
               </div>
             </div>
 
             <div className="mt-4 space-y-3">
               {pendingApprovalsFeed.length === 0 && (
-                <p className="rounded-lg border border-dashed border-slate-200/70 px-4 py-5 text-sm text-muted-foreground shadow-sm dark:border-slate-800">
+                <p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground shadow-sm">
                   {copy.approvalsEmpty}
                 </p>
               )}
@@ -176,13 +176,13 @@ export default async function AdminUsersPage({
               {pendingApprovalsFeed.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center gap-3 rounded-lg border border-slate-200/70 bg-white/80 shadow-sm px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+                  className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 shadow-sm px-4 py-3"
                 >
-                  <div className="flex size-10 items-center justify-center rounded-md bg-slate-900/90 text-[13px] font-semibold uppercase tracking-tight text-white dark:bg-slate-700">
+                  <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
                     {getInitials(user.fullName)}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{user.fullName}</p>
+                    <p className="text-sm font-semibold text-foreground">{user.fullName}</p>
                     <p className="text-xs text-muted-foreground">{user.institution ?? copy.noInstitution}</p>
                   </div>
                   <div className="text-right text-[11px] text-muted-foreground">
@@ -196,12 +196,12 @@ export default async function AdminUsersPage({
           </section>
         </div>
 
-        <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+        <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
           <div className="mb-4">
-            <h3 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">{copy.tableTitle}</h3>
+            <h3 className="text-xl font-semibold tracking-tight text-foreground">{copy.tableTitle}</h3>
             <p className="text-sm text-muted-foreground">{copy.tableSubtitle}</p>
           </div>
-          <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-2 dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-2">
             <AdminUsersClient locale={locale} />
           </div>
         </section>

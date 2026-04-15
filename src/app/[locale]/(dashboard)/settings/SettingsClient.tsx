@@ -199,7 +199,7 @@ export function SettingsClient({
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center gap-3">
-        <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-2 text-primary dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-2 text-primary">
           <SettingsIcon className="size-6" />
         </div>
         <div>
@@ -212,7 +212,7 @@ export function SettingsClient({
         {summary.map((item) => (
           <div
             key={item.key}
-            className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-950"
+            className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-4"
           >
             <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{item.label}</dt>
             <dd className="text-2xl font-semibold text-foreground">{item.value}</dd>
@@ -242,35 +242,35 @@ export function SettingsClient({
         </TabsList>
 
         <TabsContent value="profile">
-          <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
             <h2 className="text-lg font-semibold tracking-tight">{t('profile')}</h2>
             <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
-              <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-4">
                 <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t('name')}</dt>
                 <dd className="text-base font-medium">{user.fullName}</dd>
               </div>
-              <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-4">
                 <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Email</dt>
                 <dd className="text-base font-medium">{user.email}</dd>
               </div>
-              <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-4">
                 <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t('role')}</dt>
                 <dd>
                   <Badge variant="outline">{user.role}</Badge>
                 </dd>
               </div>
-              <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-4">
                 <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t('plan')}</dt>
                 <dd>
                   <Badge variant="outline">{user.plan ?? '—'}</Badge>
                 </dd>
               </div>
-              <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-4">
                 <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t('memberSince')}</dt>
                 <dd className="text-base font-medium">{createdAt.toLocaleDateString()}</dd>
               </div>
               {user.institution && (
-                <div className="rounded-lg border border-slate-200/70 bg-white/90 shadow-sm p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="rounded-lg border border-border bg-muted/30 shadow-sm p-4">
                   <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t('institution')}</dt>
                   <dd className="text-base font-medium">{user.institution}</dd>
                 </div>
@@ -279,7 +279,7 @@ export function SettingsClient({
           </section>
 
           {/* Update name */}
-          <section className="mt-4 rounded-lg border border-slate-200/70 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <section className="mt-4 rounded-lg border border-border bg-card text-card-foreground p-5 shadow-sm">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {t('updateName')}
             </h3>
@@ -300,7 +300,7 @@ export function SettingsClient({
           </section>
 
           {/* Change password */}
-          <section className="mt-4 rounded-lg border border-slate-200/70 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <section className="mt-4 rounded-lg border border-border bg-card text-card-foreground p-5 shadow-sm">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {t('changePassword')}
             </h3>
@@ -357,7 +357,7 @@ export function SettingsClient({
           </section>
 
           {/* Language selector */}
-          <section className="mt-4 rounded-lg border border-slate-200/70 bg-white/95 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <section className="mt-4 rounded-lg border border-border bg-card text-card-foreground p-5 shadow-sm">
             <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               <Globe className="size-4" />
               {t('language')}
@@ -382,7 +382,7 @@ export function SettingsClient({
 
         <TabsContent value="billing">
           <div className="space-y-4">
-            <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+            <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
               <h2 className="text-lg font-semibold tracking-tight">{t('creditsRemaining')}</h2>
               <p className="mt-3 text-4xl font-bold text-primary">{parseFloat(user.credits).toFixed(0)}</p>
               <p className="text-sm text-muted-foreground" aria-live="polite">
@@ -390,7 +390,7 @@ export function SettingsClient({
               </p>
             </section>
 
-            <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+            <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
               <h2 className="text-lg font-semibold tracking-tight">{t('usageHistory')}</h2>
               {usageRecords.length === 0 ? (
                 <p className="mt-3 text-sm text-muted-foreground">{t('noUsage')}</p>
@@ -419,7 +419,7 @@ export function SettingsClient({
         </TabsContent>
 
         <TabsContent value="preferences">
-          <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
             <h2 className="text-lg font-semibold tracking-tight">{t('preferences')}</h2>
             <div className="mt-4 space-y-6">
               <div>
@@ -452,14 +452,38 @@ export function SettingsClient({
               </div>
               <div>
                 <p className="mb-1 text-sm font-medium">{t('notificationsLabel')}</p>
-                <p className="text-xs text-muted-foreground">{t('notificationsHint')}</p>
+                <p className="mb-3 text-xs text-muted-foreground">{t('notificationsHint')}</p>
+                <div className="space-y-2">
+                  <NotificationToggle
+                    storageKey="notify:job-complete"
+                    label={t('notifyJobComplete')}
+                    description={t('notifyJobCompleteHint')}
+                  />
+                  <NotificationToggle
+                    storageKey="notify:job-failed"
+                    label={t('notifyJobFailed')}
+                    description={t('notifyJobFailedHint')}
+                    defaultEnabled
+                  />
+                  <NotificationToggle
+                    storageKey="notify:plan-updates"
+                    label={t('notifyPlanUpdates')}
+                    description={t('notifyPlanUpdatesHint')}
+                    defaultEnabled
+                  />
+                  <NotificationToggle
+                    storageKey="notify:announcements"
+                    label={t('notifyAnnouncements')}
+                    description={t('notifyAnnouncementsHint')}
+                  />
+                </div>
               </div>
             </div>
           </section>
         </TabsContent>
 
         <TabsContent value="activity">
-          <section className="rounded-lg border border-slate-200/70 bg-white/95 shadow-sm p-5 dark:border-slate-800 dark:bg-slate-950">
+          <section className="rounded-lg border border-border bg-card text-card-foreground shadow-sm p-5">
             <h2 className="text-lg font-semibold tracking-tight">{t('activity')}</h2>
             {activity.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">{t('noActivity')}</p>
@@ -493,6 +517,47 @@ export function SettingsClient({
   );
 }
 
+function NotificationToggle({
+  storageKey,
+  label,
+  description,
+  defaultEnabled = false,
+}: {
+  storageKey: string;
+  label: string;
+  description: string;
+  defaultEnabled?: boolean;
+}) {
+  const [enabled, setEnabled] = useState<boolean>(defaultEnabled);
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+    if (stored != null) setEnabled(stored === '1');
+  }, [storageKey]);
+  const toggle = () => {
+    const next = !enabled;
+    setEnabled(next);
+    try {
+      localStorage.setItem(storageKey, next ? '1' : '0');
+    } catch {
+      /* ignore quota */
+    }
+  };
+  return (
+    <label className="flex items-start gap-3 rounded-md border border-border bg-muted/20 px-3 py-2 cursor-pointer hover:bg-muted/40">
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={toggle}
+        className="mt-1 size-4 accent-primary"
+      />
+      <span className="flex-1">
+        <span className="block text-sm font-medium">{label}</span>
+        <span className="block text-xs text-muted-foreground">{description}</span>
+      </span>
+    </label>
+  );
+}
+
 function ThemeOption({
   value,
   label,
@@ -510,8 +575,8 @@ function ThemeOption({
       onClick={() => onSelect(value)}
       aria-pressed={selected}
       className={cn(
-        'rounded-md border px-3 py-2 text-left text-sm transition hover:border-primary/40 hover:bg-primary/5 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900',
-        selected ? 'border-primary bg-primary/10 text-foreground' : 'border-slate-200/70 bg-white text-muted-foreground dark:text-muted-foreground',
+        'rounded-md border px-3 py-2 text-left text-sm transition hover:border-primary/40 hover:bg-primary/5 motion-reduce:transition-none',
+        selected ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-card text-muted-foreground',
       )}
     >
       <span className="font-medium">{label}</span>
