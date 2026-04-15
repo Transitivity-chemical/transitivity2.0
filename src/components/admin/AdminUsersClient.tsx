@@ -189,7 +189,7 @@ export function AdminUsersClient({ locale }: Props) {
   const handleResetTempPassword = async (id: string, email: string) => {
     const ok = await confirm({
       title: 'Redefinir senha temporária?',
-      description: t('confirmResetTempPassword'),
+      description: t('users.confirmResetTempPassword'),
       confirmLabel: 'Redefinir',
     });
     if (!ok) return;
@@ -225,7 +225,7 @@ export function AdminUsersClient({ locale }: Props) {
   const handleDeactivate = async (id: string) => {
     const ok = await confirm({
       title: 'Desativar usuário?',
-      description: t('confirmDeactivate'),
+      description: t('users.confirmDeactivate'),
       confirmLabel: 'Desativar',
       variant: 'destructive',
     });
