@@ -26,14 +26,20 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const Plot = dynamic(() => import('react-plotly.js'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full w-full items-center justify-center rounded-md border bg-muted/20 text-sm text-muted-foreground">
-      Loading chart…
-    </div>
-  ),
-});
+const Plot = dynamic(
+  async () => {
+    const mod = await import('react-plotly.js');
+    return mod.default;
+  },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center rounded-md border bg-muted/20 text-sm text-muted-foreground">
+        Loading chart…
+      </div>
+    ),
+  },
+);
 
 interface DataSeries {
   label: string;
@@ -66,7 +72,7 @@ function useDarkMode(): boolean {
   return dark;
 }
 
-// Tracks whether Plotly ever failed to load. Fallback to Recharts if so.
+// Tracks whether the dynamic import itself errored. Fallback to Recharts if so.
 let plotlyFailed = false;
 
 export function SimpleChart({
@@ -80,18 +86,17 @@ export function SimpleChart({
   const [useFallback, setUseFallback] = useState(plotlyFailed);
 
   useEffect(() => {
-    // If Plotly hasn't mounted in 4 s, flip to Recharts fallback.
     if (useFallback) return;
-    const timer = setTimeout(() => {
-      const plotlyLoaded =
-        typeof window !== 'undefined' &&
-        (window as unknown as { Plotly?: unknown }).Plotly;
-      if (!plotlyLoaded) {
-        plotlyFailed = true;
-        setUseFallback(true);
-      }
-    }, 4000);
-    return () => clearTimeout(timer);
+    // Probe the import; only flip to Recharts on an actual module-resolution error.
+    let cancelled = false;
+    import('react-plotly.js').catch(() => {
+      if (cancelled) return;
+      plotlyFailed = true;
+      setUseFallback(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [useFallback]);
 
   const data: Data[] = useMemo(
@@ -123,8 +128,14 @@ export function SimpleChart({
         size: 12,
         color: ink,
       },
-      margin: { l: 60, r: 20, t: title ? 40 : 16, b: 50 },
-      title: title ? { text: title, font: { size: 14, color: ink } } : undefined,
+      margin: { l: 60, r: 20, t: title ? 56 : 40, b: 50 },
+      title: title ? { text: title, font: { size: 14, color: ink }, y: 0.98, yanchor: 'top' } : undefined,
+      modebar: {
+        orientation: 'h',
+        bgcolor: 'rgba(0,0,0,0)',
+        color: muted,
+        activecolor: ink,
+      },
       xaxis: {
         title: xLabel ? { text: xLabel, font: { color: ink, size: 12 } } : undefined,
         gridcolor: grid,
@@ -201,6 +212,7 @@ export function SimpleChart({
         config={{
           responsive: true,
           displaylogo: false,
+          displayModeBar: 'hover',
           modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
         }}
         useResizeHandler
