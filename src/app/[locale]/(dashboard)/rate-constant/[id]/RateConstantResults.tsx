@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { formatEnergy, formatFrequency } from '@/lib/format-scientific';
+import {
+  convertEnergyFromKJmol,
+  convertKFromLmols,
+  ENERGY_UNIT_LABEL,
+  K_UNIT_LABEL,
+  kUnitForReaction,
+  type EnergyUnit,
+  type KUnit,
+} from '@/lib/units';
 
 interface Reaction {
   id: string;
@@ -41,11 +51,21 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
   const rateConstants = reaction.rateConstants || {};
   const methods = Object.keys(rateConstants);
 
+  const [energyUnit, setEnergyUnit] = useState<EnergyUnit>('kcalmol');
+  const [kUnit, setKUnit] = useState<KUnit>('Lmols');
+
+  const displayKUnit = kUnitForReaction(reaction.reactionType, kUnit);
+  const convertK = (v: number) =>
+    reaction.reactionType === 'UNIMOLECULAR' ? v : convertKFromLmols(v, kUnit);
+
   const downloadCSV = () => {
-    const headers = ['T (K)', ...methods.map((m) => `k_${m}`)];
+    const headers = [`T (K)`, ...methods.map((m) => `k_${m} (${displayKUnit})`)];
     const rows = temperatures.map((temp, i) => [
       temp,
-      ...methods.map((m) => rateConstants[m]?.[i]?.toExponential(6) || ''),
+      ...methods.map((m) => {
+        const v = rateConstants[m]?.[i];
+        return v != null ? convertK(v).toExponential(6) : '';
+      }),
     ]);
 
     const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -56,6 +76,29 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
     a.download = `${reaction.name.replace(/\s+/g, '_')}_rate_constants.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const downloadXLSX = async () => {
+    // Dynamic import so the xlsx bundle is only fetched when used.
+    const XLSX = await import('xlsx');
+    const header = [`T (K)`, `1000/T (K^-1)`, ...methods.flatMap((m) => [`k_${m} (${displayKUnit})`, `ln k_${m}`])];
+    const rows = temperatures.map((temp, i) => {
+      const row: (string | number)[] = [temp, 1000 / temp];
+      for (const m of methods) {
+        const v = rateConstants[m]?.[i];
+        if (v == null) {
+          row.push('', '');
+        } else {
+          const conv = convertK(v);
+          row.push(conv, Math.log(Math.abs(conv)));
+        }
+      }
+      return row;
+    });
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'rate_constants');
+    XLSX.writeFile(wb, `${reaction.name.replace(/\s+/g, '_')}_rate_constants.xlsx`);
   };
 
   // Arrhenius plot data: 1000/T vs ln(k)
@@ -101,9 +144,39 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
           <h1 className="text-xl font-bold">{reaction.name}</h1>
           <Badge>{reaction.reactionType}</Badge>
         </div>
-        <Button onClick={downloadCSV} variant="outline" size="sm">
-          <Download className="mr-1 size-4" /> CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            E:
+            <select
+              value={energyUnit}
+              onChange={(e) => setEnergyUnit(e.target.value as EnergyUnit)}
+              className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+            >
+              <option value="kcalmol">{ENERGY_UNIT_LABEL.kcalmol}</option>
+              <option value="kjmol">{ENERGY_UNIT_LABEL.kjmol}</option>
+            </select>
+          </label>
+          {reaction.reactionType === 'BIMOLECULAR' && (
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              k:
+              <select
+                value={kUnit}
+                onChange={(e) => setKUnit(e.target.value as KUnit)}
+                className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+              >
+                <option value="Lmols">{K_UNIT_LABEL.Lmols}</option>
+                <option value="cm3mols">{K_UNIT_LABEL.cm3mols}</option>
+                <option value="cm3molecules">{K_UNIT_LABEL.cm3molecules}</option>
+              </select>
+            </label>
+          )}
+          <Button onClick={downloadCSV} variant="outline" size="sm">
+            <Download className="mr-1 size-4" /> CSV
+          </Button>
+          <Button onClick={downloadXLSX} variant="outline" size="sm">
+            <Download className="mr-1 size-4" /> XLSX
+          </Button>
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -112,7 +185,9 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-muted-foreground">{t('forwardBarrier')}</p>
-              <p className="text-lg font-semibold">{reaction.forwardBarrier.toFixed(2)} kJ/mol</p>
+              <p className="text-lg font-semibold">
+                {convertEnergyFromKJmol(reaction.forwardBarrier, energyUnit).toFixed(2)} {ENERGY_UNIT_LABEL[energyUnit]}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -120,7 +195,9 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-muted-foreground">{t('reverseBarrier')}</p>
-              <p className="text-lg font-semibold">{reaction.reverseBarrier.toFixed(2)} kJ/mol</p>
+              <p className="text-lg font-semibold">
+                {convertEnergyFromKJmol(reaction.reverseBarrier, energyUnit).toFixed(2)} {ENERGY_UNIT_LABEL[energyUnit]}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -136,7 +213,7 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-muted-foreground">{t('imagFreq')}</p>
-              <p className="text-lg font-semibold">{reaction.imaginaryFreq.toFixed(1)} cm⁻¹</p>
+              <p className="text-lg font-semibold">{formatFrequency(reaction.imaginaryFreq)} cm⁻¹</p>
             </CardContent>
           </Card>
         )}
@@ -160,6 +237,9 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
                     {methods.map((m) => (
                       <th key={m} className="px-3 py-2 text-right font-medium">
                         k<sub>{m}</sub>
+                        <span className="ml-1 font-normal text-[10px] text-muted-foreground">
+                          ({displayKUnit})
+                        </span>
                       </th>
                     ))}
                   </tr>
@@ -168,11 +248,14 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
                   {temperatures.map((temp, i) => (
                     <tr key={temp} className="border-b border-muted/50">
                       <td className="px-3 py-1.5 font-mono">{temp}</td>
-                      {methods.map((m) => (
-                        <td key={m} className="px-3 py-1.5 text-right font-mono text-xs">
-                          {rateConstants[m]?.[i]?.toExponential(4) || '-'}
-                        </td>
-                      ))}
+                      {methods.map((m) => {
+                        const v = rateConstants[m]?.[i];
+                        return (
+                          <td key={m} className="px-3 py-1.5 text-right font-mono text-xs">
+                            {v != null ? convertK(v).toExponential(4) : '-'}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
@@ -274,7 +357,7 @@ export function RateConstantResults({ reaction }: { reaction: Reaction }) {
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-1 text-xs text-muted-foreground">
                     {sp.scfEnergy != null && (
-                      <p>E = {sp.scfEnergy.toFixed(6)} Hartree</p>
+                      <p>E = {formatEnergy(sp.scfEnergy)} Hartree</p>
                     )}
                     {sp.molecularMass != null && (
                       <p>M = {sp.molecularMass.toFixed(4)} g/mol</p>

@@ -17,6 +17,7 @@ import {
 import { FileDropzone } from '@/components/chemistry/FileDropzone';
 import { Upload, Trash2, Plus, ChevronRight, ChevronLeft, Loader2, FlaskConical } from 'lucide-react';
 import { SAMPLE_RATE_CONSTANT_DATA } from '@/lib/sample-data';
+import { formatEnergy } from '@/lib/format-scientific';
 
 type SpeciesRole = 'REACTANT' | 'TRANSITION_STATE' | 'PRODUCT';
 
@@ -322,7 +323,7 @@ export function ReactionWizard() {
                       <p className="text-sm font-medium">{sp.label}</p>
                       {sp.scfEnergy && (
                         <p className="text-xs text-muted-foreground">
-                          E = {sp.scfEnergy.toFixed(6)} Hartree | {sp.nAtoms} atoms
+                          E = {formatEnergy(sp.scfEnergy)} Hartree | {sp.nAtoms} atoms
                         </p>
                       )}
                     </div>

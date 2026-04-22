@@ -120,7 +120,6 @@ export function RateConstantWorkbench() {
 
   const [reactionName, setReactionName] = useState('');
   const [reactionType, setReactionType] = useState<'UNIMOLECULAR' | 'BIMOLECULAR'>('BIMOLECULAR');
-  const [energyType, setEnergyType] = useState<'En' | 'Ent' | 'EnG'>('En');
   const [species, setSpecies] = useState<WorkspaceSpecies[]>([]);
   const [temperatureRows, setTemperatureRows] = useState<TemperatureRow[]>([
     createTemperatureRow('200'),
@@ -371,7 +370,6 @@ export function RateConstantWorkbench() {
           products: products.map(formatSpeciesForEndpoint),
           temperatures,
           reactionType,
-          energyType,
           tunnelingMethods,
           dParameter: tunnelingMethods.includes('D_TST') ? Number(dParameter) : undefined,
           solventModel:
@@ -484,19 +482,8 @@ export function RateConstantWorkbench() {
                 <option value="BIMOLECULAR">{t('bimolecular')}</option>
               </select>
             </div>
-            <div className="w-full">
-              <Label htmlFor="energy-type">{t('energyType')}</Label>
-              <select
-                id="energy-type"
-                value={energyType}
-                onChange={(event) => setEnergyType(event.target.value as typeof energyType)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="En">E (SCF Energy)</option>
-                <option value="Ent">E + H (Enthalpy)</option>
-                <option value="EnG">E + G (Free Energy)</option>
-              </select>
-            </div>
+            {/* Energy-type selector removed: k is always computed from SCF.
+                See docs/qa-danilo-round-1.md §1. */}
           </div>
 
           <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">

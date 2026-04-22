@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { TransitionStatePreview } from '@/components/chemistry/previews';
 import { FilePicker, type BucketFile } from '@/components/files/FilePicker';
+import { formatEnergy } from '@/lib/format-scientific';
 
 export interface ParsedSpecies {
   filename: string;
@@ -126,7 +127,7 @@ export function SpeciesPanel({
           </div>
           {value.scfEnergy != null && (
             <div className="text-[10px] text-muted-foreground tabular-nums">
-              SCF: {value.scfEnergy.toFixed(6)} Eh
+              SCF: {formatEnergy(value.scfEnergy)} Eh
             </div>
           )}
           {value.nAtoms != null && (
