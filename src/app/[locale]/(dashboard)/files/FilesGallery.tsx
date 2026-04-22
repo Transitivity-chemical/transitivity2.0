@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Download, FileText, Upload, Loader2, Folder, Trash2 } from 'lucide-react';
+import { useConfirm } from '@/components/providers/ConfirmDialogProvider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,31 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
   const [dragActive, setDragActive] = useState(false);
   const dragCounterRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const confirm = useConfirm();
+
+  const handleDelete = async (f: GalleryFile) => {
+    const ok = await confirm({
+      title: locale === 'pt-BR' ? 'Excluir arquivo?' : 'Delete file?',
+      description:
+        locale === 'pt-BR'
+          ? `"${f.originalName}" será removido do bucket e não poderá ser recuperado.`
+          : `"${f.originalName}" will be removed from the bucket and can't be recovered.`,
+      confirmLabel: locale === 'pt-BR' ? 'Excluir' : 'Delete',
+      variant: 'destructive',
+    });
+    if (!ok) return;
+    try {
+      const res = await fetch(`/api/v1/files/${f.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      toast.success(locale === 'pt-BR' ? 'Arquivo excluído' : 'File deleted');
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Falha ao excluir');
+    }
+  };
 
   const refetch = useCallback(async () => {
     try {
@@ -273,8 +299,17 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
                       className="inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-medium hover:bg-accent"
                     >
                       <Download className="size-3" />
-                      Baixar
+                      {locale === 'pt-BR' ? 'Baixar' : 'Download'}
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(f)}
+                      className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-2.5 py-1 text-[11px] font-medium text-destructive hover:bg-destructive/10"
+                      aria-label={locale === 'pt-BR' ? 'Excluir' : 'Delete'}
+                    >
+                      <Trash2 className="size-3" />
+                      {locale === 'pt-BR' ? 'Excluir' : 'Delete'}
+                    </button>
                   </div>
                 </li>
               ))}

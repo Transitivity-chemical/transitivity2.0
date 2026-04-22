@@ -7,6 +7,7 @@ import { ArrowLeft, Download, FileText, Folder, Clock, FlaskConical, Atom, Trend
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/format-date';
+import { AdminUserFilesList } from '@/components/admin/AdminUserFilesList';
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -171,39 +172,7 @@ export default async function AdminUserDetailPage({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {files.length === 0 ? (
-            <p className="px-5 py-6 text-center text-xs text-muted-foreground">Nenhum arquivo.</p>
-          ) : (
-            <ul className="max-h-96 divide-y overflow-y-auto">
-              {files.map((f) => (
-                <li key={f.id}>
-                  <div className="flex items-center gap-3 px-5 py-2 text-xs">
-                    <FileText className="size-3.5 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{f.originalName}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatBytes(f.sizeBytes)} · {f.fileType}
-                        {f.sha256 ? ` · ${f.sha256.slice(0, 8)}` : ''}
-                      </p>
-                    </div>
-                    <Badge variant={f.resourceRole === 'INPUT' ? 'outline' : 'secondary'} className="text-[9px]">
-                      {f.resourceRole}
-                    </Badge>
-                    <span className="hidden w-36 text-right text-[10px] tabular-nums text-muted-foreground sm:inline">
-                      {formatDateTime(f.createdAt, locale)}
-                    </span>
-                    <Link
-                      href={`/api/v1/files/${f.id}/download`}
-                      className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium hover:bg-accent"
-                    >
-                      <Download className="size-3" />
-                      Baixar
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+          <AdminUserFilesList locale={locale} initialFiles={files} />
         </CardContent>
       </Card>
 

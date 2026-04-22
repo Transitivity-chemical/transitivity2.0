@@ -1,7 +1,8 @@
-import { unlink } from 'fs/promises';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { deleteFromBucket } from '@/lib/bucket-client';
+import { isAdminRole } from '@/lib/access';
 
 export async function DELETE(
   _request: Request,
@@ -15,29 +16,32 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const file = await prisma.fileUpload.findUnique({
-      where: { id },
-    });
+    const [file, caller] = await Promise.all([
+      prisma.fileUpload.findUnique({ where: { id } }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true },
+      }),
+    ]);
 
     if (!file) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    if (file.userId !== session.user.id) {
+    const admin = caller ? isAdminRole(caller.role) : false;
+    if (file.userId !== session.user.id && !admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Delete from filesystem
+    // Delete from bucket; do not block DB cleanup on bucket errors so a
+    // disappeared blob can't leave an undeletable DB row.
     try {
-      await unlink(file.storagePath);
-    } catch {
-      // File may already be deleted from disk; continue with DB cleanup
+      await deleteFromBucket({ userId: file.userId, storagePath: file.storagePath });
+    } catch (err) {
+      console.warn('bucket delete warning', err);
     }
 
-    // Delete from database
-    await prisma.fileUpload.delete({
-      where: { id },
-    });
+    await prisma.fileUpload.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -75,6 +75,24 @@ export async function downloadFromBucket(params: {
   return new Uint8Array(buf);
 }
 
+export async function deleteFromBucket(params: {
+  userId: string;
+  storagePath: string;
+}): Promise<void> {
+  const qs = new URLSearchParams({
+    user_id: params.userId,
+    path: params.storagePath,
+  });
+  const res = await fetch(`${FASTAPI_URL}/api/v1/files/delete?${qs}`, {
+    method: 'DELETE',
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`bucket delete failed: ${res.status} ${body}`);
+  }
+}
+
 /**
  * Upload bytes + insert a FileUpload row in one call. Returns the Prisma
  * row so callers can link it to their resource.

@@ -29,19 +29,23 @@ import { runTransitivityFitViaProxy, type RemoteFitResponse } from '@/lib/fittin
 import { downloadFit } from '@/lib/fitting-save';
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { SGFilterPreview } from '@/components/chemistry/previews/SGFilterPreview';
+import { usePersistentState } from '@/lib/use-persistent-state';
 
 export function TransitivityPlotTab() {
-  const [theory, setTheory] = useState<TransitivityTheory>('Arrhenius');
-  const [pairs, setPairs] = useState<TKPair[]>([]);
-  const [gsa, setGsa] = useState<GsaParams>(DEFAULT_GSA_PARAMS);
-  const [applySg, setApplySg] = useState(false);
-  const [sgPolyOrder, setSgPolyOrder] = useState(2);
+  const [theory, setTheory] = usePersistentState<TransitivityTheory>('fit:transitivity:theory', 'Arrhenius');
+  const [pairs, setPairs] = usePersistentState<TKPair[]>('fit:transitivity:pairs', []);
+  const [gsa, setGsa] = usePersistentState<GsaParams>('fit:transitivity:gsa', DEFAULT_GSA_PARAMS);
+  const [applySg, setApplySg] = usePersistentState('fit:transitivity:applySg', false);
+  const [sgPolyOrder, setSgPolyOrder] = usePersistentState('fit:transitivity:sgPolyOrder', 2);
   const [fitting, setFitting] = useState(false);
   const [result, setResult] = useState<{ tempK: number[]; lnK: number[]; lnFit: number[] } | null>(null);
   const [rawFit, setRawFit] = useState<RemoteFitResponse | null>(null);
 
   const params = useMemo(() => getTransitivityParams(theory), [theory]);
-  const [paramValues, setParamValues] = useState<Record<string, InitialParamValue>>({});
+  const [paramValues, setParamValues] = usePersistentState<Record<string, InitialParamValue>>(
+    'fit:transitivity:paramValues',
+    {},
+  );
 
   const loadExample = () => {
     setPairs(SAMPLE_FITTING_DATA.map((p) => ({ T: p.temperature, k: p.rateConstant })));

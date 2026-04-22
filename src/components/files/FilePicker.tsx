@@ -241,7 +241,7 @@ export function FilePicker({
           </Button>
         </div>
 
-        <div className="max-h-[55vh] overflow-y-auto">
+        <div className="h-[55vh] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
               <Loader2 className="mr-2 size-4 animate-spin" /> Carregando…

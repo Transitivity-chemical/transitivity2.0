@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { usePersistentState } from '@/lib/use-persistent-state';
 import { FlaskConical, Loader2, Trash2, Upload } from 'lucide-react';
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { TunnelingPreview } from '@/components/chemistry/previews';
@@ -118,26 +119,54 @@ export function RateConstantWorkbench() {
   const t = useTranslations('rateConstant');
   const tCommon = useTranslations('common');
 
-  const [reactionName, setReactionName] = useState('');
-  const [reactionType, setReactionType] = useState<'UNIMOLECULAR' | 'BIMOLECULAR'>('BIMOLECULAR');
-  const [species, setSpecies] = useState<WorkspaceSpecies[]>([]);
-  const [temperatureRows, setTemperatureRows] = useState<TemperatureRow[]>([
-    createTemperatureRow('200'),
-    createTemperatureRow('300'),
-    createTemperatureRow('400'),
-    createTemperatureRow('500'),
-    createTemperatureRow('700'),
-    createTemperatureRow('1000'),
-    createTemperatureRow('1500'),
-    createTemperatureRow('2000'),
-  ]);
-  const [tunnelingMethods, setTunnelingMethods] = useState<string[]>(['BELL_35', 'ECKART']);
-  const [dParameter, setDParameter] = useState('0.0');
-  const [solventModel, setSolventModel] = useState('none');
-  const [solventName, setSolventName] = useState('');
-  const [solventViscosity, setSolventViscosity] = useState('0.00089');
-  const [radiusA, setRadiusA] = useState('2e-10');
-  const [radiusB, setRadiusB] = useState('2e-10');
+  // Persisted across reloads so an accidental refresh doesn't wipe uploads.
+  const [reactionName, setReactionName, clearReactionName] = usePersistentState('ratecs:ctst:name', '');
+  const [reactionType, setReactionType, clearReactionType] = usePersistentState<'UNIMOLECULAR' | 'BIMOLECULAR'>(
+    'ratecs:ctst:type',
+    'BIMOLECULAR',
+  );
+  const [species, setSpecies, clearSpecies] = usePersistentState<WorkspaceSpecies[]>('ratecs:ctst:species', []);
+  const [temperatureRows, setTemperatureRows, clearTempRows] = usePersistentState<TemperatureRow[]>(
+    'ratecs:ctst:temps',
+    [
+      createTemperatureRow('200'),
+      createTemperatureRow('300'),
+      createTemperatureRow('400'),
+      createTemperatureRow('500'),
+      createTemperatureRow('700'),
+      createTemperatureRow('1000'),
+      createTemperatureRow('1500'),
+      createTemperatureRow('2000'),
+    ],
+  );
+  const [tunnelingMethods, setTunnelingMethods, clearTunneling] = usePersistentState<string[]>(
+    'ratecs:ctst:tunneling',
+    ['BELL_35', 'ECKART'],
+  );
+  const [dParameter, setDParameter, clearDParam] = usePersistentState('ratecs:ctst:d', '0.0');
+  const [solventModel, setSolventModel, clearSolventModel] = usePersistentState('ratecs:ctst:solvent', 'none');
+  const [solventName, setSolventName, clearSolventName] = usePersistentState('ratecs:ctst:solventName', '');
+  const [solventViscosity, setSolventViscosity, clearVisc] = usePersistentState(
+    'ratecs:ctst:viscosity',
+    '0.00089',
+  );
+  const [radiusA, setRadiusA, clearRadA] = usePersistentState('ratecs:ctst:radA', '2e-10');
+  const [radiusB, setRadiusB, clearRadB] = usePersistentState('ratecs:ctst:radB', '2e-10');
+
+  const clearWorkbenchState = () => {
+    clearReactionName();
+    clearReactionType();
+    clearSpecies();
+    clearTempRows();
+    clearTunneling();
+    clearDParam();
+    clearSolventModel();
+    clearSolventName();
+    clearVisc();
+    clearRadA();
+    clearRadB();
+  };
+  void clearWorkbenchState; // Not auto-clearing on success — user may want to re-run.
   const [status, setStatus] = useState<'idle' | 'parsing' | 'loading' | 'error' | 'success'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [result, setResult] = useState<RateConstantResponse | null>(null);

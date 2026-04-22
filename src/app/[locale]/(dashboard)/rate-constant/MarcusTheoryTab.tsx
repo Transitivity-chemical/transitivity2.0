@@ -20,6 +20,7 @@ import { TemperatureConfig, DEFAULT_TEMPERATURES } from '@/components/chemistry/
 import { HoverPreviewPopover } from '@/components/common/HoverPreviewPopover';
 import { MarcusLambdaPreview } from '@/components/chemistry/previews/MarcusLambdaPreview';
 import { computeMarcus } from '@/lib/marcus-compute';
+import { usePersistentState } from '@/lib/use-persistent-state';
 
 type MarcusResult = {
   temperatures: number[];
@@ -32,14 +33,15 @@ type MarcusResult = {
 const EMPTY: ParsedSpecies | null = null;
 
 export function MarcusTheoryTab() {
-  const [reactant1, setReactant1] = useState<ParsedSpecies | null>(EMPTY);
-  const [reactant2, setReactant2] = useState<ParsedSpecies | null>(EMPTY);
-  const [transitionState, setTransitionState] = useState<ParsedSpecies | null>(EMPTY);
-  const [product1, setProduct1] = useState<ParsedSpecies | null>(EMPTY);
-  const [product2, setProduct2] = useState<ParsedSpecies | null>(EMPTY);
-  const [verticalProduct1, setVerticalProduct1] = useState<ParsedSpecies | null>(EMPTY);
-  const [verticalProduct2, setVerticalProduct2] = useState<ParsedSpecies | null>(EMPTY);
-  const [temperatures, setTemperatures] = useState<number[]>([...DEFAULT_TEMPERATURES]);
+  // Persisted across reloads — see lib/use-persistent-state.ts
+  const [reactant1, setReactant1] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:r1', EMPTY);
+  const [reactant2, setReactant2] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:r2', EMPTY);
+  const [transitionState, setTransitionState] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:ts', EMPTY);
+  const [product1, setProduct1] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:p1', EMPTY);
+  const [product2, setProduct2] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:p2', EMPTY);
+  const [verticalProduct1, setVerticalProduct1] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:v1', EMPTY);
+  const [verticalProduct2, setVerticalProduct2] = usePersistentState<ParsedSpecies | null>('ratecs:marcus:v2', EMPTY);
+  const [temperatures, setTemperatures] = usePersistentState<number[]>('ratecs:marcus:temps', [...DEFAULT_TEMPERATURES]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MarcusResult | null>(null);
 
