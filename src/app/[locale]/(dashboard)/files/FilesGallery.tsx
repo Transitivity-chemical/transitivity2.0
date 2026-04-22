@@ -43,6 +43,8 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
   const [role, setRole] = useState<Role>('ALL');
   const [query, setQuery] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const dragCounterRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const refetch = useCallback(async () => {
@@ -64,22 +66,72 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
   }, [refetch]);
 
   const handleUpload = async (file: File) => {
-    setUploading(true);
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      const res = await fetch('/api/v1/files/upload', { method: 'POST', body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      toast.success(`${file.name} enviado`);
-      await refetch();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao enviar');
-    } finally {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/api/v1/files/upload', { method: 'POST', body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return file.name;
+  };
+
+  const handleUploadMany = useCallback(
+    async (fileList: FileList | File[]) => {
+      const items = Array.from(fileList);
+      if (items.length === 0) return;
+      setUploading(true);
+      let ok = 0;
+      let failed = 0;
+      for (const f of items) {
+        try {
+          await handleUpload(f);
+          ok++;
+        } catch (err) {
+          failed++;
+          toast.error(`${f.name}: ${err instanceof Error ? err.message : 'erro'}`);
+        }
+      }
+      if (ok > 0) toast.success(`${ok} ${ok === 1 ? 'arquivo enviado' : 'arquivos enviados'}`);
+      if (failed > 0 && ok === 0) {
+        /* all failed, already toasted above */
+      }
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
+      await refetch();
+    },
+    [refetch],
+  );
+
+  useEffect(() => {
+    const onDragEnter = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes('Files')) return;
+      dragCounterRef.current += 1;
+      setDragActive(true);
+    };
+    const onDragLeave = () => {
+      dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+      if (dragCounterRef.current === 0) setDragActive(false);
+    };
+    const onDragOver = (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes('Files')) e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes('Files')) return;
+      e.preventDefault();
+      dragCounterRef.current = 0;
+      setDragActive(false);
+      if (e.dataTransfer.files?.length) void handleUploadMany(e.dataTransfer.files);
+    };
+    window.addEventListener('dragenter', onDragEnter);
+    window.addEventListener('dragleave', onDragLeave);
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('drop', onDrop);
+    return () => {
+      window.removeEventListener('dragenter', onDragEnter);
+      window.removeEventListener('dragleave', onDragLeave);
+      window.removeEventListener('dragover', onDragOver);
+      window.removeEventListener('drop', onDrop);
+    };
+  }, [handleUploadMany]);
 
   const filtered = files.filter((f) => {
     if (role !== 'ALL' && f.resourceRole !== role) return false;
@@ -95,12 +147,26 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
       <input
         ref={fileInputRef}
         type="file"
+        multiple
         className="hidden"
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleUpload(f);
+          if (e.target.files?.length) void handleUploadMany(e.target.files);
         }}
       />
+
+      {dragActive && (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
+          <div className="rounded-2xl border-2 border-dashed border-primary bg-primary/5 px-10 py-8 text-center shadow-2xl">
+            <Upload className="mx-auto mb-2 size-8 text-primary" />
+            <p className="text-lg font-semibold">
+              {locale === 'pt-BR' ? 'Solte para enviar' : 'Drop to upload'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {locale === 'pt-BR' ? 'Múltiplos arquivos suportados' : 'Multiple files supported'}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -175,7 +241,9 @@ export function FilesGallery({ locale, initialFiles, initialTotalBytes }: Props)
       {filtered.length === 0 ? (
         <Card className="shadow-sm">
           <CardContent className="py-16 text-center text-sm text-muted-foreground">
-            Nenhum arquivo ainda. Clique em <span className="font-medium">Enviar arquivo</span> para começar.
+            {locale === 'pt-BR'
+              ? <>Nenhum arquivo ainda. Arraste arquivos para qualquer lugar ou clique em <span className="font-medium">Enviar arquivo</span>.</>
+              : <>No files yet. Drag files anywhere or click <span className="font-medium">Upload</span>.</>}
           </CardContent>
         </Card>
       ) : (

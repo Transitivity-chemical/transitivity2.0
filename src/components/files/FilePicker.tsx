@@ -31,6 +31,19 @@ import { Upload, FileText, Search, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+// Module-level cache so flipping between workbenches doesn't re-fetch the
+// bucket every time. Keyed on roleFilter; 60 s TTL; revalidate in background
+// on open. Invalidated manually after upload.
+type CacheEntry = { files: BucketFile[]; fetchedAt: number };
+const filesCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 60_000;
+function cacheKey(roleFilter: 'INPUT' | 'OUTPUT' | null): string {
+  return roleFilter ?? 'ALL';
+}
+function invalidateFilesCache() {
+  filesCache.clear();
+}
+
 export interface BucketFile {
   id: string;
   originalName: string;
@@ -68,31 +81,44 @@ export function FilePicker({
   title = 'Selecionar arquivo',
   description = 'Escolha da sua galeria ou envie um novo.',
 }: FilePickerProps) {
-  const [files, setFiles] = useState<BucketFile[]>([]);
+  const cached = filesCache.get(cacheKey(roleFilter));
+  const [files, setFiles] = useState<BucketFile[]>(cached?.files ?? []);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const [filter, setFilter] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchFiles = useCallback(async () => {
-    setLoading(true);
-    try {
-      const url = new URL('/api/v1/files/list', window.location.origin);
-      if (roleFilter) url.searchParams.set('role', roleFilter);
-      url.searchParams.set('limit', '200');
-      const res = await fetch(url.toString(), { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setFiles(data.files || []);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao carregar arquivos');
-    } finally {
-      setLoading(false);
-    }
-  }, [roleFilter]);
+  const fetchFiles = useCallback(
+    async ({ force = false }: { force?: boolean } = {}) => {
+      const key = cacheKey(roleFilter);
+      const entry = filesCache.get(key);
+      const fresh = entry && Date.now() - entry.fetchedAt < CACHE_TTL_MS;
+      if (entry) setFiles(entry.files);
+      if (!force && fresh) return;
+      // Only show the spinner when we have no cached data at all.
+      if (!entry) setLoading(true);
+      try {
+        const url = new URL('/api/v1/files/list', window.location.origin);
+        if (roleFilter) url.searchParams.set('role', roleFilter);
+        url.searchParams.set('limit', '200');
+        const res = await fetch(url.toString(), { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const list: BucketFile[] = data.files || [];
+        filesCache.set(key, { files: list, fetchedAt: Date.now() });
+        setFiles(list);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Falha ao carregar arquivos');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [roleFilter],
+  );
 
   useEffect(() => {
-    if (open) fetchFiles();
+    if (open) void fetchFiles();
   }, [open, fetchFiles]);
 
   const handleUpload = async (file: File) => {
@@ -104,8 +130,9 @@ export function FilePicker({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       toast.success(`${file.name} enviado`);
-      // Refresh + auto-select the newly uploaded file
-      await fetchFiles();
+      // Upload invalidates every role-scoped cache.
+      invalidateFilesCache();
+      await fetchFiles({ force: true });
       if (data.id) {
         const newFile: BucketFile = {
           id: data.id,
@@ -149,7 +176,31 @@ export function FilePicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] w-[95vw] max-w-2xl overflow-hidden p-0">
+      <DialogContent
+        className={cn(
+          'max-h-[85vh] w-[95vw] max-w-2xl overflow-hidden p-0 transition-colors',
+          dragActive && 'ring-2 ring-primary ring-offset-2',
+        )}
+        onDragEnter={(e) => {
+          if (e.dataTransfer.types.includes('Files')) {
+            e.preventDefault();
+            setDragActive(true);
+          }
+        }}
+        onDragLeave={(e) => {
+          if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+          setDragActive(false);
+        }}
+        onDragOver={(e) => {
+          if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+        }}
+        onDrop={(e) => {
+          if (!e.dataTransfer.files?.length) return;
+          e.preventDefault();
+          setDragActive(false);
+          void handleUpload(e.dataTransfer.files[0]);
+        }}
+      >
         <DialogHeader className="border-b px-5 py-4">
           <DialogTitle className="text-base">{title}</DialogTitle>
           <DialogDescription className="text-xs">{description}</DialogDescription>
