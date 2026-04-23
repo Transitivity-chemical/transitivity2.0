@@ -29,8 +29,16 @@ export async function shouldBeAuthorized() {
 
 export async function shouldBeAdmin() {
   const session = await shouldBeAuthorized();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((session.user as any).role !== 'ADMIN') {
+  // Read role FRESH from DB — the JWT can be stale for users promoted to
+  // ADMIN after their last login. The dashboard layout already does this;
+  // API routes must match.
+  const { prisma } = await import('@/lib/prisma');
+  const { isAdminRole } = await import('@/lib/access');
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (!user || !isAdminRole(user.role)) {
     throw new ClientError('Forbidden', 403);
   }
   return session;
